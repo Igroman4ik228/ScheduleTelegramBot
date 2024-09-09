@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "scheduletelegrambot"
+version = "0.1.0"
+description = ""
+authors = ["igroman4ik"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aiogram = "^3.13.0"
+pydantic-settings = "^2.4.0"
+sqlalchemy = "^2.0.34"
+requests = "^2.32.3"
+cachetools = "^5.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
