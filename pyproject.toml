@@ -12,7 +12,11 @@ pydantic-settings = "^2.4.0"
 sqlalchemy = "^2.0.34"
 requests = "^2.32.3"
 cachetools = "^5.5.0"
+<<<<<<< HEAD
+injector = "^0.22.0"
+=======
 alembic = "^1.13.2"
+>>>>>>> fd399c0d55ef66e6f7a87e2fe38bf3ad9e4746b8
 
 
 [build-system]
