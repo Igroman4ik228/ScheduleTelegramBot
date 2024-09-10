@@ -1,0 +1,28 @@
+from abc import ABC, abstractmethod
+import asyncio
+from logging import Logger
+
+
+class BackgroundService(ABC):
+    @abstractmethod
+    def __init__(self, time_span: int, logger: Logger) -> None:
+        self.is_active: bool = False
+        self.time_span = time_span
+        self.logger = logger
+
+    @abstractmethod
+    async def do_work(self):
+        pass
+
+    async def active(self):
+        self.is_active = True
+        while self.is_active:
+            await self.do_work()
+            await asyncio.sleep(self.time_span)
+
+    async def pause(self):
+        self.is_active = False
+
+    @abstractmethod
+    async def stop(self):
+        pass
