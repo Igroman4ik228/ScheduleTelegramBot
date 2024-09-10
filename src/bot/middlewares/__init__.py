@@ -3,11 +3,14 @@ from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
 
 def register_middlewares(dp: Dispatcher) -> None:
-    from . import error_handling, throttling
+    from .auth import AuthMiddleware
+    from .error_handling import ErrorHandlingMiddleware
+    from .throttling import ThrottlingMiddleware
 
-    dp.message.outer_middleware(throttling.ThrottlingMiddleware())
-    dp.update.outer_middleware(
-        error_handling.ErrorHandlingMiddleware(dp.get("bot"))
-    )
+    dp.message.outer_middleware(ThrottlingMiddleware())
+
+    dp.update.outer_middleware(ErrorHandlingMiddleware(dp.get("bot")))
+
+    dp.message.middleware(AuthMiddleware())
 
     dp.callback_query.middleware(CallbackAnswerMiddleware())
