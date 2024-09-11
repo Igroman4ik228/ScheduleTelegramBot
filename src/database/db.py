@@ -1,20 +1,35 @@
+import asyncio
+
 from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
                                     async_sessionmaker, create_async_engine)
 
 from config import settings
+from database.models.base import Base
 
 
-def get_engine(url: str = settings.database_url) -> AsyncEngine:
-    return create_async_engine(
-        url=url,
-        echo=settings.DEBUG,
-        pool_size=0
-    )
+async def create_tables(cur_engine: AsyncEngine) -> None:
+    async with cur_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await cur_engine.dispose()
 
 
-def get_sessionmaker(engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-    return async_sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
+async def delete_tables(cur_engine: AsyncEngine) -> None:
+    async with cur_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await cur_engine.dispose()
+
+engine = create_async_engine(
+    url=settings.database_url,
+    echo=settings.DEBUG,
+    pool_pre_ping=True
+)
+sessionmaker = async_sessionmaker(engine,
+                                  autoflush=False,
+                                  expire_on_commit=False)
+
+# Удаление таблиц
+# asyncio.run(delete_tables(engine))
 
 
-engine = get_engine(settings.database_url)
-sessionmaker = get_sessionmaker(engine)
+# Создание таблиц если их нет
+asyncio.run(create_tables(engine))

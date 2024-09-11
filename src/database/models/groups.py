@@ -1,13 +1,25 @@
-from base import Base, department_foreign_key, int_pk, str_256
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from database.models.base import Base, department_foreign_key, int_pk, str_256
 
 
 class GroupModel(Base):
     __tablename__ = 'Groups'
 
-    id = Mapped[int_pk]
-    name = Mapped[str_256]
-    department_id = Mapped[department_foreign_key]
+    id: Mapped[int_pk]
+    name: Mapped[str_256] = mapped_column(unique=True)
+    department_id: Mapped[department_foreign_key]
 
-    users: Mapped[list["UserModel"]] = relationship()
-    department: Mapped["DepartmentModel"] = relationship()
+    department: Mapped["DepartmentModel"] = relationship(
+        back_populates="groups"
+    )
+
+    users: Mapped[list["UserModel"]] = relationship(
+        back_populates="group"
+    )
+    default_schedule: Mapped[list["DefaultScheduleModel"]] = relationship(
+        back_populates="group"
+    )
+    result_schedule: Mapped[list["ResultScheduleModel"]] = relationship(
+        back_populates="group"
+    )

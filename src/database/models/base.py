@@ -1,14 +1,13 @@
 import datetime
 from typing import Annotated
 
-from sqlalchemy import ForeignKey, String, text
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import DeclarativeBase, mapped_column
+from sqlalchemy.sql import func
 
 int_pk = Annotated[int, mapped_column(primary_key=True)]
 
-created_at = Annotated[datetime.datetime, mapped_column(
-    server_default=text("TIMEZONE('utc', now())")
-)]
+created_at = Annotated[datetime.datetime, mapped_column(default=func.now())]
 
 group_foreign_key = Annotated[int, mapped_column(
     ForeignKey("Groups.id", ondelete="CASCADE")
@@ -18,8 +17,8 @@ department_foreign_key = Annotated[int, mapped_column(
     ForeignKey("Departments.id", ondelete="CASCADE")
 )]
 
-str_256 = Annotated(str, 256)
-str_512 = Annotated(str, 512)
+str_256 = Annotated[str, 256]
+str_512 = Annotated[str, 512]
 
 
 class Base(DeclarativeBase):
