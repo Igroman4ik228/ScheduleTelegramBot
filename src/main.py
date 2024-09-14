@@ -6,8 +6,9 @@ from logging.config import dictConfig
 from injector import Injector, Module, inject, provider, singleton
 
 from AdService.ad_sender import AdService
-from BackgroundService.builder import BackgroundBuilder
-from BackgroundService.manager import BackgroundManager
+from BackgroundServicePack.builder import BackgroundBuilder
+from BackgroundServicePack.manager import BackgroundManager
+from NotifyService.notify import NotifyService
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
@@ -31,21 +32,24 @@ class AppModule(Module):
         logger = logging.getLogger(__name__)
         return logger
 
-    # @provider
-    # def provide_parser_service(self, logger: Logger, settings: Settings) -> ParserService:
-    #     return ParserService(time_span=60, logger=logger, settings=settings)
-
+    # TODO: Edit time_span for realization logic or production
     @provider
-    def provide_parser_service(self, logger: Logger) -> ParserService:
-        return ParserService(time_span=2, logger=logger)
+    def provide_parser_service(self, logger: Logger, notify: NotifyService) -> ParserService:
+        return ParserService(time_span=2, logger=logger, notify=notify)
 
+    # TODO: Edit time_span for realization logic or production
     @provider
     def provide_ad_service(self, logger: Logger) -> AdService:
         return AdService(time_span=12, logger=logger)
 
+    @singleton
+    @provider
+    def provide_notify_service(self, logger: Logger) -> NotifyService:
+        return NotifyService(logger=logger)
+
     @provider
     def provide_builder(self, parser: ParserService, ad_sender: AdService) -> BackgroundBuilder:
-        return BackgroundBuilder(parser, ad_sender)
+        return BackgroundBuilder(parser=parser, ad_sender=ad_sender)
 
     @provider
     def provide_manager(self, builder: BackgroundBuilder) -> BackgroundManager:

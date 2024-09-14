@@ -2,7 +2,7 @@ from email.parser import Parser
 from injector import Injector, inject, singleton, Module, provider
 
 import AdService
-from BackgroundService.models import BackgroundService
+from BackgroundServicePack.models import BackgroundService
 
 
 class BackgroundBuilder:
