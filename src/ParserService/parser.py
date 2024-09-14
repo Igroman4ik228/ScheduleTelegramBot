@@ -21,15 +21,15 @@ class ParserService(BackgroundService):
         print(f"Parsing")
 
     async def active(self):
-        self.logger.log("ParserService active")
+        self.logger.info("ParserService active")
         await super().active()
 
     async def pause(self):
-        self.logger.log("ParserService paused")
+        self.logger.info("ParserService paused")
         await super().pause()
 
     async def stop(self):
-        self.logger.log("ParserService stopped")
+        self.logger.info("ParserService stopped")
         await self.pause()
 
     async def _osdaj(self):

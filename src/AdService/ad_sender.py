@@ -13,13 +13,13 @@ class AdService(BackgroundService):
         print(f"Ad Sending every {self.time_span} seconds")
 
     async def active(self):
-        self.logger.log("AdService active")
+        self.logger.info("AdService active")
         await super().active()
 
     async def pause(self):
-        self.logger.log("AdService paused")
+        self.logger.info("AdService paused")
         await super().pause()
 
     async def stop(self):
-        self.logger.log("AdService stopped")
+        self.logger.info("AdService stopped")
         await self.pause()

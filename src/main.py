@@ -31,13 +31,17 @@ class AppModule(Module):
         logger = logging.getLogger(__name__)
         return logger
 
+    # @provider
+    # def provide_parser_service(self, logger: Logger, settings: Settings) -> ParserService:
+    #     return ParserService(time_span=60, logger=logger, settings=settings)
+
     @provider
-    def provide_parser_service(self, logger: Logger, settings: Settings) -> ParserService:
-        return ParserService(time_span=60, logger=logger, settings=settings)
+    def provide_parser_service(self, logger: Logger) -> ParserService:
+        return ParserService(time_span=2, logger=logger)
 
     @provider
     def provide_ad_service(self, logger: Logger) -> AdService:
-        return AdService(time_span=120, logger=logger)
+        return AdService(time_span=12, logger=logger)
 
     @provider
     def provide_builder(self, parser: ParserService, ad_sender: AdService) -> BackgroundBuilder:
@@ -53,12 +57,18 @@ class AppModule(Module):
 
 
 async def main() -> None:
-    # injector = Injector(AppModule())
+    injector = Injector(AppModule())
     try:
-        bot_manager = BotManager(settings.BOT_TOKEN)
-        await asyncio.gather(bot_manager.start())
+        #bot_manager = BotManager(settings.BOT_TOKEN)
+
+        bot_manager = injector.get(BotManager)
+        service_manager = injector.get(BackgroundManager)
+
+        await asyncio.gather(bot_manager.start(), service_manager.start_services())
     finally:
         await engine.dispose()
+
+
 if __name__ == '__main__':
     try:
         asyncio.run(main())
