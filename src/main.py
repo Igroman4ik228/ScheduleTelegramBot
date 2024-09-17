@@ -8,10 +8,10 @@ from injector import Injector, Module, inject, provider, singleton
 from AdService.ad_sender import AdService
 from BackgroundServicePack.builder import BackgroundBuilder
 from BackgroundServicePack.manager import BackgroundManager
-from NotifyService.notify import NotifyService
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
+from NotifyService.notify import NotifyService
 from ParserService.parser import ParserService
 
 dictConfig(settings.logger_conf)
@@ -63,8 +63,6 @@ class AppModule(Module):
 async def main() -> None:
     injector = Injector(AppModule())
     try:
-        #bot_manager = BotManager(settings.BOT_TOKEN)
-
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 
