@@ -30,7 +30,7 @@ class UserRepository:
                 select(UserModel)
                 .filter_by(telegram_id=telegram_id)
             )
-        return user_query.scalars().first()
+        return user_query.scalar_one_or_none()
 
     async def get_all(self) -> list[UserModel]:
         async with sessionmaker() as session:

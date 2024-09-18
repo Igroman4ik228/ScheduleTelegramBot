@@ -28,11 +28,11 @@ class ResultScheduleRepository:
 
     async def get(self, weekday: int):
         async with sessionmaker() as session:
-            user_query = await session.execute(
+            result_schedule_query = await session.execute(
                 select(ResultScheduleModel)
                 .filter_by(weekday=weekday)
             )
-        return user_query.scalars().first()
+        return result_schedule_query.scalar_one_or_none()
 
     async def delete(self, weekday: int):
         result_schedule = self.get(weekday)

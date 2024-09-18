@@ -23,7 +23,7 @@ class DepartmentRepository:
                 select(DepartmentModel)
                 .filter_by(name=name)
             )
-            return result_query.scalars().first()
+            return result_query.scalar_one_or_none()
 
     async def delete(self, name: str) -> None:
         department = await self.get(name)

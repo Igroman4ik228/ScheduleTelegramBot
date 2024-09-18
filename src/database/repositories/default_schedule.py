@@ -29,11 +29,11 @@ class DefaultScheduleRepository:
 
     async def get(self, shift: int, weekday: int,):
         async with sessionmaker() as session:
-            user_query = await session.execute(
+            default_schedule_query = await session.execute(
                 select(DefaultScheduleModel)
                 .filter_by(shift=shift, weekday=weekday)
             )
-        return user_query.scalars().first()
+        return default_schedule_query.scalar_one_or_none()
 
     async def delete(self, shift: int, weekday: int):
         default_schedule = self.get(shift, weekday)

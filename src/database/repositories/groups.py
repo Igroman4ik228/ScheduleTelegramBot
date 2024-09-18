@@ -34,7 +34,7 @@ class GroupRepository:
                 select(GroupModel)
                 .filter_by(name=name)
             )
-            return result_query.scalars().first()
+            return result_query.scalar_one_or_none()
 
     async def get_by_id(self, group_id: int) -> GroupModel | None:
         async with sessionmaker() as session:
@@ -42,7 +42,12 @@ class GroupRepository:
                 select(GroupModel)
                 .filter_by(id=group_id)
             )
-            return result_query.scalars().first()
+            return result_query.scalar_one_or_none()
+
+    async def get_all(self) -> list[GroupModel]:
+        async with sessionmaker() as session:
+            groups_query = await session.execute(select(GroupModel))
+        return groups_query.scalars().all()
 
     async def delete(self, group_id: int) -> None:
         is_exist = await self._check_group_existence_by_id(group_id)
