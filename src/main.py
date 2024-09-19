@@ -5,6 +5,7 @@ from logging.config import dictConfig
 
 from injector import Injector, Module, inject, provider, singleton
 
+import constants
 from AdService.ad_sender import AdService
 from BackgroundServicePack.builder import BackgroundBuilder
 from BackgroundServicePack.manager import BackgroundManager
@@ -35,7 +36,7 @@ class AppModule(Module):
     # TODO: Edit time_span for realization logic or production
     @provider
     def provide_parser_service(self, logger: Logger, notify: NotifyService) -> ParserService:
-        return ParserService(time_span=2, logger=logger, notify=notify)
+        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=2, logger=logger, notify=notify)
 
     # TODO: Edit time_span for realization logic or production
     @provider

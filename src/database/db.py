@@ -1,7 +1,7 @@
 import asyncio
 
-from sqlalchemy.ext.asyncio import (AsyncEngine, AsyncSession,
-                                    async_sessionmaker, create_async_engine)
+from sqlalchemy.ext.asyncio import (AsyncEngine, async_sessionmaker,
+                                    create_async_engine)
 
 from config import settings
 from database.models.base import Base
@@ -17,6 +17,7 @@ async def delete_tables(cur_engine: AsyncEngine) -> None:
     async with cur_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await cur_engine.dispose()
+
 
 engine = create_async_engine(
     url=settings.database_url,

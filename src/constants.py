@@ -15,7 +15,8 @@ BAN_UNBAN = "Ban/Unban"
 WRITE_LIST_USERS = "WriteListUsers"
 
 # Strings
-SCHEDULE_URL = "https://menu.sttec.yar.ru/timetable/rasp_second.html"
+SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
+                 "https://menu.sttec.yar.ru/timetable/rasp_second.html"]
 GROUP = "ИС1-31"
 REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"

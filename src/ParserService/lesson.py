@@ -9,10 +9,11 @@ class Lesson():
     def __init__(self,
                  group: str,
                  numbers: list[int],
-                 time: tuple[int, int],
+                 time: tuple[int, int] | None,
                  subject: str,
                  classroom: str,
                  is_replacement=False):
+        # todo: remove group
         self.group = group
         self.numbers = numbers
         self.time = time
@@ -22,6 +23,27 @@ class Lesson():
 
     def __str__(self) -> str:
         return f"{self.group} {self.numbers} {self.time} {self.subject} {self.classroom} {self.is_replacement}"
+
+    def to_dict(self):
+        return {
+            'group': self.group,
+            'numbers': self.numbers,
+            'time': self.time,
+            'subject': self.subject,
+            'classroom': self.classroom,
+            'is_replacement': self.is_replacement
+        }
+
+    @staticmethod
+    def from_dict(data: dict):
+        return Lesson(
+            group=data['group'],
+            numbers=data['numbers'],
+            time=tuple(data['time']),
+            subject=data['subject'],
+            classroom=data['classroom'],
+            is_replacement=data.get('is_replacement', False)
+        )
 
     @staticmethod
     def get_lesson_number_by_time(time: tuple[int, int]) -> int:
