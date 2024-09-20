@@ -1,5 +1,4 @@
 import asyncio
-from dataclasses import dataclass
 from logging import Logger
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
@@ -10,14 +9,10 @@ import constants
 from BackgroundServicePack.models import BackgroundService
 from NotifyService.notify import NotifyService
 from ObserverPack.models import Publisher
+from ParserService.builder import Builder
 from ParserService.element_finder import ElementFinder
 from ParserService.lesson import Lesson
-
-
-@dataclass
-class Week():
-    weekday: int
-    shift: int
+from ParserService.week import Week
 
 
 def retry_request(func):
@@ -39,25 +34,24 @@ def retry_request(func):
 
 class ParserService(BackgroundService, Publisher):
     @inject
-    def __init__(self, time_span: int, logger: Logger, notify: NotifyService):
+    def __init__(self, url: str, time_span: int, logger: Logger, notify: NotifyService):
         BackgroundService.__init__(self, time_span, logger)
         Publisher.__init__(self, logger)
+        self.url = url
 
         self.attach(notify)
 
     async def do_work(self):
-        # https://menu.sttec.yar.ru/timetable/rasp_first.html
-        url = "https://menu.sttec.yar.ru/timetable/rasp_second.html"
-        response_text = await self._fetch_schedule(url)
+        response_text = await self._fetch_schedule(self.url)
         soup = BeautifulSoup(response_text, 'lxml')
         finder = ElementFinder(soup)
 
-        weekday = finder.get_weekday()
-        shift = finder.get_shift()
+        weekday = Week.get_weekday(finder)
+        shift = Week.get_shift(finder)
         week = Week(weekday, shift)
         self.logger.info(f"weekday: {week.weekday}, shift: {week.shift}")
 
-        replacement_lessons = self._parse_replacement_lessons(finder.rows)
+        replacement_lessons = self._get_replacement_lessons(finder.rows)
         for replacement_lesson in replacement_lessons:
             self.logger.info(replacement_lesson)
 
@@ -83,7 +77,7 @@ class ParserService(BackgroundService, Publisher):
                 response.raise_for_status()
                 return await response.text()
 
-    def _parse_replacement_lessons(self, rows: BeautifulSoup) -> list[Lesson]:
+    def _get_replacement_lessons(self, rows: BeautifulSoup) -> list[Lesson]:
         replacement_lessons = []
         for row in rows:
             cells = ElementFinder.get_cells(row)
