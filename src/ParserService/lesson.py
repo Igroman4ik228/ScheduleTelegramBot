@@ -13,7 +13,6 @@ class Lesson():
                  subject: str,
                  classroom: str,
                  is_replacement=False):
-        # todo: remove group
         self.group = group
         self.numbers = numbers
         self.time = time

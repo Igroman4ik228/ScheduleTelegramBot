@@ -55,6 +55,15 @@ class ParserService(BackgroundService, Publisher):
         for replacement_lesson in replacement_lessons:
             self.logger.info(replacement_lesson)
 
+        replacement_lessons = Builder.grouping_schedule(replacement_lessons)
+
+        builder = Builder(replacement_lessons, week.weekday, week.shift)
+
+        for group in replacement_lessons:
+            self.logger.info(f"!{group}!")
+            for lesson in replacement_lessons.get(group):
+                self.logger.info(f"{group}: {lesson}")
+
         self.is_update = True
         await self.notify()
 
