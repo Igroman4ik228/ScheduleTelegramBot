@@ -10,9 +10,11 @@ logger = getLogger(__name__)
 
 
 class ResultScheduleRepository:
-    async def create(self, weekday: int, data_lessons: str, group_name: str) -> None:
-        group_repo = GroupRepository()
-        group = await group_repo.get_by_name(group_name)
+    def __init__(self):
+        self.group_repo = GroupRepository()
+
+    async def create(self, group_name: str, weekday: int, data_lessons: str) -> None:
+        group = await self.group_repo.get_by_name(group_name)
         if not group:
             logger.warning(f"Group '{group_name}' not found")
             return
@@ -26,16 +28,22 @@ class ResultScheduleRepository:
             session.add(result_schedule)
             await session.commit()
 
-    async def get(self, weekday: int):
+    async def get(self, group_name: str, weekday: int):
+        group = await self.group_repo.get_by_name(group_name)
+        if not group:
+            logger.warning(f"Group '{group_name}' not found")
+            return
+
         async with sessionmaker() as session:
             result_schedule_query = await session.execute(
                 select(ResultScheduleModel)
+                .filter_by(group_id=group.id)
                 .filter_by(weekday=weekday)
             )
         return result_schedule_query.scalar_one_or_none()
 
-    async def delete(self, weekday: int):
-        result_schedule = self.get(weekday)
+    async def delete(self, group_name: str, weekday: int):
+        result_schedule = await self.get(group_name, weekday)
         if not result_schedule:
             logger.warning("Result schedule on "
                            f"{weekday} not found for delete")

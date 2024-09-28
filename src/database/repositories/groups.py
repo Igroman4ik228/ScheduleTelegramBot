@@ -10,14 +10,16 @@ logger = getLogger(__name__)
 
 
 class GroupRepository:
-    async def create(self, name: str, department_name: int) -> None:
+    def __init__(self) -> None:
+        self.department_rep = DepartmentRepository()
+
+    async def create(self, name: str, department_name: str) -> None:
         is_exist = await self._check_group_existence_by_name(name)
         if is_exist:
             logger.warning(f"Group with name '{name}' already exists")
             return
 
-        department_rep = DepartmentRepository()
-        department = await department_rep.get(department_name)
+        department = await self.department_rep.get(department_name)
         if not department:
             logger.warning("Department with name "
                            f"'{department_name}' not found")

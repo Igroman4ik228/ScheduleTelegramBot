@@ -1,26 +1,27 @@
 import json
+from logging import getLogger
 
 from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from ParserService.lesson import Lesson
 
 
-class Builder():
+class Builder:
 
-    def __init__(self, replacement_lessons: list[Lesson], weekday: int, shift: int, ):
-        self.replacement_lessons = replacement_lessons
-        self.default_lessons = {
-            "ИС1-31": [Lesson(group='ИС1-31', numbers=[3], time=None,
+    def __init__(self, weekday: int, shift: int, ):
+        self.default_schedule = {
+            "ИС1-31": [Lesson(numbers=[3], time=None,
                               subject='Математика', classroom='Аудитория 1')],
-            "СД2-22": [Lesson(group='СД2-22', numbers=[2, 3, 4, 5], time=None,
+            "СД2-22": [Lesson(numbers=[2, 3, 4, 5], time=None,
                               subject='Физика', classroom='Аудитория 2')],
-            "ДИ1-31": [Lesson(group='ДИ1-31', numbers=[1, 3, 5], time=None,
+            "ДИ1-31": [Lesson(numbers=[1, 3, 5], time=None,
                               subject='Химия', classroom='Аудитория 3')],
-            "СА1-1": [Lesson(group='СА1-1', numbers=[2], time=None,
+            "СА1-1": [Lesson(numbers=[2], time=None,
                              subject='Биология', classroom='Аудитория 4')],
-        }
+        }  # for testing
         self.weekday = weekday
         self.shift = shift
+        self.logger = getLogger(__name__)
         self.default_schedule_rep = DefaultScheduleRepository()
         self.result_schedule_rep = ResultScheduleRepository()
 
@@ -32,37 +33,77 @@ class Builder():
 
         return [Lesson.from_dict(lesson) for lesson in json.loads(default_schedule_data)]
 
-    @ staticmethod
-    def grouping_schedule(lessons: list[Lesson]) -> dict[str, list[Lesson]]:
-        group_lessons: dict[str, list[Lesson]] = {}
-        for lesson in lessons:
+    def apply_replacement(self, replacement_lessons: dict[str, list[Lesson]]) -> dict[str, list[Lesson]]:
+        for group, lessons in replacement_lessons.items():
+            for lesson in lessons:
+                found = False
+                default_lessons = self.default_schedule.get(group, [])
 
-            if lesson.group not in group_lessons:
-                group_lessons[lesson.group] = [lesson]
-            else:
-                group_lessons[lesson.group].append(lesson)
+                for default_lesson in default_lessons:
+                    if default_lesson.numbers == lesson.numbers:
+                        self._update_lesson(default_lesson, lesson)
+                        found = True
+                        break
 
-        return group_lessons
+                    has_common_numbers = bool(
+                        set(default_lesson.numbers) & set(lesson.numbers)
+                    )
+                    if has_common_numbers:
+                        updated_numbers = (
+                            set(default_lesson.numbers) - set(lesson.numbers)
+                        )
+                        default_lesson.numbers = list(updated_numbers)
+                        self.default_schedule[group].append(lesson)
+                        found = True
 
-    def apply_replacement(self,
-                          replacement_lessons: dict[str, list[Lesson]]) -> dict[str, list[Lesson]]:
-        default_schedule = self.default_lessons
-        pass
+                if not found:
+                    if group not in self.default_schedule:
+                        self.default_schedule[group] = []
 
-    def format_schedule(self, result_schedule: list[Lesson]) -> dict[str, str]:
-        formatted_group_data = {}
-        for result_lesson in result_schedule:
-            formatted_schedule = f"Расписание на {self.weekday}({self.shift}):"
+                    self.default_schedule[group].append(lesson)
+
+        return self.default_schedule
+
+    def _update_lesson(self, lesson: Lesson, replacement_lesson: Lesson):
+        lesson.is_replacement = True
+        lesson.time = replacement_lesson.time
+        lesson.subject = replacement_lesson.subject
+        lesson.classroom = replacement_lesson.classroom
+
+    def build_result_schedule(self, result_schedule_data: dict[str, list[Lesson]]) -> dict[str, str]:
+        result_schedule = {}
+        for group, lessons in result_schedule_data.items():
+            formatted_schedule = self.format_schedule(lessons)
+            result_schedule[group] = formatted_schedule
+        return result_schedule
+
+    def format_schedule(self, result_lessons: list[Lesson]) -> str:
+        for result_lesson in result_lessons:
+            formatted_schedule = f"Расписание на {self.weekday} "
+            formatted_schedule += f"({self.shift}):\n"
+
             for number in result_lesson.numbers:
-                formatted_schedule += f"{number}. {result_lesson.time} "
-                formatted_schedule += f"{result_lesson.subject} "
-                formatted_schedule += f"[{result_lesson.classroom}]"
+                formatted_schedule += f"{number}. "
+
+                if result_lesson.time is not None:
+                    formatted_schedule += f"{result_lesson.time}"
+
+                formatted_schedule += f"{result_lesson.subject}"
+
+                if result_lesson.classroom != '':
+                    formatted_schedule += f" [{result_lesson.classroom}]"
 
                 if result_lesson.is_replacement:
-                    formatted_schedule += "(❗️ замена)"
+                    formatted_schedule += " (❗️ замена)"
 
                 formatted_schedule += "\n"
-            formatted_group_data[result_lesson.group] = formatted_schedule
+        return formatted_schedule
 
-    def save_schedule_to_db(self, result_schedule: dict[str, str]):
-        pass
+    async def save_schedule_to_db(self, result_schedule: dict[str, str]):
+        for group, schedule in result_schedule.items():
+            # todo: redis
+            await self.result_schedule_rep.delete(group, self.weekday)
+
+            self.logger.info(f"{group}")
+            self.logger.info(f"{schedule}")
+            await self.result_schedule_rep.create(group, self.weekday, schedule)

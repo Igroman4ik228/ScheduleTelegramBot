@@ -4,21 +4,28 @@ from bs4 import BeautifulSoup
 class ElementFinder():
     def __init__(self, soup: BeautifulSoup):
         self.soup = soup
-        self.table = self._get_table()
-        self.rows = self._get_rows()
 
-    def _get_table(self):
+    @property
+    def table(self):
         table = self.soup.find('table')
         if table is None:
             raise ValueError("Таблица отсутствует.")
         return table
 
-    def _get_rows(self) -> list[BeautifulSoup]:
-        return self.table.find_all('tr')[1:]
+    @property
+    def rows(self) -> list[BeautifulSoup]:
+        # skip first row (table header)
+        rows = self.table.find_all('tr')[1:]
+        if not rows:
+            raise ValueError("Строки в таблице отсутствуют.")
+        return rows
 
     @staticmethod
     def get_cells(row: BeautifulSoup):
-        return row.find_all('td')
+        cells = row.find_all('td')
+        if not cells:
+            raise ValueError("Ячейки не найдены в строке таблицы.")
+        return cells
 
     def get_text_from_div(self,
                           index: int,

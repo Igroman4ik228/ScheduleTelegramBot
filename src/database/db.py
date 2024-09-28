@@ -21,7 +21,7 @@ async def delete_tables(cur_engine: AsyncEngine) -> None:
 
 engine = create_async_engine(
     url=settings.database_url,
-    echo=settings.DEBUG,
+    echo=False,
     pool_pre_ping=True
 )
 sessionmaker = async_sessionmaker(engine,

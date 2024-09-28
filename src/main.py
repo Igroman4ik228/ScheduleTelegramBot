@@ -12,11 +12,15 @@ from BackgroundServicePack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
+from database.repositories.departments import DepartmentRepository
+from database.repositories.groups import GroupRepository
 from NotifyService.notify import NotifyService
 from ParserService.parser import ParserService
 
 dictConfig(settings.logger_conf)
 logger = getLogger(__name__)
+department_rep = DepartmentRepository()
+group_rep = GroupRepository()
 
 
 # Register DI
@@ -36,7 +40,7 @@ class AppModule(Module):
     # TODO: Edit time_span for realization logic or production
     @provider
     def provide_parser_service(self, logger: Logger, notify: NotifyService) -> ParserService:
-        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=2, logger=logger, notify=notify)
+        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=60, logger=logger, notify=notify)
 
     # TODO: Edit time_span for realization logic or production
     @provider
