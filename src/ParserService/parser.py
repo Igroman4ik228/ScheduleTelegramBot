@@ -6,6 +6,7 @@ from injector import inject
 
 import constants
 from BackgroundServicePack.models import BackgroundService
+from config import settings
 from NotifyService.notify import NotifyService
 from ObserverPack.models import Publisher
 from ParserService.builder import Builder
@@ -26,9 +27,12 @@ class ParserService(BackgroundService, Publisher):
         self.attach(notify)
 
     async def do_work(self):
-        response_text = await self.request.fetch()
-        # with open('test.html', 'r', encoding='utf-8') as file:
-        #     response_text = file.read()
+        if settings.DEBUG:
+            with open('test.html', 'r', encoding='utf-8') as file:
+                response_text = file.read()
+        else:
+            response_text = await self.request.fetch()
+
         soup = BeautifulSoup(response_text, 'lxml')
         finder = ElementFinder(soup)
 
@@ -38,10 +42,10 @@ class ParserService(BackgroundService, Publisher):
         replacement_schedule = self._extract_replacement_schedule(finder.rows)
 
         builder = Builder(week.weekday, week.shift)
-        result_schedule = builder.apply_replacement(replacement_schedule)
-        result_schedule_str = builder.build_result_schedule(result_schedule)
+        result_schedule_data = builder.apply_replacement(replacement_schedule)
+        result_schedule = builder.build_result_schedule(result_schedule_data)
 
-        await builder.save_schedule_to_db(result_schedule_str)
+        await builder.save_schedule_to_db(result_schedule)
 
         self.is_update = True
         await self.notify()
@@ -67,26 +71,33 @@ class ParserService(BackgroundService, Publisher):
             if group is None:
                 continue
 
-            replacement_lesson = self._parse_replacement_lesson(cells)
+            replacement_lessons = self._parse_replacement_lessons(cells)
 
             replacement_schedule.setdefault(group, [])
-            replacement_schedule[group].append(replacement_lesson)
+            for replacement_lesson in replacement_lessons:
+                replacement_schedule[group].append(replacement_lesson)
 
         return replacement_schedule
 
-    def _parse_replacement_lesson(self, cells: BeautifulSoup) -> Lesson:
+    def _parse_replacement_lessons(self, cells: BeautifulSoup) -> list[Lesson]:
         lesson_numbers, time = self._get_lesson_numbers(
             cells[2].text.strip()
         )
         subject = cells[4].text.strip()
         classrooms = cells[5].text.strip()
 
-        return Lesson(
-            lesson_numbers,
-            time,
-            subject,
-            classrooms,
-            is_replacement=True)
+        replacement_lessons = []
+        for lesson_number in lesson_numbers:
+            replacement_lessons.append(
+                Lesson(
+                    lesson_number,
+                    time,
+                    subject,
+                    classrooms,
+                    is_replacement=True)
+            )
+
+        return replacement_lessons
 
     def _parse_group(self, cells: BeautifulSoup) -> str | None:
         group = cells[1].text.strip().upper()
@@ -131,14 +142,12 @@ class ParserService(BackgroundService, Publisher):
     def _parse_time_format(self, lesson_numbers_string: str) -> tuple[list[int], dt_time]:
         """Парсит строку с указанием времени в формате 'час.минуты'."""
         hour_str, minute_str = lesson_numbers_string.split('.')
-        hours = int(hour_str)
-        minutes = int(minute_str)
+        hours, minutes = int(hour_str), int(minute_str)
 
-        time = (hours, minutes)
+        time = dt_time(hours, minutes)
         lesson_number = Lesson.get_lesson_number_by_time(time)
 
-        valid_time = dt_time(hours, minutes)
-        return [lesson_number], valid_time
+        return [lesson_number], time
 
     def _parse_default_numbers(self) -> list[int]:
         """Возвращает все доступные номера уроков."""

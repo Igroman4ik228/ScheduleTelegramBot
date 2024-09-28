@@ -1,3 +1,4 @@
+from datetime import time as dt_time
 from os import path
 
 # CALLBACK_DATA
@@ -53,17 +54,17 @@ DAY_NAME_CASES = {
 }
 
 # Tuple
-START_LESSONS_TIME = [(8, 00),
-                      (9, 20),
-                      (11, 00),
-                      (13, 20),
-                      (15, 5),
-                      (17, 5),
-                      (18, 45)]
-END_LESSONS_TIME = [(9, 10),
-                    (10, 50),
-                    (12, 25),
-                    (14, 50),
-                    (16, 35),
-                    (18, 35),
-                    (19, 55)]
+START_LESSONS_TIME = [dt_time(8, 00),
+                      dt_time(9, 20),
+                      dt_time(11, 00),
+                      dt_time(13, 20),
+                      dt_time(15, 5),
+                      dt_time(17, 5),
+                      dt_time(18, 45)]
+END_LESSONS_TIME = [dt_time(9, 10),
+                    dt_time(10, 50),
+                    dt_time(12, 25),
+                    dt_time(14, 50),
+                    dt_time(18, 35),
+                    dt_time(16, 35),
+                    dt_time(19, 55)]

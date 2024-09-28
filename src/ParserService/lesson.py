@@ -7,18 +7,18 @@ import constants
 
 @dataclass
 class Lesson:
-    numbers: list[int]
+    number: int
     time: dt_time | None
     subject: str
     classroom: str
     is_replacement: bool = False
 
     def __str__(self) -> str:
-        return f"{self.numbers} {self.time} {self.subject} {self.classroom} {self.is_replacement}"
+        return f"{self.number} {self.time} {self.subject} {self.classroom} {self.is_replacement}"
 
     def to_dict(self):
         return {
-            'numbers': self.numbers,
+            'numbers': self.number,
             'time': self.time.strftime("%H:%M") if self.time else None,
             'subject': self.subject,
             'classroom': self.classroom,
@@ -32,7 +32,7 @@ class Lesson:
         ) if data['time'] else None
 
         return Lesson(
-            numbers=data['numbers'],
+            numbers=data['number'],
             time=time_value,
             subject=data['subject'],
             classroom=data['classroom'],
@@ -40,20 +40,13 @@ class Lesson:
         )
 
     @staticmethod
-    def get_lesson_number_by_time(time: tuple[int, int]) -> int:
-        input_time = dt_time(time[0], time[1])
-
-        lesson_times = [dt_time(hour, minute)
-                        for hour, minute in constants.START_LESSONS_TIME]
+    def get_lesson_number_by_time(time: dt_time) -> int:
+        lesson_times: list[dt_time] = []
+        for lesson_time in constants.START_LESSONS_TIME:
+            lesson_times.append(lesson_time)
 
         for i, lesson_time in enumerate(lesson_times):
-            if input_time <= lesson_time:
+            if time <= lesson_time:
                 return i
 
         return len(constants.START_LESSONS_TIME)
-
-
-class Schedule:
-    def __init__(self, group: str, lessons: list[Lesson] = []):
-        self.group = group
-        self.lessons = lessons
