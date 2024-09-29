@@ -1,7 +1,7 @@
 from logging import Logger
 
 from injector import inject
-from BackgroundServicePack.models import BackgroundService
+from background_service_pack.models import BackgroundService
 
 
 class AdService(BackgroundService):

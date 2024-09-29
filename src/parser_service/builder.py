@@ -3,7 +3,7 @@ from logging import getLogger
 
 from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
-from ParserService.lesson import Lesson
+from parser_service.lesson import Lesson
 
 
 class Builder:

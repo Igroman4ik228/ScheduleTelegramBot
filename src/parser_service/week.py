@@ -1,5 +1,5 @@
 import constants
-from ParserService.element_finder import ElementFinder
+from parser_service.element_finder import ElementFinder
 
 
 class Week():

@@ -6,16 +6,16 @@ from logging.config import dictConfig
 from injector import Injector, Module, inject, provider, singleton
 
 import constants
-from AdService.ad_sender import AdService
-from BackgroundServicePack.builder import BackgroundBuilder
-from BackgroundServicePack.manager import BackgroundManager
+from ad_service.ad_sender import AdService
+from background_service_pack.builder import BackgroundBuilder
+from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
 from database.repositories.departments import DepartmentRepository
 from database.repositories.groups import GroupRepository
-from NotifyService.notify import NotifyService
-from ParserService.parser import ParserService
+from notify_service.notify import NotifyService
+from parser_service.parser import ParserService
 
 dictConfig(settings.logger_conf)
 logger = getLogger(__name__)
@@ -31,7 +31,6 @@ class AppModule(Module):
     def provide_setting(self) -> Settings:
         return Settings()
 
-    @singleton
     @provider
     def provide_logger(self) -> Logger:
         logger = logging.getLogger(__name__)

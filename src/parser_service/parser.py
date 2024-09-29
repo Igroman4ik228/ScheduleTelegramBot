@@ -5,15 +5,15 @@ from bs4 import BeautifulSoup
 from injector import inject
 
 import constants
-from BackgroundServicePack.models import BackgroundService
+from background_service_pack.models import BackgroundService
 from config import settings
-from NotifyService.notify import NotifyService
-from ObserverPack.models import Publisher
-from ParserService.builder import Builder
-from ParserService.element_finder import ElementFinder
-from ParserService.lesson import Lesson
-from ParserService.request import Request
-from ParserService.week import Week
+from notify_service.notify import NotifyService
+from observer_pack.models import Publisher
+from parser_service.builder import Builder
+from parser_service.element_finder import ElementFinder
+from parser_service.lesson import Lesson
+from parser_service.request import Request
+from parser_service.week import Week
 
 
 class ParserService(BackgroundService, Publisher):

@@ -1,6 +1,6 @@
 
 from logging import Logger
-from ObserverPack.models import Observer
+from observer_pack.models import Observer
 
 
 class NotifyService(Observer):
