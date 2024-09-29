@@ -11,6 +11,7 @@ logger = getLogger(__name__)
 
 class UserRepository:
     async def create(self, name: str, telegram_id: int, group_name: str = None) -> None:
+        group = None
         if group_name:
             group_repo = GroupRepository()
             group = await group_repo.get_by_name(group_name)

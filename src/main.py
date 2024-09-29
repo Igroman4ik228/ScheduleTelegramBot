@@ -5,7 +5,7 @@ from logging.config import dictConfig
 
 from injector import Injector, Module, inject, provider, singleton
 
-import constants
+import utils.constants as constants
 from ad_service.ad_sender import AdService
 from background_service_pack.builder import BackgroundBuilder
 from background_service_pack.manager import BackgroundManager
@@ -18,7 +18,6 @@ from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
 
 dictConfig(settings.logger_conf)
-logger = getLogger(__name__)
 department_rep = DepartmentRepository()
 group_rep = GroupRepository()
 

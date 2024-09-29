@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from datetime import time as dt_time
 
-import constants
+import utils.constants as constants
 
 
 @dataclass

@@ -1,0 +1,11 @@
+from aiogram import F, Router
+from aiogram.types import Message
+
+from bot.filters.admin import AdminFilter
+
+router = Router(name=__name__)
+
+
+@router.message(F.text.lower().contains("админ панель"), AdminFilter())
+async def handle_panel(message: Message):
+    await message.answer("Админ панель")

@@ -1,4 +1,4 @@
-import constants
+import utils.constants as constants
 from parser_service.element_finder import ElementFinder
 
 

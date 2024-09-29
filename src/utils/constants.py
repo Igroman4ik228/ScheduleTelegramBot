@@ -1,24 +1,17 @@
+from dataclasses import dataclass
 from datetime import time as dt_time
 from os import path
 
+
 # CALLBACK_DATA
-TOGGLE_NOTIFICATION = "ToggleNotification"
-WRITE_ERROR_LOGS = "WriteErrorLogs"
-FORCED_PARSE = "ForcedParse"
-BROADCAST = "Broadcast"
-WRITE_DEFAULT_SCHEDULE = "WriteDefaultSchedule"
-WRITE_DEFAULT_NUMERATOR_SCHEDULE = "WriteDefaultNumeratorSchedule"
-WRITE_DEFAULT_DENOMINATOR_SCHEDULE = "WriteDefaultDenominatorSchedule"
-TOGGLE_TIME_DISPLAY = "ToggleTimeDisplay"
-LOAD_DEFAULT_SCHEDULES = "LoadDefaultSchedules"
-CLEAR_LOG = "ClearLog"
-BAN_UNBAN = "Ban/Unban"
-WRITE_LIST_USERS = "WriteListUsers"
+@dataclass
+class CallbackData:
+    pass
+
 
 # Strings
 SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
                  "https://menu.sttec.yar.ru/timetable/rasp_second.html"]
-GROUP = "ИС1-31"
 REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"

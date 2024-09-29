@@ -4,7 +4,7 @@ from logging import Logger
 from bs4 import BeautifulSoup
 from injector import inject
 
-import constants
+import utils.constants as constants
 from background_service_pack.models import BackgroundService
 from config import settings
 from notify_service.notify import NotifyService

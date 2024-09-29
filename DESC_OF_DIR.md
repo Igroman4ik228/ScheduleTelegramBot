@@ -21,11 +21,11 @@
 `main.py` - точка входа проекта, конфигурация сервисов через DI
 
 **bot:**
-- *filters: файлы `admin.py`, `number.py` – фильтры для работы с ботом.
-- *handlers:
-	- *users: `start.py` – обработчики команд пользователя.
+- *filters*: файлы `admin.py`, `number.py` – фильтры для работы с ботом.
+- *handlers*:
+	- *users*: `start.py` – обработчики команд пользователя.
 - *keyboards*: папки с клавиатурами для бота.
-- *middlewares: middleware для бота.
+- *middlewares*: middleware для бота.
 - `bot.py` – основной файл для запуска бота.
 
 **parser_service**:
@@ -41,7 +41,7 @@
 **database:**
 - `db.py` – взаимодействие с базой данных.
 - `redis_cache.py` – работа с кэшем Redis.
-- *migrations – для управления миграциями базы данных.
+- *migrations* – для управления миграциями базы данных.
 - *models*:
 	- `base.py`, `departments.py`, `groups.py`, `users.py`, и др. – модели данных для различных сущностей (расписания, группы, пользователи).
 - *repositories*:
