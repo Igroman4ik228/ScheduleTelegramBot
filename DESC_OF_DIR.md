@@ -9,10 +9,10 @@
 
 #### ABC (pack)
 
-**ObserverPack**:
+**observer_pack**:
 - `models.py` – модели для Observer pattern (наблюдатель).
 
-**BackgroundServicePack:**
+**background_service_pack:**
 - `builder.py`, `manager.py` – классы для управления и конфигурации фоновых сервисов.
 - `models.py` – модели данных.
 
