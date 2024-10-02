@@ -1,5 +1,4 @@
 from datetime import time as dt_time
-from logging import Logger
 
 from bs4 import BeautifulSoup
 from injector import inject
@@ -18,11 +17,11 @@ from utils import constants
 
 class ParserService(BackgroundService, Publisher):
     @inject
-    def __init__(self, url: str, time_span: int, logger: Logger, notify: NotifyService):
-        BackgroundService.__init__(self, time_span, logger)
-        Publisher.__init__(self, logger)
+    def __init__(self, url: str, time_span: int,  notify: NotifyService):
+        BackgroundService.__init__(self, time_span)
+        Publisher.__init__(self)
 
-        self.request = Request(url, logger)
+        self.request = Request(url)
 
         self.attach(notify)
 

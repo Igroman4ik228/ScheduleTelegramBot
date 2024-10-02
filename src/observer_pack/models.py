@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import asyncio
-from logging import Logger
+import logging
 
 
 class Observer(ABC):
@@ -13,10 +13,10 @@ class Observer(ABC):
 class Publisher(ABC):
 
     @abstractmethod
-    def __init__(self, logger: Logger) -> None:
+    def __init__(self) -> None:
         self.services: list[Observer] = []
         self.is_update: bool = False
-        self.logger = logger
+        self.logger = logger = logging.getLogger(__class__.__name__)
 
     def attach(self, observer: Observer) -> None:
         self.services.append(observer)

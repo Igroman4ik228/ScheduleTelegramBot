@@ -1,14 +1,16 @@
 import asyncio
 from abc import ABC, abstractmethod
 from logging import Logger
+import logging
 
 
 class BackgroundService(ABC):
     @abstractmethod
-    def __init__(self, time_span: int, logger: Logger) -> None:
+    def __init__(self, time_span: int) -> None:
         self.is_active: bool = False
         self.time_span = time_span
-        self.logger = logger
+        self.logger = logging.getLogger(__class__.__name__)
+
 
     @abstractmethod
     async def do_work(self):
