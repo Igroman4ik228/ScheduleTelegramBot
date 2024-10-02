@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from datetime import time as dt_time
 
-import utils.constants as constants
+from utils import constants
 
 
 @dataclass
@@ -12,9 +12,6 @@ class Lesson:
     subject: str
     classroom: str
     is_replacement: bool = False
-
-    def __str__(self) -> str:
-        return f"{self.number} {self.time} {self.subject} {self.classroom} {self.is_replacement}"
 
     def to_dict(self):
         return {
@@ -32,7 +29,7 @@ class Lesson:
         ) if data['time'] else None
 
         return Lesson(
-            numbers=data['number'],
+            number=data['number'],
             time=time_value,
             subject=data['subject'],
             classroom=data['classroom'],
@@ -50,3 +47,6 @@ class Lesson:
                 return i
 
         return len(constants.START_LESSONS_TIME)
+
+    def __str__(self) -> str:
+        return f"{self.number} {self.time} {self.subject} {self.classroom} {self.is_replacement}"

@@ -26,8 +26,6 @@ class Builder:
         self.weekday = weekday
         self.shift = shift
         self.logger = getLogger(__name__)
-        self.default_schedule_rep = DefaultScheduleRepository()
-        self.result_schedule_rep = ResultScheduleRepository()
 
     def _get_default_schedule(self) -> dict[str, list[Lesson]]:
         default_schedule_data = self.default_schedule_rep.get(self.shift,
@@ -100,8 +98,9 @@ class Builder:
     async def save_schedule_to_db(self, result_schedule: dict[str, str]):
         for group, schedule in result_schedule.items():
             # todo: redis
-            await self.result_schedule_rep.delete(group, self.weekday)
+            pass
+            # await self.result_schedule_rep.delete(group, self.weekday)
 
-            self.logger.info(f"{group}")
-            self.logger.info(f"{schedule}")
-            await self.result_schedule_rep.create(group, self.weekday, schedule)
+            # # self.logger.info(f"{group}")
+            # # self.logger.info(f"{schedule}")
+            # await self.result_schedule_rep.create(group, self.weekday, schedule)

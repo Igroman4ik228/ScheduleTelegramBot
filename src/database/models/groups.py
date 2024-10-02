@@ -23,3 +23,23 @@ class GroupModel(Base):
     result_schedule: Mapped[list["ResultScheduleModel"]] = relationship(
         back_populates="group"
     )
+
+    def __repr__(self):
+        return (
+            "Group(\n"
+            f"id={self.id!r},\n"
+            f"name={self.name!r},\n"
+            f"department_id={self.department_id!r},\n"
+            ")"
+        )
+
+    def __str__(self):
+        return (
+            "\n"
+            "Group Information:\n"
+            f"  Name: {self.name}\n"
+            f"  Department ID: {self.department_id}\n"
+            f"  Number of Users: {len(self.users)}\n"
+            f"  Number of Default Schedules: {len(self.default_schedule)}\n"
+            f"  Number of Result Schedules: {len(self.result_schedule)}\n"
+        )

@@ -4,9 +4,8 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 
+from database.db import sessionmaker
 from database.repositories.users import UserRepository
-
-user_rep = UserRepository()
 
 logger = getLogger(__name__)
 
@@ -23,10 +22,20 @@ class AuthMiddleware(BaseMiddleware):
         if not user:
             return await handler(message, data)
 
-        if await user_rep.get(user.id):
+        async with sessionmaker() as session:
+            user_rep = UserRepository(session)
+
+            if await user_rep.exists(user.id):
+                return await handler(message, data)
+
+            new_user = await user_rep.create(
+                first_name=user.first_name,
+                user_name=user.username,
+                telegram_id=user.id,
+                last_name=user.last_name,
+                is_bot=user.is_bot,
+                is_premium=user.is_premium
+            )
+            logger.info(f"New user registration: {repr(new_user)}")
+
             return await handler(message, data)
-
-        logger.info(f"new user registration: {user.id}")
-        await user_rep.create(user.username, user.id)
-
-        return await handler(message, data)

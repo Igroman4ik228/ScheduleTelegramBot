@@ -1,4 +1,5 @@
 import asyncio
+from functools import wraps
 
 from sqlalchemy.ext.asyncio import (AsyncEngine, async_sessionmaker,
                                     create_async_engine)
@@ -17,6 +18,14 @@ async def delete_tables(cur_engine: AsyncEngine) -> None:
     async with cur_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await cur_engine.dispose()
+
+
+def with_session(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        async with sessionmaker() as session:
+            return await func(session, *args, **kwargs)
+    return wrapper
 
 
 engine = create_async_engine(

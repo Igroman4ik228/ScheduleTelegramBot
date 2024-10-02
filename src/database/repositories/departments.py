@@ -1,39 +1,24 @@
-from logging import getLogger
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy import delete, select
-
-from database.db import sessionmaker
 from database.models.departments import DepartmentModel
+from database.repositories.base import BaseRepository
 
-logger = getLogger(__name__)
 
+class DepartmentRepository(BaseRepository[DepartmentModel]):
+    def __init__(self, session: AsyncSession):
+        super().__init__(session, DepartmentModel)
 
-class DepartmentRepository:
-    async def create(self, name: str) -> None:
-        department = DepartmentModel(
-            name=name
-        )
-        async with sessionmaker() as session:
-            session.add(department)
-            await session.commit()
+    async def create(self, name: str) -> DepartmentModel | None:
+        return await super().create(name=name)
 
     async def get(self, name: str) -> DepartmentModel | None:
-        async with sessionmaker() as session:
-            result_query = await session.execute(
-                select(DepartmentModel)
-                .filter_by(name=name)
-            )
-            return result_query.scalar_one_or_none()
+        return await super().get(name=name)
+
+    async def update(self, department: DepartmentModel) -> DepartmentModel | None:
+        return await super().update(department)
 
     async def delete(self, name: str) -> None:
-        department = await self.get(name)
-        if not department:
-            logger.warning(f"Department '{name}' not found")
-            return
+        await super().delete(name=name)
 
-        async with sessionmaker() as session:
-            await session.execute(
-                delete(DepartmentModel)
-                .where(DepartmentModel.name == name)
-            )
-            await session.commit()
+    async def exists(self, name: str) -> bool:
+        return await super().exists(name=name)

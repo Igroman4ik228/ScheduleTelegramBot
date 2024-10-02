@@ -18,7 +18,7 @@ def retry_request(func):
     return wrapper
 
 
-class Request():
+class Request:
     def __init__(self, url: str, logger: Logger) -> None:
         self.url = url
         self.logger = logger

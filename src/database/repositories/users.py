@@ -1,59 +1,52 @@
 from logging import getLogger
 
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.db import sessionmaker
 from database.models.users import UserModel
+from database.repositories.base import BaseRepository
 from database.repositories.groups import GroupRepository
 
-logger = getLogger(__name__)
 
+class UserRepository(BaseRepository[UserModel]):
+    def __init__(self, session: AsyncSession):
+        self.logger = getLogger(__name__)
+        super().__init__(session, UserModel)
+        self.group_repo = GroupRepository(session)
 
-class UserRepository:
-    async def create(self, name: str, telegram_id: int, group_name: str = None) -> None:
-        group = None
-        if group_name:
-            group_repo = GroupRepository()
-            group = await group_repo.get_by_name(group_name)
+    async def create(
+            self,
+            first_name: str,
+            user_name: str,
+            telegram_id: int,
+            group_name: str = None,
+            **kwargs
+    ) -> UserModel | None:
+        group_id = None
+        if group_name is not None:
+            group = await self.group_repo.get(group_name)
+            if group is None:
+                self.logger.warning(
+                    f"Group {group_name} not found for create"
+                )
+                return
+            group_id = group.id
 
-        user = UserModel(
-            name=name,
+        return await super().create(
+            first_name=first_name,
+            user_name=user_name,
             telegram_id=telegram_id,
-            group_id=group.id if group else None
+            group_id=group_id,
+            **kwargs
         )
-        async with sessionmaker() as session:
-            session.add(user)
-            await session.commit()
 
     async def get(self, telegram_id: int) -> UserModel | None:
-        async with sessionmaker() as session:
-            user_query = await session.execute(
-                select(UserModel)
-                .filter_by(telegram_id=telegram_id)
-            )
-        return user_query.scalar_one_or_none()
-
-    async def get_all(self) -> list[UserModel]:
-        async with sessionmaker() as session:
-            users_query = await session.execute(select(UserModel))
-        return users_query.scalars().all()
-
-    async def delete(self, telegram_id: int) -> None:
-        user = self.get(telegram_id)
-        if not user:
-            logger.warning(f"User {telegram_id} not found for delete")
-            return
-
-        async with sessionmaker() as session:
-            await session.delete(user)
-            await session.commit()
+        return await super().get(telegram_id=telegram_id)
 
     async def update(self, user: UserModel) -> None:
-        existing_user = await self.get(user.telegram_id)
-        if not existing_user:
-            logger.warning(f"User {user.telegram_id} not found for update")
-            return
+        await super().update(user)
 
-        async with sessionmaker() as session:
-            existing_user.name = user.name
-            await session.commit()
+    async def delete(self, telegram_id: int) -> None:
+        await super().delete(telegram_id=telegram_id)
+
+    async def exists(self, telegram_id: int) -> bool:
+        return await super().exists(telegram_id=telegram_id)

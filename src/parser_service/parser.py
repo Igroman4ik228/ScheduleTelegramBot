@@ -4,7 +4,6 @@ from logging import Logger
 from bs4 import BeautifulSoup
 from injector import inject
 
-import utils.constants as constants
 from background_service_pack.models import BackgroundService
 from config import settings
 from notify_service.notify import NotifyService
@@ -14,6 +13,7 @@ from parser_service.element_finder import ElementFinder
 from parser_service.lesson import Lesson
 from parser_service.request import Request
 from parser_service.week import Week
+from utils import constants
 
 
 class ParserService(BackgroundService, Publisher):

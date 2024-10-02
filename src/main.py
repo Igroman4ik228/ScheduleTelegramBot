@@ -1,25 +1,23 @@
 import asyncio
 import logging
-from logging import Logger, getLogger
+from logging import Logger
 from logging.config import dictConfig
 
-from injector import Injector, Module, inject, provider, singleton
+from injector import Injector, Module, provider, singleton
 
-import utils.constants as constants
 from ad_service.ad_sender import AdService
 from background_service_pack.builder import BackgroundBuilder
 from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
-from database.repositories.departments import DepartmentRepository
-from database.repositories.groups import GroupRepository
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
+from utils import constants
 
 dictConfig(settings.logger_conf)
-department_rep = DepartmentRepository()
-group_rep = GroupRepository()
+
+logger = logging.getLogger(__name__)
 
 
 # Register DI
@@ -69,7 +67,10 @@ async def main() -> None:
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 
-        await asyncio.gather(bot_manager.start(), service_manager.start_services())
+        await asyncio.gather(
+            bot_manager.start(),
+            service_manager.start_services()
+        )
     finally:
         await engine.dispose()
 
