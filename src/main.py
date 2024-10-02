@@ -32,17 +32,17 @@ class AppModule(Module):
     # TODO: Edit time_span for realization logic or production
     @provider
     def provide_parser_service(self, notify: NotifyService) -> ParserService:
-        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=60, logger=logger, notify=notify)
+        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=60, notify=notify)
 
     # TODO: Edit time_span for realization logic or production
     @provider
-    def provide_ad_service(self, logger: Logger) -> AdService:
-        return AdService(time_span=12, logger=logger)
+    def provide_ad_service(self) -> AdService:
+        return AdService(time_span=12)
 
     @singleton
     @provider
     def provide_notify_service(self) -> NotifyService:
-        return NotifyService(logger=logger)
+        return NotifyService()
 
     @provider
     def provide_builder(self, parser: ParserService, ad_sender: AdService) -> BackgroundBuilder:
