@@ -3,8 +3,8 @@ from logging import getLogger
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
-from .handlers import register_routers
-from .middlewares import register_middlewares
+from bot.handlers import register_routers
+from bot.middlewares import register_middlewares
 
 
 class BotManager:

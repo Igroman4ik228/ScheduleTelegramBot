@@ -1,0 +1,19 @@
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+
+from database.db import sessionmaker
+from database.repositories.groups import GroupRepository
+
+
+async def get_group_kb() -> InlineKeyboardMarkup:
+    async with sessionmaker() as session:
+        groups = await GroupRepository(session).get_all()
+
+    group_builder = InlineKeyboardBuilder()
+    for group in groups:
+        group_builder.add(
+            InlineKeyboardButton(text=group.name,
+                                 callback_data=f"Group:{group.name}")
+        )
+
+    return group_builder.as_markup()

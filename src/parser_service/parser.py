@@ -17,6 +17,9 @@ from utils import constants
 
 
 class ParserService(BackgroundService, Publisher):
+    weekday: int
+    shift: int
+
     @inject
     def __init__(self, url: str, time_span: int, logger: Logger, notify: NotifyService):
         BackgroundService.__init__(self, time_span, logger)
@@ -37,6 +40,9 @@ class ParserService(BackgroundService, Publisher):
         finder = ElementFinder(soup)
 
         week = Week(finder)
+        ParserService.weekday = week.weekday
+        ParserService.shift = week.shift
+
         self.logger.info(f"weekday: {week.weekday}, shift: {week.shift}")
 
         replacement_schedule = self._extract_replacement_schedule(finder.rows)

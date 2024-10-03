@@ -3,6 +3,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 def get_setting_kb(notify_status: bool,
                    time_display_status: bool):
+
     notification_text = get_notification_text(notify_status)
     time_text = get_time_text(time_display_status)
 
