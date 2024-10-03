@@ -1,5 +1,4 @@
 from email.parser import Parser
-from injector import Injector, inject, singleton, Module, provider
 
 import ad_service
 from background_service_pack.models import BackgroundService

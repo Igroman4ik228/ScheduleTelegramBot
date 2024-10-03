@@ -7,8 +7,8 @@ from background_service_pack.models import BackgroundService
 
 class AdService(BackgroundService):
     @inject
-    def __init__(self, time_span: int, logger: Logger):
-        super().__init__(time_span, logger)
+    def __init__(self, time_span: int):
+        super().__init__(time_span)
 
     async def do_work(self):
         print(f"Ad Sending every {self.time_span} seconds")

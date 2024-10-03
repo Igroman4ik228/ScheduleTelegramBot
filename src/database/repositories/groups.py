@@ -13,11 +13,7 @@ class GroupRepository(BaseRepository[GroupModel]):
         super().__init__(session, GroupModel)
         self.department_repo = DepartmentRepository(session)
 
-    async def create(
-            self,
-            name: str,
-            department_name: str
-    ) -> GroupModel | None:
+    async def create(self, name: str,department_name: str) -> GroupModel | None:
         department = await self.department_repo.get(department_name)
         if department is None:
             self.logger.warning("Department with name "

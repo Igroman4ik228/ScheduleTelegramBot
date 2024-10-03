@@ -11,6 +11,7 @@ from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
+from database.repositories.default_schedule import DefaultScheduleRepository
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
 from utils import constants
@@ -28,25 +29,20 @@ class AppModule(Module):
     def provide_setting(self) -> Settings:
         return Settings()
 
+    # TODO: Edit time_span for realization logic or production
     @provider
-    def provide_logger(self) -> Logger:
-        logger = logging.getLogger(__name__)
-        return logger
+    def provide_parser_service(self, notify: NotifyService) -> ParserService:
+        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=60, notify=notify)
 
     # TODO: Edit time_span for realization logic or production
     @provider
-    def provide_parser_service(self, logger: Logger, notify: NotifyService) -> ParserService:
-        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=60, logger=logger, notify=notify)
-
-    # TODO: Edit time_span for realization logic or production
-    @provider
-    def provide_ad_service(self, logger: Logger) -> AdService:
-        return AdService(time_span=12, logger=logger)
+    def provide_ad_service(self) -> AdService:
+        return AdService(time_span=12)
 
     @singleton
     @provider
-    def provide_notify_service(self, logger: Logger) -> NotifyService:
-        return NotifyService(logger=logger)
+    def provide_notify_service(self) -> NotifyService:
+        return NotifyService()
 
     @provider
     def provide_builder(self, parser: ParserService, ad_sender: AdService) -> BackgroundBuilder:

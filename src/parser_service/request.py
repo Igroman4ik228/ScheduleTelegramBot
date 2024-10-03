@@ -1,5 +1,5 @@
 import asyncio
-from logging import Logger
+import logging
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
@@ -19,9 +19,10 @@ def retry_request(func):
 
 
 class Request:
-    def __init__(self, url: str, logger: Logger) -> None:
+    def __init__(self, url: str) -> None:
         self.url = url
-        self.logger = logger
+        self.logger = logging.getLogger(__name__)
+
 
     @retry_request
     async def fetch(self) -> str:
