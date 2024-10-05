@@ -34,9 +34,10 @@ class BaseRepository[T]:
         )
         return query.scalar_one_or_none()
 
-    async def get_all(self) -> list[T]:
+    async def get_all(self, **kwargs) -> list[T]:
         query = await self.session.execute(
             select(self.model)
+            .filter_by(**kwargs)
         )
         return query.scalars().all()
 

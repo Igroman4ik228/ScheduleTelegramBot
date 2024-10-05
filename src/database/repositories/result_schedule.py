@@ -42,6 +42,14 @@ class ResultScheduleRepository(BaseRepository[ResultScheduleModel]):
         return await super().get(weekday=weekday,
                                  group_id=group.id)
 
+    async def get_by_group_id(
+            self,
+            weekday: int,
+            group_id: str
+    ) -> ResultScheduleModel | None:
+        return await super().get(weekday=weekday,
+                                 group_id=group_id)
+
     async def update(self, default_schedule: ResultScheduleModel) -> ResultScheduleModel | None:
         return await super().update(default_schedule)
 

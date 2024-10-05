@@ -5,9 +5,10 @@ from database.db import sessionmaker
 from database.repositories.groups import GroupRepository
 
 
-async def get_group_kb() -> InlineKeyboardMarkup:
+async def get_group_kb(department_name: str) -> InlineKeyboardMarkup:
+
     async with sessionmaker() as session:
-        groups = await GroupRepository(session).get_all()
+        groups = await GroupRepository(session).get_all_by_department(department_name)
 
     group_builder = InlineKeyboardBuilder()
     for group in groups:

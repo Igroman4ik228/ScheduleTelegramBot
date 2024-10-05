@@ -7,10 +7,11 @@ from aiogram.types import Message
 from database.db import sessionmaker
 from database.repositories.users import UserRepository
 
-logger = getLogger(__name__)
-
 
 class AuthMiddleware(BaseMiddleware):
+    def __init__(self):
+        self.logger = getLogger(__name__)
+
     async def __call__(
         self,
         handler: Callable[[Message, dict[str, Any]], Awaitable[Any]],
@@ -36,6 +37,6 @@ class AuthMiddleware(BaseMiddleware):
                 is_bot=user.is_bot,
                 is_premium=user.is_premium
             )
-            logger.info(f"New user registration: {repr(new_user)}")
+            self.logger.info(f"New user registration: {repr(new_user)}")
 
             return await handler(message, data)

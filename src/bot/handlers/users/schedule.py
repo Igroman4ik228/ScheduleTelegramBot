@@ -14,12 +14,8 @@ router = Router(name=__name__)
 async def handle_schedule(message: Message):
     async with sessionmaker() as session:
         user = await UserRepository(session).get(message.from_user.id)
-        if user.group_id is None:
-            await message.answer("Выберите группу, пожалуйста")
-            return
-
-        result_schedule = await ResultScheduleRepository(session).get(ParserService.weekday,
-                                                                      user.group_id)
+        result_schedule = await ResultScheduleRepository(session).get_by_group_id(ParserService.weekday,
+                                                                                  user.group_id)
 
     if result_schedule is None:
         await message.answer(constants.NO_SCHEDULE_TEXT)
@@ -34,12 +30,8 @@ async def handle_previous_schedule(message: Message):
 
     async with sessionmaker() as session:
         user = await UserRepository(session).get(message.from_user.id)
-        if user.group_id is None:
-            await message.answer("Выберите группу, пожалуйста")
-            return
-
-        result_schedule = await ResultScheduleRepository(session).get(previous_weekday,
-                                                                      user.group_id)
+        result_schedule = await ResultScheduleRepository(session).get_by_group_id(previous_weekday,
+                                                                                  user.group_id)
 
     if result_schedule is None:
         await message.answer(constants.NO_SCHEDULE_TEXT)

@@ -1,28 +1,22 @@
-from dataclasses import dataclass
 from datetime import time as dt_time
+from enum import Enum
 from os import path
 
 
 # CALLBACK_DATA
-@dataclass
-class CallbackData:
-    name: str
-    value: str
-
-
-# CALLBACK_DATA
-TOGGLE_NOTIFICATION = "ToggleNotification"
-WRITE_ERROR_LOGS = "WriteErrorLogs"
-FORCED_PARSE = "ForcedParse"
-BROADCAST = "Broadcast"
-WRITE_DEFAULT_SCHEDULE = "WriteDefaultSchedule"
-WRITE_DEFAULT_NUMERATOR_SCHEDULE = "WriteDefaultNumeratorSchedule"
-WRITE_DEFAULT_DENOMINATOR_SCHEDULE = "WriteDefaultDenominatorSchedule"
-TOGGLE_TIME_DISPLAY = "ToggleTimeDisplay"
-LOAD_DEFAULT_SCHEDULES = "LoadDefaultSchedules"
-CLEAR_LOG = "ClearLog"
-BAN_UNBAN = "Ban/Unban"
-WRITE_LIST_USERS = "WriteListUsers"
+class CallbackData(Enum):
+    TOGGLE_NOTIFICATION = "ToggleNotification"
+    TOGGLE_TIME_DISPLAY = "ToggleTimeDisplay"
+    WRITE_ERROR_LOGS = "WriteErrorLogs"
+    FORCED_PARSE = "ForcedParse"
+    BROADCAST = "Broadcast"
+    WRITE_DEFAULT_SCHEDULE = "WriteDefaultSchedule"
+    WRITE_DEFAULT_NUMERATOR_SCHEDULE = "WriteDefaultNumeratorSchedule"
+    WRITE_DEFAULT_DENOMINATOR_SCHEDULE = "WriteDefaultDenominatorSchedule"
+    LOAD_DEFAULT_SCHEDULES = "LoadDefaultSchedules"
+    CLEAR_LOG = "ClearLog"
+    BAN_UNBAN = "Ban/Unban"
+    WRITE_LIST_USERS = "WriteListUsers"
 
 
 # Strings

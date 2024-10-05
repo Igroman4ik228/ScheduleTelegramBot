@@ -1,5 +1,7 @@
 from aiogram import Dispatcher
 
+from .users import group
+
 
 def register_routers(dp: Dispatcher) -> None:
     # Admin routers
@@ -9,10 +11,11 @@ def register_routers(dp: Dispatcher) -> None:
         panel.router,
     )
 
-    from .users import schedule, start
+    from .users import group, schedule, start
 
     # User routers
     dp.include_routers(
         start.router,
+        group.router,
         schedule.router,
     )
