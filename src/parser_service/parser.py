@@ -16,9 +16,6 @@ from utils import constants
 
 
 class ParserService(BackgroundService, Publisher):
-    weekday: int
-    shift: int
-
     @inject
     def __init__(self, url: str, time_span: int,  notify: NotifyService):
         BackgroundService.__init__(self, time_span)
@@ -38,15 +35,12 @@ class ParserService(BackgroundService, Publisher):
         soup = BeautifulSoup(response_text, 'lxml')
         finder = ElementFinder(soup)
 
-        week = Week(finder)
-        ParserService.weekday = week.weekday
-        ParserService.shift = week.shift
-
-        self.logger.info(f"weekday: {week.weekday}, shift: {week.shift}")
+        Week.initialize(finder)
+        self.logger.info(f"weekday: {Week.weekday}, shift: {Week.shift}")
 
         replacement_schedule = self._extract_replacement_schedule(finder.rows)
 
-        builder = Builder(week.weekday, week.shift)
+        builder = Builder(Week.weekday, Week.shift)
         result_schedule_data = builder.apply_replacement(replacement_schedule)
         result_schedule = builder.build_result_schedule(result_schedule_data)
 

@@ -1,11 +1,12 @@
 from aiogram import F, Router
 from aiogram.types import Message
 
+import utils.constants as const
+from bot.keyboards.reply.main_kb import get_main_kb
 from database.db import sessionmaker
 from database.repositories.result_schedule import ResultScheduleRepository
 from database.repositories.users import UserRepository
-from parser_service.parser import ParserService
-from utils import constants
+from parser_service.week import Week
 
 router = Router(name=__name__)
 
@@ -14,19 +15,21 @@ router = Router(name=__name__)
 async def handle_schedule(message: Message):
     async with sessionmaker() as session:
         user = await UserRepository(session).get(message.from_user.id)
-        result_schedule = await ResultScheduleRepository(session).get_by_group_id(ParserService.weekday,
+        result_schedule = await ResultScheduleRepository(session).get_by_group_id(Week.weekday,
                                                                                   user.group_id)
 
     if result_schedule is None:
-        await message.answer(constants.NO_SCHEDULE_TEXT)
+        await message.answer(const.NO_SCHEDULE_TEXT,
+                             reply_markup=get_main_kb(message.from_user.id))
         return
 
-    await message.answer(result_schedule.data_lessons)
+    await message.answer(result_schedule.data_lessons,
+                         reply_markup=get_main_kb(message.from_user.id))
 
 
 @router.message(F.text.lower().contains("предыдущее"))
 async def handle_previous_schedule(message: Message):
-    previous_weekday = get_previous_weekday(ParserService.weekday)
+    previous_weekday = get_previous_weekday(Week.weekday)
 
     async with sessionmaker() as session:
         user = await UserRepository(session).get(message.from_user.id)
@@ -34,30 +37,30 @@ async def handle_previous_schedule(message: Message):
                                                                                   user.group_id)
 
     if result_schedule is None:
-        await message.answer(constants.NO_SCHEDULE_TEXT)
+        await message.answer(const.NO_SCHEDULE_TEXT,
+                             reply_markup=get_main_kb(message.from_user.id))
         return
 
-    await message.answer(result_schedule.data_lessons)
+    await message.answer(result_schedule.data_lessons,
+                         reply_markup=get_main_kb(message.from_user.id))
 
 
 @router.message(F.text.lower().contains("следующее"))
 async def handle_next_schedule(message: Message):
-    next_weekday = get_next_weekday(ParserService.weekday)
+    next_weekday = get_next_weekday(Week.weekday)
 
     async with sessionmaker() as session:
         user = await UserRepository(session).get(message.from_user.id)
-        if user.group_id is None:
-            await message.answer("Выберите группу, пожалуйста")
-            return
-
         result_schedule = await ResultScheduleRepository(session).get(next_weekday,
                                                                       user.group_id)
 
     if result_schedule is None:
-        await message.answer(constants.NO_SCHEDULE_TEXT)
+        await message.answer(const.NO_SCHEDULE_TEXT,
+                             reply_markup=get_main_kb(message.from_user.id))
         return
 
-    await message.answer(result_schedule.data_lessons)
+    await message.answer(result_schedule.data_lessons,
+                         reply_markup=get_main_kb(message.from_user.id))
 
 
 def get_previous_weekday(weekday: int) -> int:

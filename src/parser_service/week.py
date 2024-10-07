@@ -1,36 +1,43 @@
+import utils.constants as const
 from parser_service.element_finder import ElementFinder
-from utils import constants
+from utils.different import get_key
 
 
-class Week():
+class Week:
+    @classmethod
+    def initialize(cls, finder: ElementFinder):
+        cls.weekday = cls._get_weekday(finder)
+        cls.shift = cls._get_shift(finder)
 
-    def __init__(self, finder: ElementFinder):
-        self.finder = finder
+    @classmethod
+    def _get_weekday(cls, finder: ElementFinder) -> int:
+        weekday_name = finder.get_text_from_div(index=2)
+        weekday_name = weekday_name.strip().lower()
 
-    @property
-    def weekday(self) -> int:
-        day_of_week_name = self.finder.get_text_from_div(index=2).lower()
-        day_of_week = get_key(constants.DAY_NAMES, day_of_week_name)
-
-        return day_of_week
-
-    @property
-    def shift(self) -> int:
-        week_schedule_name = self.finder.get_text_from_div(index=3,
-                                                           word_index=0)
-        week_schedule_name = week_schedule_name.strip("()").lower()
-
-        week_schedule = constants.WEEK_SCHEDULE_MAPPING.get(week_schedule_name)
-
-        if week_schedule is None:
+        weekday = get_key(const.DAY_NAMES, weekday_name)
+        if weekday is None:
             raise ValueError(
-                f"Не удалось определить числитель/знаменатель. Значение: {week_schedule_name}")
+                f"Не удалось определить день недели: {weekday_name}"
+            )
 
-        return week_schedule
+        return weekday
 
+    @classmethod
+    def _get_shift(cls, finder: ElementFinder) -> int:
+        shift_name = finder.get_text_from_div(index=3, word_index=0)
+        shift_name = shift_name.strip("()").lower()
 
-def get_key(input_dict: dict, target_value):
-    for key, value in input_dict.items():
-        if value == target_value:
-            return key
-    raise ValueError(f"{target_value} не найден в {input_dict}")
+        shift = const.WEEK_SCHEDULE_MAPPING.get(shift_name)
+        if shift is None:
+            raise ValueError(
+                f"Не удалось определить числитель/знаменатель. Значение: {shift_name}")
+
+        return shift
+
+    @classmethod
+    def get_weekday_name(cls, weekday: int) -> str:
+        return const.DAY_NAMES.get(weekday, "Неизвестный день")
+
+    @classmethod
+    def get_shift_name(cls, shift: int) -> str:
+        return get_key(const.WEEK_SCHEDULE_MAPPING, shift) or "Неизвестный смена"

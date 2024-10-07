@@ -1,9 +1,11 @@
 import json
 from logging import getLogger
 
+from database.db import with_session_self
 from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
+from parser_service.week import Week
 
 
 class Builder:
@@ -28,8 +30,9 @@ class Builder:
         self.logger = getLogger(__name__)
 
     def _get_default_schedule(self) -> dict[str, list[Lesson]]:
-        default_schedule_data = self.default_schedule_rep.get(self.shift,
-                                                              self.weekday)
+        # default_schedule_data = self.default_schedule_rep.get(self.shift,
+        #                                                       self.weekday)
+        default_schedule_data = None
         if default_schedule_data is None:
             return []
 
@@ -72,10 +75,11 @@ class Builder:
         return result_schedule
 
     def format_schedule(self, result_lessons: list[Lesson]) -> str:
-        # todo: weekday -> weekday_name (0 -> Понедельник)
+        shift_name = Week.get_weekday_name(self.shift)
         formatted_schedule = f"Расписание на {self.weekday} "
-        # todo: shift -> shift_name (0 -> Числитель)
-        formatted_schedule += f"({self.shift}):\n"
+
+        shift_name = Week.get_shift_name(self.shift)
+        formatted_schedule += f"({shift_name}):\n"
 
         result_lessons.sort(key=lambda lesson: lesson.number)
         for result_lesson in result_lessons:
@@ -95,12 +99,11 @@ class Builder:
             formatted_schedule += "\n"
         return formatted_schedule
 
-    async def save_schedule_to_db(self, result_schedule: dict[str, str]):
+    @with_session_self
+    async def save_schedule_to_db(self, session, result_schedule: dict[str, str]):
+        result_schedule_rep = ResultScheduleRepository(session)
         for group, schedule in result_schedule.items():
-            # todo: redis
-            pass
-            # await self.result_schedule_rep.delete(group, self.weekday)
+            if await result_schedule_rep.exists(self.weekday, group):
+                await result_schedule_rep.delete(self.weekday, group)
 
-            # # self.logger.info(f"{group}")
-            # # self.logger.info(f"{schedule}")
-            # await self.result_schedule_rep.create(group, self.weekday, schedule)
+            await result_schedule_rep.create(self.weekday, schedule, group)

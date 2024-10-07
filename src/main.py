@@ -11,6 +11,7 @@ from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine, sessionmaker
+from database.repositories.groups import GroupRepository
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
 from utils import constants

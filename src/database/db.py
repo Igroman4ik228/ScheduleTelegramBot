@@ -28,6 +28,14 @@ def with_session(func):
     return wrapper
 
 
+def with_session_self(func):
+    @wraps(func)
+    async def wrapper(self, *args, **kwargs):
+        async with sessionmaker() as session:
+            return await func(self, session, *args, **kwargs)
+    return wrapper
+
+
 engine = create_async_engine(
     url=settings.database_url,
     echo=False,

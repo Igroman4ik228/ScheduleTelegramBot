@@ -1,5 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from utils.constants import CallbackData
+
 
 def get_setting_kb(notify_status: bool,
                    time_display_status: bool):
@@ -9,12 +11,12 @@ def get_setting_kb(notify_status: bool,
 
     setting_kb = [
         [InlineKeyboardButton(text=notification_text,
-                              callback_data="TOGGLE_NOTIFICATION"),
+                              callback_data=CallbackData.TOGGLE_NOTIFICATION.value),
          InlineKeyboardButton(text="🗒 Расписание",
-                              callback_data="WRITE_DEFAULT_SCHEDULE")],
+                              callback_data=CallbackData.WRITE_DEFAULT_SCHEDULE.value)],
 
         [InlineKeyboardButton(text=time_text,
-                              callback_data="TOGGLE_TIME_DISPLAY")]
+                              callback_data=CallbackData.TOGGLE_TIME_DISPLAY.value)]
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=setting_kb)
