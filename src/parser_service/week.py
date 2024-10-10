@@ -4,7 +4,7 @@ from utils import constants
 
 class Week():
 
-    def __init__(self, finder: ElementFinder):
+    def __init__(self, finder: ElementFinder = None):
         self.finder = finder
 
     @property

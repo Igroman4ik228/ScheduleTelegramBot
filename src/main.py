@@ -14,6 +14,7 @@ from database.db import engine
 from database.repositories.default_schedule import DefaultScheduleRepository
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
+from parser_service.week import Week
 from utils import constants
 
 dictConfig(settings.logger_conf)
