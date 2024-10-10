@@ -9,10 +9,12 @@ def register_routers(dp: Dispatcher) -> None:
         panel.router,
     )
 
-    from .users import schedule, start
-
     # User routers
+    from bot.handlers.users import group, schedule, setting, start
+
     dp.include_routers(
         start.router,
+        group.router,
+        setting.router,
         schedule.router,
     )

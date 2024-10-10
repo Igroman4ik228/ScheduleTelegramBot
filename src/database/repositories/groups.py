@@ -13,7 +13,7 @@ class GroupRepository(BaseRepository[GroupModel]):
         super().__init__(session, GroupModel)
         self.department_repo = DepartmentRepository(session)
 
-    async def create(self, name: str,department_name: str) -> GroupModel | None:
+    async def create(self, name: str, department_name: str) -> GroupModel | None:
         department = await self.department_repo.get(department_name)
         if department is None:
             self.logger.warning("Department with name "
@@ -25,6 +25,10 @@ class GroupRepository(BaseRepository[GroupModel]):
 
     async def get(self, name: str) -> GroupModel | None:
         return await super().get(name=name)
+
+    async def get_all_by_department(self, department_name: str) -> list[GroupModel]:
+        department = await self.department_repo.get(department_name)
+        return await super().get_all(department_id=department.id)
 
     async def update(self, group: GroupModel) -> GroupModel | None:
         return await super().update(group)
