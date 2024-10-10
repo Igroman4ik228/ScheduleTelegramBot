@@ -42,6 +42,14 @@ class UserRepository(BaseRepository[UserModel]):
     async def get(self, telegram_id: int) -> UserModel | None:
         return await super().get(telegram_id=telegram_id)
 
+    async def get_by_group(self, group_id: int):
+        # ToDo: Code logic to get by group id
+        pass
+
+    async def get_by_premium(self, is_premium: bool):
+        # ToDo: Code logic to get by premium in tg
+        pass
+
     async def update(self, user: UserModel) -> None:
         await super().update(user)
 
