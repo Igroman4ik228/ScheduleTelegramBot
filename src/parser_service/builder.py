@@ -6,6 +6,7 @@ from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
 from parser_service.week import Week
+from utils.constants import DAY_NAME_CASES
 
 
 class Builder:
@@ -75,8 +76,9 @@ class Builder:
         return result_schedule
 
     def format_schedule(self, result_lessons: list[Lesson]) -> str:
-        shift_name = Week.get_weekday_name(self.shift)
-        formatted_schedule = f"Расписание на {self.weekday} "
+        weekday_name = Week.get_weekday_name(self.weekday)
+        weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
+        formatted_schedule = f"Расписание на {weekday_name} "
 
         shift_name = Week.get_shift_name(self.shift)
         formatted_schedule += f"({shift_name}):\n"
@@ -103,7 +105,6 @@ class Builder:
     async def save_schedule_to_db(self, session, result_schedule: dict[str, str]):
         result_schedule_rep = ResultScheduleRepository(session)
         for group, schedule in result_schedule.items():
-            if await result_schedule_rep.exists(self.weekday, group):
-                await result_schedule_rep.delete(self.weekday, group)
+            await result_schedule_rep.delete(self.weekday, group)
 
             await result_schedule_rep.create(self.weekday, schedule, group)

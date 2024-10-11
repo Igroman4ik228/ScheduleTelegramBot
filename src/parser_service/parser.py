@@ -5,6 +5,9 @@ from injector import inject
 
 from background_service_pack.models import BackgroundService
 from config import settings
+from database.db import sessionmaker
+from database.repositories.groups import GroupRepository
+from database.repositories.result_schedule import ResultScheduleRepository
 from notify_service.notify import NotifyService
 from observer_pack.models import Publisher
 from parser_service.builder import Builder
@@ -44,9 +47,15 @@ class ParserService(BackgroundService, Publisher):
         result_schedule_data = builder.apply_replacement(replacement_schedule)
         result_schedule = builder.build_result_schedule(result_schedule_data)
 
+        self.is_update = False
+        for group, schedule in result_schedule.items():
+            is_changed = await self.check_changed_schedule(group, schedule)
+            if is_changed:
+                self.is_update = True
+                break
+
         await builder.save_schedule_to_db(result_schedule)
 
-        self.is_update = True
         await self.notify()
 
     async def active(self):
@@ -60,6 +69,23 @@ class ParserService(BackgroundService, Publisher):
     async def stop(self):
         self.logger.info("ParserService stopped")
         await self.pause()
+
+    async def check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
+        async with sessionmaker() as session:
+            group = await GroupRepository(session).get(group_name)
+
+            if group is None:
+                return False
+
+            result_schedule = await ResultScheduleRepository(session).get_by_group_id(Week.weekday,
+                                                                                      group.id)
+        if result_schedule is None:
+            return True
+
+        if result_schedule.data_lessons != current_result_schedule:
+            return True
+
+        return False
 
     def _extract_replacement_schedule(self, rows: BeautifulSoup) -> dict[str, list[Lesson]]:
         replacement_schedule = {}

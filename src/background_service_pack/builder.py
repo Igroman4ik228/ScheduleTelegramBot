@@ -5,8 +5,8 @@ from background_service_pack.models import BackgroundService
 
 
 class BackgroundBuilder:
-    def __init__(self, parser : Parser, ad_sender: ad_service):
-        self.services = [parser, ad_sender]
+    def __init__(self, parser: Parser):
+        self.services = [parser]
 
     def get_services(self) -> list[BackgroundService]:
         return self.services
