@@ -26,6 +26,7 @@ class UserModel(Base):
     is_notify: Mapped[bool_true]
     is_ban: Mapped[bool_false]
     is_premium: Mapped[bool_false]
+    is_premium_subscriber: Mapped[bool_false]
 
     group: Mapped["GroupModel"] = relationship(
         back_populates="users"

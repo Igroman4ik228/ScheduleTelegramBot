@@ -14,10 +14,7 @@ class DepartmentRepository(BaseRepository[DepartmentModel]):
     async def get(self, name: str) -> DepartmentModel | None:
         return await super().get(name=name)
 
-    async def update(self, department: DepartmentModel) -> DepartmentModel | None:
-        return await super().update(department)
-
-    async def delete(self, name: str) -> None:
+    async def delete(self, name: str):
         await super().delete(name=name)
 
     async def exists(self, name: str) -> bool:

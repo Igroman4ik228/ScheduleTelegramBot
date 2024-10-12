@@ -6,11 +6,10 @@ from database.models.default_schedule import DefaultScheduleModel
 from database.repositories.base import BaseRepository
 from database.repositories.groups import GroupRepository
 
-logger = getLogger(__name__)
-
 
 class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
     def __init__(self, session: AsyncSession):
+        self.logger = getLogger(__name__)
         super().__init__(session, DefaultScheduleModel)
         self.group_repo = GroupRepository(session)
 
@@ -23,7 +22,7 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get(group_name)
         if group is None:
-            logger.warning(
+            self.logger.warning(
                 f"Group {group_name} not found for create"
             )
             return
@@ -41,25 +40,22 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get(group_name)
         if group is None:
-            logger.warning(f"Group {group_name} not found for get")
+            self.logger.warning(f"Group {group_name} not found for get")
             return
 
         return await super().get(weekday=weekday,
                                  shift=shift,
                                  group_id=group.id)
 
-    async def update(self, default_schedule: DefaultScheduleModel) -> DefaultScheduleModel | None:
-        return await super().update(default_schedule)
-
     async def delete(
         self,
         weekday: int,
         shift: int,
         group_name: str
-    ) -> None:
+    ):
         group = await self.group_repo.get(group_name)
         if group is None:
-            logger.warning(f"Group {group_name} not found for delete")
+            self.logger.warning(f"Group {group_name} not found for delete")
             return
 
         await super().delete(group_name=group_name,
@@ -74,7 +70,7 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
     ) -> bool:
         group = await self.group_repo.get(group_name)
         if group is None:
-            logger.warning(f"Group {group_name} not found for exists")
+            self.logger.warning(f"Group {group_name} not found for exists")
             return
 
         return await super().exists(group.id,

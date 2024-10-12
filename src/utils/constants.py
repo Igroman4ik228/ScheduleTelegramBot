@@ -1,10 +1,12 @@
 from datetime import time as dt_time
-from enum import Enum
+from enum import StrEnum
 from os import path
 
 
 # CALLBACK_DATA
-class CallbackData(Enum):
+class CallbackData(StrEnum):
+    SETTING = "Setting"
+    CHOOSE_DEPARTMENT = "ChooseDepartment"
     TOGGLE_NOTIFICATION = "ToggleNotification"
     TOGGLE_TIME_DISPLAY = "ToggleTimeDisplay"
     WRITE_ERROR_LOGS = "WriteErrorLogs"
@@ -54,6 +56,10 @@ DAY_NAME_CASES = {
     "среда": "среду",
     "пятница": "пятницу",
     "суббота": "субботу",
+}
+ON_OFF_NAMES = {
+    False: "Выключено",
+    True: "Включено"
 }
 
 # Tuple

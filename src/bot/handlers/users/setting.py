@@ -10,13 +10,13 @@ from utils.constants import CallbackData
 router = Router(name=__name__)
 
 
-@router.message(F.text.lower().contains("настройки"))
-async def handle_settings(message: Message):
+@router.callback_query(F.data == CallbackData.SETTING.value)
+async def handle_setting(callback_query: CallbackQuery):
     async with sessionmaker() as session:
-        user = await UserRepository(session).get(message.from_user.id)
-    await message.answer("Настройки",
-                         reply_markup=get_setting_kb(user.is_notify,
-                                                     user.is_time_shown))
+        user = await UserRepository(session).get(callback_query.from_user.id)
+    await callback_query.message.edit_text("Настройки",
+                                           reply_markup=get_setting_kb(user.is_notify,
+                                                                       user.is_time_shown))
 
 
 @router.callback_query(F.data == CallbackData.TOGGLE_NOTIFICATION.value)

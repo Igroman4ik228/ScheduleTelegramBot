@@ -42,18 +42,16 @@ class UserRepository(BaseRepository[UserModel]):
     async def get(self, telegram_id: int) -> UserModel | None:
         return await super().get(telegram_id=telegram_id)
 
-    async def get_by_group(self, group_id: int):
-        # ToDo: Code logic to get by group id
-        pass
+    async def get_with_group(self, telegram_id: int) -> UserModel | None:
+        return await super().get_with_option("group", telegram_id=telegram_id)
 
-    async def get_by_premium(self, is_premium: bool):
-        # ToDo: Code logic to get by premium in tg
-        pass
+    async def get_by_group(self, group_id: int) -> UserModel | None:
+        return await super().get_all(group_id=group_id)
 
-    async def update(self, user: UserModel) -> None:
-        await super().update(user)
+    async def get_by_premium(self, is_premium: bool) -> UserModel | None:
+        return await super().get_all(is_premium=is_premium)
 
-    async def delete(self, telegram_id: int) -> None:
+    async def delete(self, telegram_id: int):
         await super().delete(telegram_id=telegram_id)
 
     async def exists(self, telegram_id: int) -> bool:

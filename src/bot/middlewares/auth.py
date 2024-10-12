@@ -37,6 +37,8 @@ class AuthMiddleware(BaseMiddleware):
                 is_bot=user.is_bot,
                 is_premium=user.is_premium
             )
-            self.logger.info(f"New user registration: {repr(new_user)}")
+
+            if new_user is not None:
+                self.logger.info(f"New user registration: {repr(new_user)}")
 
             return await handler(message, data)

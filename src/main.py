@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from logging import Logger
 from logging.config import dictConfig
 
 from injector import Injector, Module, provider, singleton
@@ -11,10 +10,10 @@ from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine, sessionmaker
+from database.repositories.departments import DepartmentRepository
 from database.repositories.groups import GroupRepository
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
-from parser_service.week import Week
 from utils import constants
 
 dictConfig(settings.logger_conf)

@@ -2,6 +2,7 @@ import json
 from logging import getLogger
 
 from database.db import with_session_self
+from database.redis_cache import ScheduleCache, create_redis
 from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
@@ -12,6 +13,8 @@ from utils.constants import DAY_NAME_CASES
 class Builder:
 
     def __init__(self, weekday: int, shift: int, ):
+        self.logger = getLogger(__name__)
+        self.schedule_cache = ScheduleCache(create_redis())
         self.default_schedule = {
             "ИС1-43": [Lesson(number=0, time=None,
                               subject='Математика', classroom='Аудитория 1')],
@@ -28,7 +31,6 @@ class Builder:
         }  # for testing
         self.weekday = weekday
         self.shift = shift
-        self.logger = getLogger(__name__)
 
     def _get_default_schedule(self) -> dict[str, list[Lesson]]:
         # default_schedule_data = self.default_schedule_rep.get(self.shift,
@@ -105,6 +107,8 @@ class Builder:
     async def save_schedule_to_db(self, session, result_schedule: dict[str, str]):
         result_schedule_rep = ResultScheduleRepository(session)
         for group, schedule in result_schedule.items():
-            await result_schedule_rep.delete(self.weekday, group)
+            self.schedule_cache.create_schedule(self.weekday, group, schedule)
 
-            await result_schedule_rep.create(self.weekday, schedule, group)
+            await result_schedule_rep.delete_by_group_name(self.weekday, group)
+
+            await result_schedule_rep.create_by_group_name(self.weekday, schedule, group)

@@ -16,6 +16,8 @@ class GroupFilter(Filter):
     async def has_group(self, user_id: int) -> bool:
         async with sessionmaker() as session:
             user = await UserRepository(session).get(user_id)
+            if user is None:
+                return False
             if user.group_id is None:
                 return False
             return True

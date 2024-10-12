@@ -77,8 +77,8 @@ class ParserService(BackgroundService, Publisher):
             if group is None:
                 return False
 
-            result_schedule = await ResultScheduleRepository(session).get_by_group_id(Week.weekday,
-                                                                                      group.id)
+            result_schedule = await ResultScheduleRepository(session).get(Week.weekday,
+                                                                          group.id)
         if result_schedule is None:
             return True
 

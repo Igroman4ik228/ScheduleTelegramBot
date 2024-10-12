@@ -26,12 +26,12 @@ class GroupRepository(BaseRepository[GroupModel]):
     async def get(self, name: str) -> GroupModel | None:
         return await super().get(name=name)
 
+    async def get_by_id(self, group_id: int) -> GroupModel | None:
+        return await super().get(id=group_id)
+
     async def get_all_by_department(self, department_name: str) -> list[GroupModel]:
         department = await self.department_repo.get(department_name)
         return await super().get_all(department_id=department.id)
 
-    async def update(self, group: GroupModel) -> GroupModel | None:
-        return await super().update(group)
-
-    async def delete(self, name: str) -> None:
+    async def delete(self, name: str):
         await super().delete(name=name)

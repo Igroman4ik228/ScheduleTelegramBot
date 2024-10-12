@@ -26,3 +26,34 @@ class ScheduleCache:
 
         schedule_data = schedule_data.decode('utf-8')
         return schedule_data
+
+
+class ProfileCache:
+    def __init__(self, redis_client):
+        self.redis = redis_client
+
+    def create_profile(self, user_id, bot_mes_id, user_mes_id):
+        profile_string = f"{bot_mes_id}|{user_mes_id}"
+        self.redis.hset("user:profile", user_id, profile_string)
+
+    def get_profile(self, user_id):
+        """
+        Out:
+        (bot_mes_id, user_mes_id)
+        """
+        profile_string = self.redis.hget(f"user:profile", user_id)
+
+        if profile_string is None:
+            return None
+
+        # convert to number
+        try:
+            profile_string = profile_string.decode('utf-8')
+            bot_mes_id, user_mes_id = profile_string.split('|', 1)
+
+            bot_mes_id = int(bot_mes_id)
+            user_mes_id = int(user_mes_id)
+        except (ValueError, IndexError):
+            return None
+
+        return (bot_mes_id, user_mes_id)

@@ -18,6 +18,16 @@ class ResultScheduleRepository(BaseRepository[ResultScheduleModel]):
         self,
         weekday: int,
         data_lessons: str,
+        group_id: str
+    ) -> ResultScheduleModel | None:
+        return await super().create(weekday=weekday,
+                                    data_lessons=data_lessons,
+                                    group_id=group_id)
+
+    async def create_by_group_name(
+        self,
+        weekday: int,
+        data_lessons: str,
         group_name: str
     ) -> ResultScheduleModel | None:
         group = await self.group_repo.get(group_name)
@@ -32,6 +42,14 @@ class ResultScheduleRepository(BaseRepository[ResultScheduleModel]):
     async def get(
             self,
             weekday: int,
+            group_id: str
+    ) -> ResultScheduleModel | None:
+        return await super().get(weekday=weekday,
+                                 group_id=group_id)
+
+    async def get_by_group_name(
+            self,
+            weekday: int,
             group_name: str
     ) -> ResultScheduleModel | None:
         group = await self.group_repo.get(group_name)
@@ -42,20 +60,17 @@ class ResultScheduleRepository(BaseRepository[ResultScheduleModel]):
         return await super().get(weekday=weekday,
                                  group_id=group.id)
 
-    async def get_by_group_id(
+    async def delete(
             self,
             weekday: int,
-            group_id: str
-    ) -> ResultScheduleModel | None:
-        return await super().get(weekday=weekday,
-                                 group_id=group_id)
+            group_id: str):
+        await super().delete(weekday=weekday,
+                             group_id=group_id)
 
-    async def update(self, default_schedule: ResultScheduleModel) -> ResultScheduleModel | None:
-        return await super().update(default_schedule)
-
-    async def delete(self,
-                     weekday: int,
-                     group_name: str) -> None:
+    async def delete_by_group_name(
+            self,
+            weekday: int,
+            group_name: str):
         group = await self.group_repo.get(group_name)
         if group is None:
             logger.warning(f"Group {group_name} not found for delete")

@@ -11,12 +11,12 @@ def get_setting_kb(notify_status: bool,
 
     setting_kb = [
         [InlineKeyboardButton(text=notification_text,
-                              callback_data=CallbackData.TOGGLE_NOTIFICATION.value),
-         InlineKeyboardButton(text="🗒 Расписание",
-                              callback_data=CallbackData.WRITE_DEFAULT_SCHEDULE.value)],
+                              callback_data=CallbackData.TOGGLE_NOTIFICATION.value)],
 
         [InlineKeyboardButton(text=time_text,
-                              callback_data=CallbackData.TOGGLE_TIME_DISPLAY.value)]
+                              callback_data=CallbackData.TOGGLE_TIME_DISPLAY.value)],
+        [InlineKeyboardButton(text="Выбор группы",
+                              callback_data=CallbackData.CHOOSE_DEPARTMENT.value)],
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=setting_kb)
