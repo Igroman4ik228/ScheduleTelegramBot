@@ -9,9 +9,7 @@ from background_service_pack.builder import BackgroundBuilder
 from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
-from database.db import engine, sessionmaker
-from database.repositories.departments import DepartmentRepository
-from database.repositories.groups import GroupRepository
+from database.db import engine
 from notify_service.notify import NotifyService
 from parser_service.parser import ParserService
 from utils import constants
@@ -61,9 +59,6 @@ class AppModule(Module):
 async def main():
     injector = Injector(AppModule())
     try:
-        async with sessionmaker() as session:
-            await DepartmentRepository(session).create("ОИТ")
-            await GroupRepository(session).create("ИС1-31", "ОИТ")
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 
