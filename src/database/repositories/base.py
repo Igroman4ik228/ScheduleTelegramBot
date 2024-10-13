@@ -27,7 +27,7 @@ class BaseRepository[T]:
                 "already exist for create"
             )
             await self.session.rollback()
-            return None
+            return
 
     async def get(self, **kwargs) -> T | None:
         query = await self.session.execute(
@@ -68,4 +68,9 @@ class BaseRepository[T]:
         await self.session.commit()
 
     async def exists(self, **kwargs) -> bool:
-        return bool(await BaseRepository.get(self, **kwargs))
+        query = await self.session.execute(
+            select(self.model)
+            .filter_by(**kwargs)
+            .limit(1)
+        )
+        return bool(query.scalar_one_or_none())

@@ -36,6 +36,16 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
         self,
         weekday: int,
         shift: int,
+        group_id: str
+    ) -> DefaultScheduleModel | None:
+        return await super().get(weekday=weekday,
+                                 shift=shift,
+                                 group_id=group_id)
+
+    async def get_by_group_name(
+        self,
+        weekday: int,
+        shift: int,
         group_name: str
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get(group_name)

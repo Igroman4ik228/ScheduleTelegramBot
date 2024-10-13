@@ -60,17 +60,11 @@ class ResultScheduleRepository(BaseRepository[ResultScheduleModel]):
         return await super().get(weekday=weekday,
                                  group_id=group.id)
 
-    async def delete(
-            self,
-            weekday: int,
-            group_id: str):
+    async def delete(self, weekday: int, group_id: str):
         await super().delete(weekday=weekday,
                              group_id=group_id)
 
-    async def delete_by_group_name(
-            self,
-            weekday: int,
-            group_name: str):
+    async def delete_by_group_name(self, weekday: int, group_name: str):
         group = await self.group_repo.get(group_name)
         if group is None:
             logger.warning(f"Group {group_name} not found for delete")

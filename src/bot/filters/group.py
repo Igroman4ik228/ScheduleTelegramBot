@@ -11,13 +11,14 @@ class GroupFilter(Filter):
         user = message.from_user
         if user is None:
             return False
-        return await self.has_group(user.id)
+        return await has_group(user.id)
 
-    async def has_group(self, user_id: int) -> bool:
-        async with sessionmaker() as session:
-            user = await UserRepository(session).get(user_id)
-            if user is None:
-                return False
-            if user.group_id is None:
-                return False
-            return True
+
+async def has_group(user_id: int) -> bool:
+    async with sessionmaker() as session:
+        user = await UserRepository(session).get(user_id)
+        if user is None:
+            return False
+        if user.group_id is None:
+            return False
+        return True

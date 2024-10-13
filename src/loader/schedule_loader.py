@@ -9,7 +9,7 @@ from database.repositories.users import GroupRepository
 # Асинхронная функция для получения group_id
 async def get_group_id(group_name: str):
     async with sessionmaker() as session:
-        group: GroupModel = await GroupRepository(session).get(group_name)
+        group: GroupModel = await GroupRepository(session).get_by_name(group_name)
     return group.id
 
 

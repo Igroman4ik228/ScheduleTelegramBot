@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated
 
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import DeclarativeBase, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 int_pk = Annotated[int, mapped_column(primary_key=True)]
 
@@ -27,6 +27,8 @@ str_512 = Annotated[str, 512]
 
 
 class Base(DeclarativeBase):
+    id: Mapped[int_pk]
+
     type_annotation_map = {
         str_128: String(128),
         str_512: String(512)

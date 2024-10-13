@@ -1,12 +1,11 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, department_foreign_key, int_pk, str_128
+from database.models.base import Base, department_foreign_key, str_128
 
 
 class GroupModel(Base):
     __tablename__ = 'Groups'
 
-    id: Mapped[int_pk]
     name: Mapped[str_128] = mapped_column(unique=True)
     department_id: Mapped[department_foreign_key]
 

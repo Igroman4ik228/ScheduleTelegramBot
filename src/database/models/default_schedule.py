@@ -1,12 +1,11 @@
 from sqlalchemy.orm import Mapped, relationship
 
-from database.models.base import Base, group_foreign_key, int_pk, str_512
+from database.models.base import Base, group_foreign_key, str_512
 
 
 class DefaultScheduleModel(Base):
     __tablename__ = 'DefaultSchedule'
 
-    id: Mapped[int_pk]
     weekday: Mapped[int]
     shift: Mapped[int]
     data_lessons: Mapped[str_512]

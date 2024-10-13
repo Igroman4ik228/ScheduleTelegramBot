@@ -72,8 +72,7 @@ class ParserService(BackgroundService, Publisher):
 
     async def check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
         async with sessionmaker() as session:
-            group = await GroupRepository(session).get(group_name)
-
+            group = await GroupRepository(session).get_by_name(group_name)
             if group is None:
                 return False
 

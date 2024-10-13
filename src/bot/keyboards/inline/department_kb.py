@@ -1,14 +1,10 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from database.db import sessionmaker
-from database.repositories.departments import DepartmentRepository
+from database.models.departments import DepartmentModel
 
 
-async def get_department_kb() -> InlineKeyboardMarkup:
-    async with sessionmaker() as session:
-        departments = await DepartmentRepository(session).get_all()
-
+async def get_department_kb(departments: list[DepartmentModel]) -> InlineKeyboardMarkup:
     department_builder = InlineKeyboardBuilder()
     for department in departments:
         department_builder.add(

@@ -2,9 +2,8 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 
-from database.db import sessionmaker
 from database.repositories.users import UserRepository
 
 
@@ -15,30 +14,28 @@ class AuthMiddleware(BaseMiddleware):
     async def __call__(
         self,
         handler: Callable[[Message, dict[str, Any]], Awaitable[Any]],
-        message: Message,
-        data: dict[str, Any],
+        event: Message | CallbackQuery,
+        data: dict[str, Any]
     ) -> Any:
-        user = message.from_user
+        user = event.from_user
+        user_rep: UserRepository = data["user_rep"]
 
-        if not user:
-            return await handler(message, data)
+        existing_user = await user_rep.get_with_group(user.id)
+        if existing_user:
+            data['user'] = existing_user
+            return await handler(event, data)
 
-        async with sessionmaker() as session:
-            user_rep = UserRepository(session)
+        new_user = await user_rep.create(
+            first_name=user.first_name,
+            user_name=user.username,
+            telegram_id=user.id,
+            last_name=user.last_name,
+            is_bot=user.is_bot,
+            is_premium=user.is_premium
+        )
 
-            if await user_rep.exists(user.id):
-                return await handler(message, data)
+        if new_user is not None:
+            self.logger.info(f"New user registration: {repr(new_user)}")
+            data['user'] = new_user
 
-            new_user = await user_rep.create(
-                first_name=user.first_name,
-                user_name=user.username,
-                telegram_id=user.id,
-                last_name=user.last_name,
-                is_bot=user.is_bot,
-                is_premium=user.is_premium
-            )
-
-            if new_user is not None:
-                self.logger.info(f"New user registration: {repr(new_user)}")
-
-            return await handler(message, data)
+        return await handler(event, data)

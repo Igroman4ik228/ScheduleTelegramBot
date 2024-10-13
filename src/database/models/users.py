@@ -2,13 +2,12 @@ from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import (Base, bool_false, bool_true, created_at,
-                                  int_pk, str_128)
+                                  str_128)
 
 
 class UserModel(Base):
     __tablename__ = 'Users'
 
-    id: Mapped[int_pk]
     first_name: Mapped[str_128]
     last_name: Mapped[str_128 | None]
     user_name: Mapped[str_128]
@@ -26,7 +25,6 @@ class UserModel(Base):
     is_notify: Mapped[bool_true]
     is_ban: Mapped[bool_false]
     is_premium: Mapped[bool_false]
-    is_premium_subscriber: Mapped[bool_false]
 
     group: Mapped["GroupModel"] = relationship(
         back_populates="users"

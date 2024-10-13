@@ -61,6 +61,9 @@ class AppModule(Module):
 async def main():
     injector = Injector(AppModule())
     try:
+        async with sessionmaker() as session:
+            await DepartmentRepository(session).create("ОИТ")
+            await GroupRepository(session).create("ИС1-31", "ОИТ")
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 

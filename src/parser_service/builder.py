@@ -3,7 +3,6 @@ from logging import getLogger
 
 from database.db import with_session_self
 from database.redis_cache import ScheduleCache, create_redis
-from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
 from parser_service.week import Week
@@ -32,9 +31,10 @@ class Builder:
         self.weekday = weekday
         self.shift = shift
 
-    def _get_default_schedule(self) -> dict[str, list[Lesson]]:
-        # default_schedule_data = self.default_schedule_rep.get(self.shift,
-        #                                                       self.weekday)
+    async def _get_default_schedule(self) -> dict[str, list[Lesson]]:
+        # async with sessionmaker() as session:
+        #     default_schedule_data = await DefaultScheduleRepository(session).get(self.shift,
+        #                                                                          self.weekday)
         default_schedule_data = None
         if default_schedule_data is None:
             return []

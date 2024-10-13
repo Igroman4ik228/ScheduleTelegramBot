@@ -5,11 +5,9 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
 from bot.keyboards.inline.profile_kb import get_profile_kb
-from database.db import sessionmaker
 from database.models.groups import GroupModel
 from database.models.users import UserModel
 from database.redis_cache import ProfileCache, create_redis
-from database.repositories.users import UserRepository
 
 user_locks = {}
 router = Router(name=__name__)
@@ -17,16 +15,16 @@ profile_cache = ProfileCache(create_redis())
 
 
 @router.message(F.text.lower().contains("профиль"))
-async def handle_profile(message: Message, bot: Bot):
+async def handle_profile(message: Message, bot: Bot,
+                         user: UserModel):
     user_locks.setdefault(message.from_user.id, asyncio.Lock())
     async with user_locks[message.from_user.id]:
         await delete_profile_messages(bot, message.from_user.id, message.chat.id)
 
-        async with sessionmaker() as session:
-            user = await UserRepository(session).get_with_group(message.from_user.id)
         answer_text = get_profile_text(user)
         sent_message = await message.answer(answer_text,
                                             reply_markup=get_profile_kb())
+
         profile_cache.create_profile(message.from_user.id,
                                      sent_message.message_id,
                                      message.message_id)
@@ -37,7 +35,6 @@ def get_profile_text(user: UserModel) -> str:
     answer_text = (
         f"Профиль {html.quote(user.first_name)}\n"
         f"Группа: {group.name}\n"
-        f"Подписка: {user.is_premium_subscriber}\n"
         f"Отображение времени: {user.is_time_shown}\n"
         f"Уведомления: {user.is_notify}"
     )
