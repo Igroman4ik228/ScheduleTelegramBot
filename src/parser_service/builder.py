@@ -7,7 +7,8 @@ from database.redis.schedule_cache import ScheduleCache
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
 from parser_service.week import Week
-from utils.constants import DAY_NAME_CASES
+from utils.constants import (DAY_NAME_CASES, END_LESSONS_TIME,
+                             START_LESSONS_TIME)
 
 
 class Builder:
@@ -76,6 +77,7 @@ class Builder:
         for group, lessons in result_schedule_data.items():
             formatted_schedule = self.format_schedule(lessons)
             result_schedule[group] = formatted_schedule
+
         return result_schedule
 
     def format_schedule(self, result_lessons: list[Lesson]) -> str:
@@ -102,6 +104,7 @@ class Builder:
                 formatted_schedule += " (❗️ замена)"
 
             formatted_schedule += "\n"
+
         return formatted_schedule
 
     @with_session_self

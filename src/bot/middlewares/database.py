@@ -19,6 +19,7 @@ class DatabaseMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
+
         async with sessionmaker() as session:
             data["user_rep"] = UserRepository(session)
             data["result_schedule_rep"] = ResultScheduleRepository(session)

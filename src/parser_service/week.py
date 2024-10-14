@@ -35,9 +35,9 @@ class Week:
         return shift
 
     @classmethod
-    def get_weekday_name(cls, weekday: int) -> str:
-        return const.DAY_NAMES.get(weekday, "Неизвестный день")
+    def get_weekday_name(cls) -> str:
+        return const.DAY_NAMES.get(cls.weekday, "Неизвестный день")
 
     @classmethod
-    def get_shift_name(cls, shift: int) -> str:
-        return get_key(const.WEEK_SCHEDULE_MAPPING, shift) or "Неизвестный смена"
+    def get_shift_name(cls) -> str:
+        return get_key(const.WEEK_SCHEDULE_MAPPING, cls.shift) or "Неизвестный смена"
