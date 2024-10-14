@@ -1,17 +1,17 @@
 import asyncio
-import logging
+from logging import getLogger
 
 from bot.bot import BotManager
 from database.db import with_session_self
 from database.repositories.result_schedule import ResultScheduleRepository
 from database.repositories.users import UserRepository
 from observer_pack.models import Observer
-from parser_service.week import Week
+from services.parser_service.week import Week
 
 
 class NotifyService(Observer):
     def __init__(self, bot_manager: BotManager):
-        self.logger = logging.getLogger(__class__.__name__)
+        self.logger = getLogger(__class__.__name__)
         self.bot = bot_manager.bot
 
     @with_session_self

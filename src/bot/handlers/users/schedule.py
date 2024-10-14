@@ -8,7 +8,7 @@ from database.models.users import UserModel
 from database.redis.base import create_redis
 from database.redis.schedule_cache import ScheduleCache
 from database.repositories.result_schedule import ResultScheduleRepository
-from parser_service.week import Week
+from services.parser_service.week import Week
 
 router = Router(name=__name__)
 redis = create_redis()

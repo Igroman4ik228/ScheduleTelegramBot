@@ -1,5 +1,3 @@
-from logging import Logger
-
 from injector import inject
 
 from background_service_pack.models import BackgroundService

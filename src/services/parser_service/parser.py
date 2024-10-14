@@ -5,16 +5,18 @@ from injector import inject
 
 from background_service_pack.models import BackgroundService
 from config import settings
-from database.db import sessionmaker
+from database.db import sessionmaker, with_session_self
+from database.redis.base import create_redis
+from database.redis.schedule_cache import ScheduleCache
 from database.repositories.groups import GroupRepository
 from database.repositories.result_schedule import ResultScheduleRepository
-from notify_service.notify import NotifyService
 from observer_pack.models import Publisher
-from parser_service.builder import Builder
-from parser_service.element_finder import ElementFinder
-from parser_service.lesson import Lesson
-from parser_service.request import Request
-from parser_service.week import Week
+from services.notify_service.notify import NotifyService
+from services.parser_service.builder import Builder
+from services.parser_service.element_finder import ElementFinder
+from services.parser_service.lesson import Lesson
+from services.parser_service.request import Request
+from services.parser_service.week import Week
 from utils import constants
 
 
@@ -24,6 +26,7 @@ class ParserService(BackgroundService, Publisher):
         BackgroundService.__init__(self, time_span)
         Publisher.__init__(self)
 
+        self.schedule_cache = ScheduleCache(create_redis())
         self.request = Request(url)
 
         self.attach(notify)
@@ -33,6 +36,7 @@ class ParserService(BackgroundService, Publisher):
             with open('test.html', 'r', encoding='utf-8') as file:
                 response_text = file.read()
         else:
+
             response_text = await self.request.fetch()
 
         soup = BeautifulSoup(response_text, 'lxml')
@@ -43,9 +47,8 @@ class ParserService(BackgroundService, Publisher):
 
         replacement_schedule = self._extract_replacement_schedule(finder.rows)
 
-        builder = Builder(Week.weekday, Week.shift)
-        result_schedule_data = builder.apply_replacement(replacement_schedule)
-        result_schedule = builder.build_result_schedule(result_schedule_data)
+        builder = Builder(replacement_schedule)
+        result_schedule = builder.main_build()
 
         self.is_update = False
         for group, schedule in result_schedule.items():
@@ -54,7 +57,7 @@ class ParserService(BackgroundService, Publisher):
                 self.is_update = True
                 break
 
-        await builder.save_schedule_to_db(result_schedule)
+        await self._save_schedule_to_db(result_schedule)
 
         await self.notify()
 
@@ -69,6 +72,17 @@ class ParserService(BackgroundService, Publisher):
     async def stop(self):
         self.logger.info("ParserService stopped")
         await self.pause()
+
+    @with_session_self
+    async def _save_schedule_to_db(self, session, result_schedule: dict[str, str]):
+        result_schedule_rep = ResultScheduleRepository(session)
+
+        for group, schedule in result_schedule.items():
+            self.schedule_cache.create(Week.weekday, group, schedule)
+
+            await result_schedule_rep.delete_by_group_name(Week.weekday, group)
+
+            await result_schedule_rep.create_by_group_name(Week.weekday, schedule, group)
 
     async def check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
         async with sessionmaker() as session:

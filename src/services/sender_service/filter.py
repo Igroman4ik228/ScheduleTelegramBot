@@ -1,17 +1,16 @@
-
-import logging
+from logging import getLogger
 
 from database.db import sessionmaker
 from database.models.users import UserModel
 from database.repositories.users import UserRepository
-from sender_service.filter_enum import FilterAction
+from services.sender_service.filter_enum import FilterAction
 
 
 class UserFilter:
     def __init__(self):
+        self.logger = getLogger(__name__)
         self._filter: FilterAction = None
         self.target_obj: object = None
-        self.logger = logging.getLogger(__name__)
 
     def set_filter_action(self, filter_action: FilterAction):
         self._filter = filter_action

@@ -4,14 +4,14 @@ from logging.config import dictConfig
 
 from injector import Injector, Module, provider, singleton
 
-from ad_service.ad_sender import AdService
 from background_service_pack.builder import BackgroundBuilder
 from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
 from database.db import engine
-from notify_service.notify import NotifyService
-from parser_service.parser import ParserService
+from services.ad_service.ad_sender import AdService
+from services.notify_service.notify import NotifyService
+from services.parser_service.parser import ParserService
 from utils import constants
 
 dictConfig(settings.logger_conf)

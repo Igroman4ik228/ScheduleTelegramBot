@@ -23,7 +23,6 @@ class Request:
         self.url = url
         self.logger = logging.getLogger(__name__)
 
-
     @retry_request
     async def fetch(self) -> str:
         async with ClientSession() as session:

@@ -1,8 +1,16 @@
+from logging import getLogger
+
+from services.parser_service.lesson import Lesson
+from services.parser_service.week import Week
+from utils.constants import (DAY_NAME_CASES, END_LESSONS_TIME,
+                             START_LESSONS_TIME)
+
+
 class ScheduleFormatter:
-    def __init__(self, result_schedule: list[Lesson]):
+    def __init__(self, lessons: list[Lesson]):
         self.logger = getLogger(__name__)
-        self.result_schedule = sorted(
-            result_schedule,
+        self.lessons = sorted(
+            lessons,
             key=lambda lesson: lesson.number
         )
 
@@ -11,8 +19,9 @@ class ScheduleFormatter:
 
     def format_header(self) -> str:
         formatted_schedule = "Расписание на "
+
         weekday_name = Week.get_weekday_name()
-        weekday_name = DAY_NAME_CASES.get(Week.weekday, weekday_name)
+        weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
         formatted_schedule += f"{weekday_name} "
 
         shift = Week.get_shift_name()
@@ -23,7 +32,7 @@ class ScheduleFormatter:
 
     def format_lessons(self) -> str:
         formatted_lessons = ""
-        for lesson in self.result_schedule:
+        for lesson in self.lessons:
             formatted_lessons += self.format_lesson(lesson)
 
         return formatted_lessons

@@ -1,6 +1,5 @@
 from email.parser import Parser
 
-import ad_service
 from background_service_pack.models import BackgroundService
 
 

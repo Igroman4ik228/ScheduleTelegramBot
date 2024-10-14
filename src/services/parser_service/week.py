@@ -1,5 +1,5 @@
 import utils.constants as const
-from parser_service.element_finder import ElementFinder
+from services.parser_service.element_finder import ElementFinder
 from utils.different import get_key
 
 
