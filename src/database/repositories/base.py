@@ -18,16 +18,9 @@ class BaseRepository[T]:
     async def create(self, **kwargs) -> T | None:
         instance = self.model(**kwargs)
         self.session.add(instance)
-        try:
-            await self.session.commit()
+        if await self._handle_commit():
             return instance
-        except IntegrityError:
-            self.logger.debug(
-                f"Instance {repr(instance)} "
-                "already exist for create"
-            )
-            await self.session.rollback()
-            return
+        return
 
     async def get(self, **kwargs) -> T | None:
         query = await self.session.execute(
@@ -37,10 +30,17 @@ class BaseRepository[T]:
         return query.scalar_one_or_none()
 
     async def get_with_option(self, option: str, **kwargs) -> T | None:
+        if not hasattr(self.model, option):
+            self.logger.warning(
+                f"Model {self.model.__name__}"
+                f"has no attribute {option}"
+            )
+            return
+
         query = await self.session.execute(
             select(self.model)
             .filter_by(**kwargs)
-            .options(joinedload(self.model.__dict__[option]))
+            .options(joinedload(getattr(self.model, option)))
         )
         return query.scalar_one_or_none()
 
@@ -54,23 +54,33 @@ class BaseRepository[T]:
     async def update(self, instance: T):
         # Создаёт новую запись если не существует
         await self.session.merge(instance)
-        await self.session.commit()
+        await self._handle_commit()
 
     async def delete(self, **kwargs):
         exist_instance = await BaseRepository.get(self, **kwargs)
         if exist_instance is None:
-            self.logger.warning(
+            self.logger.debug(
                 f"Instance with {kwargs} not exist for delete"
             )
             return
 
         await self.session.delete(exist_instance)
-        await self.session.commit()
+        await self._handle_commit()
 
     async def exists(self, **kwargs) -> bool:
         query = await self.session.execute(
             select(self.model)
             .filter_by(**kwargs)
-            .limit(1)
         )
-        return bool(query.scalar_one_or_none())
+        return query.scalar_one_or_none() is not None
+
+    async def _handle_commit(self) -> bool:
+        try:
+            await self.session.commit()
+            return True
+        except IntegrityError:
+            await self.session.rollback()
+            return False
+        except Exception as e:
+            await self.session.rollback()
+            raise f"Ошибка в репозиториях: {e}"

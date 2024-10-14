@@ -5,7 +5,8 @@ import utils.constants as const
 from bot.keyboards.reply.main_kb import get_main_kb
 from database.models.groups import GroupModel
 from database.models.users import UserModel
-from database.redis_cache import ScheduleCache, create_redis
+from database.redis.base import create_redis
+from database.redis.schedule_cache import ScheduleCache
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.week import Week
 
@@ -17,8 +18,8 @@ redis = create_redis()
 async def handle_schedule(message: Message,
                           user: UserModel, result_schedule_rep: ResultScheduleRepository):
     group: GroupModel = user.group
-    result_schedule = ScheduleCache(redis).get_schedule(Week.weekday,
-                                                        group.name)
+    result_schedule = ScheduleCache(redis).get(Week.weekday,
+                                               group.name)
     if result_schedule is None:
         result_schedule_data = await result_schedule_rep.get(Week.weekday,
                                                              user.group_id)

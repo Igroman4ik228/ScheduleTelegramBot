@@ -2,7 +2,8 @@ import json
 from logging import getLogger
 
 from database.db import with_session_self
-from database.redis_cache import ScheduleCache, create_redis
+from database.redis.base import create_redis
+from database.redis.schedule_cache import ScheduleCache
 from database.repositories.result_schedule import ResultScheduleRepository
 from parser_service.lesson import Lesson
 from parser_service.week import Week
@@ -107,7 +108,7 @@ class Builder:
     async def save_schedule_to_db(self, session, result_schedule: dict[str, str]):
         result_schedule_rep = ResultScheduleRepository(session)
         for group, schedule in result_schedule.items():
-            self.schedule_cache.create_schedule(self.weekday, group, schedule)
+            self.schedule_cache.create(self.weekday, group, schedule)
 
             await result_schedule_rep.delete_by_group_name(self.weekday, group)
 
