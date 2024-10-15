@@ -2,6 +2,7 @@ from logging import getLogger
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.fsm.storage.redis import RedisStorage
 
 from bot.handlers import register_routers
 from bot.middlewares import register_middlewares
@@ -11,16 +12,17 @@ class BotManager:
     def __init__(self, token):
         self.logger = getLogger(__name__)
         self.bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
-        self.dp = Dispatcher()
+        self.dp = Dispatcher(
+            storage=RedisStorage.from_url("redis://localhost:6379/0")
+        )
 
     async def start(self):
-        try:
-            self.dp.startup.register(self._on_startup)
-            self.dp.shutdown.register(self._on_shutdown)
+        await self.bot.delete_webhook(drop_pending_updates=True)
 
-            await self.dp.start_polling(self.bot, skip_updates=True)
-        except Exception as e:
-            self.logger.error(f"Ошибка {e}", exc_info=True)
+        self.dp.startup.register(self._on_startup)
+        self.dp.shutdown.register(self._on_shutdown)
+
+        await self.dp.start_polling(self.bot)
 
     def _on_startup(self):
         register_middlewares(self.dp)

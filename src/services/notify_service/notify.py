@@ -20,8 +20,13 @@ class NotifyService(Observer):
 
         users = await UserRepository(session).get_all()
         for user in users:
-            result_schedule = await ResultScheduleRepository(session).get(Week.weekday,
+            result_schedule = await ResultScheduleRepository(session).get(Week().weekday,
                                                                           group_id=user.group_id)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.05)
             if result_schedule is not None:
-                await self.bot.send_message(user.telegram_id, result_schedule.data_lessons)
+                if user.is_ban:
+                    continue
+                try:
+                    await self.bot.send_message(user.telegram_id, result_schedule.data_lessons)
+                except Exception:
+                    pass

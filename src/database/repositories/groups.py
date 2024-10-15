@@ -3,11 +3,11 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.groups import GroupModel
-from database.repositories.base import BaseRepository
+from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.departments import DepartmentRepository
 
 
-class GroupRepository(BaseRepository[GroupModel]):
+class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     def __init__(self, session: AsyncSession):
         self.logger = getLogger(__name__)
         super().__init__(session, GroupModel)

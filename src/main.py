@@ -11,7 +11,7 @@ from config import Settings, settings
 from database.db import engine
 from services.ad_service.ad_sender import AdService
 from services.notify_service.notify import NotifyService
-from services.parser_service.parser import ParserService
+from services.parser_service.service import ParserService
 from utils import constants
 
 dictConfig(settings.logger_conf)
@@ -27,12 +27,10 @@ class AppModule(Module):
     def provide_setting(self) -> Settings:
         return Settings()
 
-    # TODO: Edit time_span for realization logic or production
     @provider
     def provide_parser_service(self, notify: NotifyService) -> ParserService:
-        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=10*60, notify=notify)
+        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=10, notify=notify)
 
-    # TODO: Edit time_span for realization logic or production
     @provider
     def provide_ad_service(self) -> AdService:
         return AdService(time_span=100)

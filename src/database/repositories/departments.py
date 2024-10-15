@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.departments import DepartmentModel
-from database.repositories.base import BaseRepository
+from database.repositories.base import BaseRepositoryAlchemy
 
 
-class DepartmentRepository(BaseRepository[DepartmentModel]):
+class DepartmentRepository(BaseRepositoryAlchemy[DepartmentModel]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, DepartmentModel)
 

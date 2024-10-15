@@ -20,11 +20,11 @@ class ScheduleFormatter:
     def format_header(self) -> str:
         formatted_schedule = "Расписание на "
 
-        weekday_name = Week.get_weekday_name()
+        weekday_name = Week().get_weekday_name()
         weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
         formatted_schedule += f"{weekday_name} "
 
-        shift = Week.get_shift_name()
+        shift = Week().get_shift_name()
         formatted_schedule += f"({shift}):"
         formatted_schedule += "\n"
 

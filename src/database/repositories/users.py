@@ -3,11 +3,11 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.users import UserModel
-from database.repositories.base import BaseRepository
+from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.groups import GroupRepository
 
 
-class UserRepository(BaseRepository[UserModel]):
+class UserRepository(BaseRepositoryAlchemy[UserModel]):
     def __init__(self, session: AsyncSession):
         self.logger = getLogger(__name__)
         super().__init__(session, UserModel)
@@ -23,7 +23,7 @@ class UserRepository(BaseRepository[UserModel]):
     ) -> UserModel | None:
         group_id = None
         if group_name is not None:
-            group = await self.group_repo.get(group_name)
+            group = await self.group_repo.get_by_name(group_name)
             if group is None:
                 self.logger.warning(
                     f"Group {group_name} not found for create"

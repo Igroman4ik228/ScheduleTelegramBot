@@ -1,14 +1,20 @@
 from redis import Redis
 
 
-def create_redis():
-    # default localhost connection
-    return Redis(host='localhost', port=6379, db=0)
+def create_redis(
+    host: str = 'localhost',
+    port: int = 6379,
+    db: int = 0
+) -> Redis:
+    return Redis(host=host, port=port, db=db)
 
 
 class BaseCache:
-    def __init__(self, redis: Redis):
-        self.redis = redis
+    def __init__(
+        self,
+        redis: Redis = None
+    ):
+        self.redis = redis or create_redis()
 
     # ex=86400 - set TTL(seconds) = 24 hours
     def create(self, key, value, ex=86400):

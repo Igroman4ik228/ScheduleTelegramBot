@@ -4,7 +4,7 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message
 
-from database.repositories.users import UserRepository
+from database.repository import Repository
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -18,7 +18,8 @@ class AuthMiddleware(BaseMiddleware):
         data: dict[str, Any]
     ) -> Any:
         user = event.from_user
-        user_rep: UserRepository = data["user_rep"]
+        repository: Repository = data["repository"]
+        user_rep = repository.users
 
         existing_user = await user_rep.get_with_group(user.id)
         if existing_user:

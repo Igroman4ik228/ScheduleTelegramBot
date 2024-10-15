@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import TypeVar
 
@@ -9,7 +10,39 @@ from sqlalchemy.orm import joinedload
 T = TypeVar('T')
 
 
-class BaseRepository[T]:
+# Todo: Спросить у MrRiten
+class AbstractRepository(ABC):
+
+    @abstractmethod
+    async def create(self, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get(self, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_with_option(self, option: str, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_all(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update(self, instance):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete(self, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def exists(self, **kwargs):
+        raise NotImplementedError
+
+
+class BaseRepositoryAlchemy[T](AbstractRepository):
     def __init__(self, session: AsyncSession, model: type[T]):
         self.logger = getLogger(__name__)
         self.session = session
@@ -57,7 +90,7 @@ class BaseRepository[T]:
         await self._handle_commit()
 
     async def delete(self, **kwargs):
-        exist_instance = await BaseRepository.get(self, **kwargs)
+        exist_instance = await BaseRepositoryAlchemy.get(self, **kwargs)
         if exist_instance is None:
             self.logger.debug(
                 f"Instance with {kwargs} not exist for delete"

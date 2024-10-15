@@ -96,6 +96,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Migrations alembic
-src/database/migrations/versions/*

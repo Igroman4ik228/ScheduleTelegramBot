@@ -3,11 +3,11 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.default_schedule import DefaultScheduleModel
-from database.repositories.base import BaseRepository
+from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.groups import GroupRepository
 
 
-class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
+class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     def __init__(self, session: AsyncSession):
         self.logger = getLogger(__name__)
         super().__init__(session, DefaultScheduleModel)
@@ -20,7 +20,7 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
         data_lessons: str,
         group_name: str
     ) -> DefaultScheduleModel | None:
-        group = await self.group_repo.get(group_name)
+        group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.warning(
                 f"Group {group_name} not found for create"
@@ -48,7 +48,7 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
         shift: int,
         group_name: str
     ) -> DefaultScheduleModel | None:
-        group = await self.group_repo.get(group_name)
+        group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.warning(f"Group {group_name} not found for get")
             return
@@ -63,7 +63,7 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
         shift: int,
         group_name: str
     ):
-        group = await self.group_repo.get(group_name)
+        group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.warning(f"Group {group_name} not found for delete")
             return
@@ -78,11 +78,11 @@ class DefaultScheduleRepository(BaseRepository[DefaultScheduleModel]):
         weekday: int,
         shift: int
     ) -> bool:
-        group = await self.group_repo.get(group_name)
+        group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.warning(f"Group {group_name} not found for exists")
             return
 
-        return await super().exists(group.id,
-                                    weekday,
-                                    shift)
+        return await super().exists(group_id=group.id,
+                                    weekday=weekday,
+                                    shift=shift)

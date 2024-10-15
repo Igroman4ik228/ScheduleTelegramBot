@@ -3,11 +3,11 @@ from aiogram.types import Message
 
 import utils.constants as const
 from bot.keyboards.reply.main_kb import get_main_kb
+from database.cache import Cache
 from database.models.groups import GroupModel
 from database.models.users import UserModel
 from database.redis.base import create_redis
-from database.redis.schedule_cache import ScheduleCache
-from database.repositories.result_schedule import ResultScheduleRepository
+from database.repository import Repository
 from services.parser_service.week import Week
 
 router = Router(name=__name__)
@@ -16,13 +16,14 @@ redis = create_redis()
 
 @router.message(F.text.lower().contains("расписание"))
 async def handle_schedule(message: Message,
-                          user: UserModel, result_schedule_rep: ResultScheduleRepository):
+                          user: UserModel, repository: Repository):
     group: GroupModel = user.group
-    result_schedule = ScheduleCache(redis).get(Week.weekday,
-                                               group.name)
+
+    result_schedule = Cache(redis).schedule.get(Week().weekday,
+                                                group.name)
     if result_schedule is None:
-        result_schedule_data = await result_schedule_rep.get(Week.weekday,
-                                                             user.group_id)
+        result_schedule_data = await repository.result_schedule.get(Week().weekday,
+                                                                    user.group_id)
         if result_schedule_data is not None:
             result_schedule = result_schedule_data.data_lessons
 
@@ -37,11 +38,11 @@ async def handle_schedule(message: Message,
 
 @router.message(F.text.lower().contains("предыдущее"))
 async def handle_previous_schedule(message: Message,
-                                   user: UserModel, result_schedule_rep: ResultScheduleRepository):
-    previous_weekday = get_previous_weekday(Week.weekday)
+                                   user: UserModel, repository: Repository):
+    previous_weekday = get_previous_weekday(Week().weekday)
 
-    result_schedule = await result_schedule_rep.get(previous_weekday,
-                                                    user.group_id)
+    result_schedule = await repository.result_schedule.get(previous_weekday,
+                                                           user.group_id)
     if result_schedule is None:
         await message.answer(const.NO_SCHEDULE_TEXT,
                              reply_markup=get_main_kb(message.from_user.id))
@@ -54,11 +55,11 @@ async def handle_previous_schedule(message: Message,
 
 @router.message(F.text.lower().contains("следующее"))
 async def handle_next_schedule(message: Message,
-                               user: UserModel, result_schedule_rep: ResultScheduleRepository):
-    next_weekday = get_next_weekday(Week.weekday)
+                               user: UserModel, repository: Repository):
+    next_weekday = get_next_weekday(Week().weekday)
 
-    result_schedule = await result_schedule_rep.get(next_weekday,
-                                                    user.group_id)
+    result_schedule = await repository.result_schedule.get(next_weekday,
+                                                           user.group_id)
     if result_schedule is None:
         await message.answer(const.NO_SCHEDULE_TEXT,
                              reply_markup=get_main_kb(message.from_user.id))
