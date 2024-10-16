@@ -53,8 +53,8 @@ class BaseRepositoryAlchemy[T]:
 
     async def update(self, instance: T):
         instance_id = getattr(instance, "id", None)
-        is_exist = await BaseRepositoryAlchemy.exists(self, id=instance_id)
-        if not is_exist:
+        exist_instance = await BaseRepositoryAlchemy.get(self, id=instance_id)
+        if exist_instance is None:
             self.logger.debug(
                 "Instance with id "
                 f"{instance_id} not exist for update"
@@ -74,9 +74,6 @@ class BaseRepositoryAlchemy[T]:
 
         await self.session.delete(exist_instance)
         await self._handle_commit()
-
-    async def exists(self, **kwargs) -> bool:
-        return await BaseRepositoryAlchemy.get(self, **kwargs) is not None
 
     async def _handle_commit(self) -> bool:
         try:

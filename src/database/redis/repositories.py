@@ -5,8 +5,6 @@ from typing import Any, Callable
 from database.redis.base import redis_client
 from database.redis.serialization import AbstractSerializer, PickleSerializer
 
-DEFAULT_TTL = 10
-
 
 def build_key_from_repo(instance: Any, *args: tuple, **kwargs: dict) -> str:
     """Генерация ключа на основе модели и аргументов репозитория."""
@@ -20,7 +18,7 @@ def build_key_from_repo(instance: Any, *args: tuple, **kwargs: dict) -> str:
 async def set_redis_value(
     key: bytes | str,
     value: bytes | str,
-    ttl: int | timedelta | None = DEFAULT_TTL,
+    ttl: int | timedelta | None = None,
     is_transaction: bool = False
 ) -> None:
     """Сохранение значения в Redis с возможностью задания TTL."""
@@ -32,7 +30,7 @@ async def set_redis_value(
 
 
 def cached(
-    ttl: int | timedelta = DEFAULT_TTL,
+    ttl: int | timedelta,
     namespace: str = "repo_cache",
     key_builder: Callable[..., str] = build_key_from_repo,
     serializer: AbstractSerializer | None = None,

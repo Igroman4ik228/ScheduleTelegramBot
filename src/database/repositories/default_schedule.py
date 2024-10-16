@@ -18,6 +18,18 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         weekday: int,
         shift: int,
         data_lessons: str,
+        group_id: str
+    ) -> DefaultScheduleModel | None:
+        return await super().create(weekday=weekday,
+                                    shift=shift,
+                                    data_lessons=data_lessons,
+                                    group_id=group_id)
+
+    async def create_by_group_name(
+        self,
+        weekday: int,
+        shift: int,
+        data_lessons: str,
         group_name: str
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
@@ -61,6 +73,16 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         self,
         weekday: int,
         shift: int,
+        group_id: str
+    ):
+        await super().delete(weekday=weekday,
+                             shift=shift,
+                             group_id=group_id)
+
+    async def delete_by_group_name(
+        self,
+        weekday: int,
+        shift: int,
         group_name: str
     ):
         group = await self.group_repo.get_by_name(group_name)
@@ -68,21 +90,6 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
             self.logger.warning(f"Group {group_name} not found for delete")
             return
 
-        await super().delete(group_name=group_name,
-                             weekday=weekday,
-                             shift=shift)
-
-    async def exists(
-        self,
-        group_name: str,
-        weekday: int,
-        shift: int
-    ) -> bool:
-        group = await self.group_repo.get_by_name(group_name)
-        if group is None:
-            self.logger.warning(f"Group {group_name} not found for exists")
-            return
-
-        return await super().exists(group_id=group.id,
-                                    weekday=weekday,
-                                    shift=shift)
+        await super().delete(weekday=weekday,
+                             shift=shift,
+                             group_id=group.id)

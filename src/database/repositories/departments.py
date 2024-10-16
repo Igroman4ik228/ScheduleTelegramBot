@@ -16,6 +16,3 @@ class DepartmentRepository(BaseRepositoryAlchemy[DepartmentModel]):
 
     async def delete(self, name: str):
         await super().delete(name=name)
-
-    async def exists(self, name: str) -> bool:
-        return await super().exists(name=name)
