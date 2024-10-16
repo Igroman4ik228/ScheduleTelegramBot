@@ -3,6 +3,8 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.users import UserModel
+from database.redis.repositories import (build_key_from_repo, cached,
+                                         clear_cache)
 from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.groups import GroupRepository
 
@@ -22,7 +24,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             **kwargs
     ) -> UserModel | None:
         group_id = None
-        if group_name is not None:
+        if group_name:
             group = await self.group_repo.get_by_name(group_name)
             if group is None:
                 self.logger.warning(
@@ -39,20 +41,33 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             **kwargs
         )
 
+    def _build_key(self, telegram_id: int, **kwargs) -> str:
+        return build_key_from_repo(self, telegram_id, **kwargs)
+
+    @cached(key_builder=_build_key)
     async def get(self, telegram_id: int) -> UserModel | None:
         return await super().get(telegram_id=telegram_id)
 
+    @cached(key_builder=_build_key)
     async def get_with_group(self, telegram_id: int) -> UserModel | None:
         return await super().get_with_option("group", telegram_id=telegram_id)
 
-    async def get_by_group(self, group_id: int) -> UserModel | None:
-        return await super().get_all(group_id=group_id)
+    @cached(key_builder=_build_key)
+    async def get_all(self, **kwargs) -> list[UserModel]:
+        return await super().get_all(**kwargs)
 
-    async def get_by_premium(self, is_premium: bool) -> UserModel | None:
-        return await super().get_all(is_premium=is_premium)
+    async def update(self, instance: UserModel):
+        await super().update(instance)
+        self._clear_user_cache(instance.telegram_id)
 
     async def delete(self, telegram_id: int):
         await super().delete(telegram_id=telegram_id)
+        self._clear_user_cache(telegram_id)
 
     async def exists(self, telegram_id: int) -> bool:
         return await super().exists(telegram_id=telegram_id)
+
+    async def _clear_user_cache(self, telegram_id: int):
+        await clear_cache(self.get, self, telegram_id)
+        await clear_cache(self.get_with_group, self, telegram_id)
+        await clear_cache(self.get_all, self)

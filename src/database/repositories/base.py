@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from logging import getLogger
 from typing import TypeVar
 
@@ -10,39 +9,7 @@ from sqlalchemy.orm import joinedload
 T = TypeVar('T')
 
 
-# Todo: Спросить у MrRiten
-class AbstractRepository(ABC):
-
-    @abstractmethod
-    async def create(self, **kwargs):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get(self, **kwargs):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_with_option(self, option: str, **kwargs):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_all(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def update(self, instance):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def delete(self, **kwargs):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def exists(self, **kwargs):
-        raise NotImplementedError
-
-
-class BaseRepositoryAlchemy[T](AbstractRepository):
+class BaseRepositoryAlchemy[T]:
     def __init__(self, session: AsyncSession, model: type[T]):
         self.logger = getLogger(__name__)
         self.session = session
@@ -85,7 +52,15 @@ class BaseRepositoryAlchemy[T](AbstractRepository):
         return query.scalars().all()
 
     async def update(self, instance: T):
-        # Создаёт новую запись если не существует
+        instance_id = getattr(instance, "id", None)
+        is_exist = await BaseRepositoryAlchemy.exists(self, id=instance_id)
+        if not is_exist:
+            self.logger.debug(
+                "Instance with id "
+                f"{instance_id} not exist for update"
+            )
+            return
+
         await self.session.merge(instance)
         await self._handle_commit()
 
@@ -101,11 +76,7 @@ class BaseRepositoryAlchemy[T](AbstractRepository):
         await self._handle_commit()
 
     async def exists(self, **kwargs) -> bool:
-        query = await self.session.execute(
-            select(self.model)
-            .filter_by(**kwargs)
-        )
-        return query.scalar_one_or_none() is not None
+        return await BaseRepositoryAlchemy.get(self, **kwargs) is not None
 
     async def _handle_commit(self) -> bool:
         try:

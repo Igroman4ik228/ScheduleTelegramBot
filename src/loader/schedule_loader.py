@@ -3,13 +3,13 @@ import json
 from database.db import sessionmaker
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.groups import GroupModel
-from database.repositories.users import GroupRepository
+from database.repository import Repository
 
 
 # Асинхронная функция для получения group_id
 async def get_group_id(group_name: str):
     async with sessionmaker() as session:
-        group: GroupModel = await GroupRepository(session).get_by_name(group_name)
+        group: GroupModel = await Repository(session).groups.get_by_name(group_name)
     return group.id
 
 

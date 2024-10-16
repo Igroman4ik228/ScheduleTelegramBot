@@ -2,10 +2,8 @@ from injector import inject
 
 from background_service_pack.models import BackgroundService
 from config import settings
-from database.cache import Cache
 from database.db import sessionmaker, with_session_self
-from database.repositories.groups import GroupRepository
-from database.repositories.result_schedule import ResultScheduleRepository
+from database.repository import Repository
 from observer_pack.models import Publisher
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
@@ -65,23 +63,21 @@ class ParserService(BackgroundService, Publisher):
 
     @with_session_self
     async def _save_schedule_to_db(self, session, result_schedule: dict[str, str]):
-        result_schedule_rep = ResultScheduleRepository(session)
+        result_schedule_rep = Repository(session).result_schedule
 
         for group, schedule in result_schedule.items():
-            Cache().schedule.create(Week().weekday, group, schedule)
-
             await result_schedule_rep.delete_by_group_name(Week().weekday, group)
 
             await result_schedule_rep.create_by_group_name(Week().weekday, schedule, group)
 
     async def _check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
-        # Проверка, изменилось ли расписание
         async with sessionmaker() as session:
-            group = await GroupRepository(session).get_by_name(group_name)
+            group = await Repository(session).groups.get_by_name(group_name)
             if group is None:
                 return False
 
-            result_schedule = await ResultScheduleRepository(session).get(Week().weekday, group.id)
+            result_schedule = await Repository(session).result_schedule.get(Week().weekday,
+                                                                            group.id)
 
         if result_schedule is None or result_schedule.data_lessons != current_result_schedule:
             return True

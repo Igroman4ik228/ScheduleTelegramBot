@@ -6,6 +6,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from bot.handlers import register_routers
 from bot.middlewares import register_middlewares
+from database.redis.base import redis_client
 
 
 class BotManager:
@@ -13,7 +14,7 @@ class BotManager:
         self.logger = getLogger(__name__)
         self.bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
         self.dp = Dispatcher(
-            storage=RedisStorage.from_url("redis://localhost:6379/0")
+            storage=RedisStorage(redis_client)
         )
 
     async def start(self):

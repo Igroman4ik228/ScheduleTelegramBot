@@ -2,7 +2,7 @@ from logging import getLogger
 
 from database.db import sessionmaker
 from database.models.users import UserModel
-from database.repositories.users import UserRepository
+from database.repository import Repository
 from services.sender_service.filter_enum import FilterAction
 
 
@@ -18,7 +18,7 @@ class UserFilter:
 
     async def get_users(self) -> list[UserModel]:
         async with sessionmaker() as session:
-            user_repository = UserRepository(session)
+            user_repository = Repository(session).users
 
             if self._filter == None:
                 self.logger.warning("Can`t get Users: Filter is None")

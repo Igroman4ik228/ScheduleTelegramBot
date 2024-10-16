@@ -5,14 +5,12 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
 from bot.keyboards.inline.profile_kb import get_profile_kb
-from database.cache import Cache
 from database.models.groups import GroupModel
 from database.models.users import UserModel
-from database.redis.base import create_redis
+from database.redis.profile_cache import ProfileCache
 
 user_locks = {}
 router = Router(name=__name__)
-redis = create_redis()
 
 
 @router.message(F.text.lower().contains("профиль"))
@@ -26,7 +24,7 @@ async def handle_profile(message: Message, bot: Bot,
         sent_message = await message.answer(answer_text,
                                             reply_markup=get_profile_kb())
 
-        Cache(redis).profile.create(message.from_user.id,
+        await ProfileCache().create(message.from_user.id,
                                     sent_message.message_id,
                                     message.message_id)
 
@@ -43,7 +41,7 @@ def get_profile_text(user: UserModel) -> str:
 
 
 async def delete_profile_messages(bot: Bot, user_id: int, chat_id: int):
-    profile_ids = Cache(redis).profile.get(user_id)
+    profile_ids = await ProfileCache().get(user_id)
     if profile_ids is not None:
         setting_message_id, user_settings_message_id = profile_ids
         try:

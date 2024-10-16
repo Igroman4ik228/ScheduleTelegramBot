@@ -3,35 +3,25 @@ from aiogram.types import Message
 
 import utils.constants as const
 from bot.keyboards.reply.main_kb import get_main_kb
-from database.cache import Cache
-from database.models.groups import GroupModel
 from database.models.users import UserModel
-from database.redis.base import create_redis
 from database.repository import Repository
 from services.parser_service.week import Week
 
 router = Router(name=__name__)
-redis = create_redis()
 
 
 @router.message(F.text.lower().contains("расписание"))
 async def handle_schedule(message: Message,
                           user: UserModel, repository: Repository):
-    group: GroupModel = user.group
+    result_schedule_data = await repository.result_schedule.get(Week().weekday,
+                                                                user.group_id)
 
-    result_schedule = Cache(redis).schedule.get(Week().weekday,
-                                                group.name)
-    if result_schedule is None:
-        result_schedule_data = await repository.result_schedule.get(Week().weekday,
-                                                                    user.group_id)
-        if result_schedule_data is not None:
-            result_schedule = result_schedule_data.data_lessons
-
-    if result_schedule is None:
+    if result_schedule_data is None:
         await message.answer(const.NO_SCHEDULE_TEXT,
                              reply_markup=get_main_kb(message.from_user.id))
         return
 
+    result_schedule = result_schedule_data.data_lessons
     await message.answer(result_schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 

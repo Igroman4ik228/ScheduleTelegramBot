@@ -3,8 +3,7 @@ from logging import getLogger
 
 from bot.bot import BotManager
 from database.db import with_session_self
-from database.repositories.result_schedule import ResultScheduleRepository
-from database.repositories.users import UserRepository
+from database.repository import Repository
 from observer_pack.models import Observer
 from services.parser_service.week import Week
 
@@ -18,10 +17,10 @@ class NotifyService(Observer):
     async def update(self, session):
         self.logger.info("Start NotifyService")
 
-        users = await UserRepository(session).get_all()
+        users = await Repository(session).users.get_all()
         for user in users:
-            result_schedule = await ResultScheduleRepository(session).get(Week().weekday,
-                                                                          group_id=user.group_id)
+            result_schedule = await Repository(session).result_schedule.get(Week().weekday,
+                                                                            group_id=user.group_id)
             await asyncio.sleep(0.05)
             if result_schedule is not None:
                 if user.is_ban:

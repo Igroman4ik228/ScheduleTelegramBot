@@ -6,7 +6,6 @@ from bot.keyboards.inline.department_kb import get_department_kb
 from bot.keyboards.inline.group_kb import get_group_kb
 from bot.keyboards.reply.main_kb import get_main_kb
 from database.models.users import UserModel
-from database.repositories.departments import DepartmentRepository
 from database.repository import Repository
 from utils.constants import CallbackData
 
@@ -15,8 +14,8 @@ router = Router(name=__name__)
 
 @router.message(~GroupFilter())
 async def handle_check_group(message: Message,
-                             department_rep: DepartmentRepository):
-    departments = await department_rep.get_all()
+                             repository: Repository):
+    departments = await repository.departments.get_all()
     await message.answer("Выберите отделение пожалуйста",
                          reply_markup=await get_department_kb(departments))
 

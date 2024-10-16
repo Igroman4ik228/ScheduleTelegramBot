@@ -2,7 +2,7 @@ from aiogram.filters import Filter
 from aiogram.types import Message
 
 from database.db import sessionmaker
-from database.repositories.users import UserRepository
+from database.repository import Repository
 
 
 class GroupFilter(Filter):
@@ -16,7 +16,7 @@ class GroupFilter(Filter):
 
 async def has_group(user_id: int) -> bool:
     async with sessionmaker() as session:
-        user = await UserRepository(session).get(user_id)
+        user = await Repository(session).users.get(user_id)
         if user is None:
             return False
         if user.group_id is None:

@@ -3,7 +3,7 @@ from database.redis.base import BaseCache
 
 class ProfileCache(BaseCache):
 
-    def create(
+    async def create(
         self,
         user_id: int,
         bot_message_id: int,
@@ -14,14 +14,14 @@ class ProfileCache(BaseCache):
         in redis cache under the key "user:profile".
         """
         profile_string = f"{bot_message_id}|{user_message_id}"
-        super().hcreate("user:profile", user_id, profile_string)
+        await super().hcreate("user:profile", user_id, profile_string)
 
-    def get(self, user_id: int):
+    async def get(self, user_id: int):
         """
         Returns:
             (bot message id, user message id) or None if user id is not found
         """
-        profile_string = super().hget("user:profile", user_id)
+        profile_string = await super().hget("user:profile", user_id)
         if profile_string is None:
             return None
 

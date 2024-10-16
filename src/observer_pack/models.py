@@ -25,8 +25,6 @@ class Publisher(ABC):
         self.services.remove(observer)
 
     async def notify(self) -> None:
-        self.logger.info("Start of notify")
         if self.is_update:
             await asyncio.gather(*(service.update() for service in self.services))
-            self.logger.info("End of notify")
             self.is_update = False

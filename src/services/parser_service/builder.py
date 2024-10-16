@@ -1,7 +1,7 @@
 from logging import getLogger
 
 from database.db import sessionmaker
-from database.repositories.default_schedule import DefaultScheduleRepository
+from database.repository import Repository
 from services.parser_service.formatter import ScheduleFormatter
 from services.parser_service.lesson import Lesson
 
@@ -39,7 +39,7 @@ class Builder:
     # TODO: finish it later
     async def _get_default_schedule(self) -> dict[str, list[Lesson]]:
         async with sessionmaker() as session:
-            default_schedule_rep = DefaultScheduleRepository(session)
+            default_schedule_rep = Repository(session).default_schedule
             default_schedule_data = await default_schedule_rep.get_all()
 
         if default_schedule_data is None:
