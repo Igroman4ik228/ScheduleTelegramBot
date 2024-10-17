@@ -34,7 +34,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
-            self.logger.warning(
+            self.logger.debug(
                 f"Group {group_name} not found for create"
             )
             return
@@ -62,7 +62,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
-            self.logger.warning(f"Group {group_name} not found for get")
+            self.logger.debug(f"Group {group_name} not found for get")
             return
 
         return await super().get(weekday=weekday,
@@ -87,7 +87,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     ):
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
-            self.logger.warning(f"Group {group_name} not found for delete")
+            self.logger.debug(f"Group {group_name} not found for delete")
             return
 
         await super().delete(weekday=weekday,

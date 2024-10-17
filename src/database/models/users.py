@@ -19,6 +19,9 @@ class UserModel(Base):
     group_id: Mapped[int | None] = mapped_column(
         ForeignKey("Groups.id", ondelete="CASCADE")
     )
+    subscribe_id: Mapped[int | None] = mapped_column(
+        ForeignKey("Subscribes.id", ondelete="CASCADE")
+    )
 
     is_bot: Mapped[bool_false]
     is_time_shown: Mapped[bool_true]
@@ -27,6 +30,9 @@ class UserModel(Base):
     is_premium: Mapped[bool_false]
 
     group: Mapped["GroupModel"] = relationship(
+        back_populates="users"
+    )
+    subscribe: Mapped["SubscribeModel"] = relationship(
         back_populates="users"
     )
 

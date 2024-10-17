@@ -4,7 +4,6 @@ from aiogram.types import CallbackQuery
 from bot.keyboards.inline.setting_kb import (get_notification_text,
                                              get_setting_kb, get_time_text)
 from database.models.users import UserModel
-from database.redis.repositories import clear_cache
 from database.repository import Repository
 from utils.constants import CallbackData
 

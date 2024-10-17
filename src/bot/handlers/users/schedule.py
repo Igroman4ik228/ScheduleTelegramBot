@@ -5,6 +5,7 @@ import utils.constants as const
 from bot.keyboards.reply.main_kb import get_main_kb
 from database.models.users import UserModel
 from database.repository import Repository
+from services.parser_service.formatter import ScheduleFormatter
 from services.parser_service.week import Week
 
 router = Router(name=__name__)
@@ -22,6 +23,10 @@ async def handle_schedule(message: Message,
         return
 
     result_schedule = result_schedule_data.data_lessons
+    if user.is_time_shown:
+        result_schedule = ScheduleFormatter.add_time_to_schedule(
+            result_schedule
+        )
     await message.answer(result_schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 
@@ -39,6 +44,10 @@ async def handle_previous_schedule(message: Message,
         return
 
     result_schedule = result_schedule.data_lessons
+    if user.is_time_shown:
+        result_schedule = ScheduleFormatter.add_time_to_schedule(
+            result_schedule
+        )
     await message.answer(result_schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 
@@ -56,6 +65,10 @@ async def handle_next_schedule(message: Message,
         return
 
     result_schedule = result_schedule.data_lessons
+    if user.is_time_shown:
+        result_schedule = ScheduleFormatter.add_time_to_schedule(
+            result_schedule
+        )
     await message.answer(result_schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 

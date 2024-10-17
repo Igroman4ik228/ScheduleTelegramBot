@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import time as dt_time
 
-from utils import constants
+from utils.constants import END_LESSONS_TIME, START_LESSONS_TIME
 
 
 @dataclass
@@ -36,16 +36,34 @@ class Lesson:
         )
 
     @staticmethod
-    def get_lesson_number_by_time(time: dt_time) -> int:
+    def get_lesson_number(time: dt_time) -> int:
         lesson_times: list[dt_time] = []
-        for lesson_time in constants.START_LESSONS_TIME:
+        for lesson_time in START_LESSONS_TIME:
             lesson_times.append(lesson_time)
 
         for i, lesson_time in enumerate(lesson_times):
             if time <= lesson_time:
                 return i
 
-        return len(constants.START_LESSONS_TIME)
+        return len(START_LESSONS_TIME)
+
+    @staticmethod
+    def get_start_time(lesson_number: int) -> dt_time:
+        if lesson_number >= len(START_LESSONS_TIME):
+            raise ValueError("Lesson number is out of range")
+        return START_LESSONS_TIME[lesson_number]
+
+    @staticmethod
+    def get_end_time(lesson_number: int) -> dt_time:
+        if lesson_number >= len(END_LESSONS_TIME):
+            raise ValueError("Lesson number is out of range")
+        return END_LESSONS_TIME[lesson_number]
+
+    @staticmethod
+    def get_full_time(lesson_number: int) -> str:
+        start = Lesson.get_start_time(lesson_number).strftime("%H:%M")
+        end = Lesson.get_end_time(lesson_number).strftime("%H:%M")
+        return f"{start} - {end}"
 
     def __str__(self) -> str:
         return f"{self.number} {self.time} {self.subject} {self.classroom} {self.is_replacement}"

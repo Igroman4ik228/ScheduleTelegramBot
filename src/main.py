@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime
 from logging.config import dictConfig
 
 from injector import Injector, Module, provider, singleton
@@ -8,8 +9,9 @@ from background_service_pack.builder import BackgroundBuilder
 from background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from config import Settings, settings
-from database.db import engine
+from database.db import engine, sessionmaker
 from database.redis.base import redis_client
+from database.repository import Repository
 from services.ad_service.ad_sender import AdService
 from services.notify_service.notify import NotifyService
 from services.parser_service.service import ParserService

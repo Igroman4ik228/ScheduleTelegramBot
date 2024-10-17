@@ -20,7 +20,7 @@ async def set_redis_value(
     value: bytes | str,
     ttl: int | timedelta | None = None,
     is_transaction: bool = False
-) -> None:
+):
     """Сохранение значения в Redis с возможностью задания TTL."""
     async with redis_client.pipeline(transaction=is_transaction) as pipeline:
         await pipeline.set(key, value)
@@ -73,7 +73,7 @@ async def clear_cache(
     instance: Any,
     *args: Any,
     **kwargs: Any,
-) -> None:
+):
     """Очистка кэша для конкретного метода и аргументов."""
     namespace: str = kwargs.get("namespace", "repo_cache")
     key = build_key_from_repo(instance, *args, **kwargs)

@@ -4,8 +4,8 @@ from aiogram.types import Message
 from database.models.users import UserModel
 
 
-class GroupFilter(Filter):
+class SubscribeFilter(Filter):
 
     async def __call__(self, message: Message, **data) -> bool:
         user: UserModel = data.get("user")
-        return user.group_id is not None
+        return user.subscribe_id is not None

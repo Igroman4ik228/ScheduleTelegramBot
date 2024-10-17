@@ -13,8 +13,7 @@ router = Router(name=__name__)
 
 
 @router.message(~GroupFilter())
-async def handle_check_group(message: Message,
-                             repository: Repository):
+async def handle_check_group(message: Message, repository: Repository):
     departments = await repository.departments.get_all()
     await message.answer("Выберите отделение пожалуйста",
                          reply_markup=await get_department_kb(departments))

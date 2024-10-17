@@ -2,8 +2,7 @@ from logging import getLogger
 
 from services.parser_service.lesson import Lesson
 from services.parser_service.week import Week
-from utils.constants import (DAY_NAME_CASES, END_LESSONS_TIME,
-                             START_LESSONS_TIME)
+from utils.constants import DAY_NAME_CASES
 
 
 class ScheduleFormatter:
@@ -56,14 +55,23 @@ class ScheduleFormatter:
 
     @staticmethod
     def add_time_to_schedule(schedule: str) -> str:
-        for lesson in schedule.split('\n')[1:]:
-            if lesson == '':
+        result_lessons: list[str] = []
+
+        splited_schedule = schedule.split('\n')
+        lessons = splited_schedule[1:]
+        for lesson in lessons:
+            if not lesson or not lesson[0].isdigit():
+                result_lesson = lesson
                 continue
-            lesson_number = lesson[0]
-            start_time = START_LESSONS_TIME[lesson_number]
-            end_time = END_LESSONS_TIME[lesson_number]
-            time = f"{start_time} - {end_time}"
 
-            lesson += f"{time}"
+            lesson_number = int(lesson[0])
 
-        return schedule
+            full_time = Lesson.get_full_time(lesson_number)
+            result_lesson = f"{lesson} {full_time}"
+
+            result_lessons.append(result_lesson)
+
+        header_schedule = splited_schedule[0]
+
+        result_lessons_str = '\n'.join(result_lessons)
+        return f"{header_schedule}\n{result_lessons_str}"

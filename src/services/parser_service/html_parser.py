@@ -142,7 +142,7 @@ class HtmlParser:
         """Парсинг времени в формате HH.MM"""
         hour_str, minute_str = lesson_numbers_string.split('.')
         time = dt_time(int(hour_str), int(minute_str))
-        lesson_number = Lesson.get_lesson_number_by_time(time)
+        lesson_number = Lesson.get_lesson_number(time)
         return [lesson_number], time
 
     def _parse_default_numbers(self) -> list[int]:

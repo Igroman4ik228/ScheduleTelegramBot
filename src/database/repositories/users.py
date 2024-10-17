@@ -26,7 +26,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         if group_name:
             group = await self.group_repo.get_by_name(group_name)
             if group is None:
-                self.logger.warning(
+                self.logger.debug(
                     f"Group {group_name} not found for create"
                 )
                 return
@@ -48,19 +48,17 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
     async def get_with_group(self, telegram_id: int) -> UserModel | None:
         return await super().get_with_option("group", telegram_id=telegram_id)
 
-    @cached(ttl=60*3)
     async def get_all(self, **kwargs) -> list[UserModel]:
         return await super().get_all(**kwargs)
 
     async def update(self, instance: UserModel):
         await super().update(instance)
-        self._clear_user_cache(instance.telegram_id)
+        await self._clear_user_cache(instance.telegram_id)
 
     async def delete(self, telegram_id: int):
         await super().delete(telegram_id=telegram_id)
-        self._clear_user_cache(telegram_id)
+        await self._clear_user_cache(telegram_id)
 
-    async def _clear_user_cache(self, telegram_id: int):
+    async def _clear_user_cache(self, telegram_id):
         await clear_cache(self.get, self, telegram_id)
         await clear_cache(self.get_with_group, self, telegram_id)
-        await clear_cache(self.get_all, self)

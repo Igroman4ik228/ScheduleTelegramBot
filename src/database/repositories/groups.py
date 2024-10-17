@@ -16,8 +16,8 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     async def create(self, name: str, department_name: str) -> GroupModel | None:
         department = await self.department_repo.get(department_name)
         if department is None:
-            self.logger.warning("Department with name "
-                                f"'{department_name}' not found")
+            self.logger.debug("Department with name "
+                              f"'{department_name}' not found")
             return
 
         return await super().create(name=name,
