@@ -16,16 +16,19 @@ class NotifyService(Observer):
     @with_session_self
     async def update(self, session):
         self.logger.info("Start NotifyService")
-
-        users = await Repository(session).users.get_all()
+        repo = Repository(session)
+        users = await repo.users.get_all()
         for user in users:
-            result_schedule = await Repository(session).result_schedule.get(Week().weekday,
-                                                                            group_id=user.group_id)
+            if user.is_ban or not user.is_notify or user.subscribe_id is None:
+                continue
+
+            result_schedule = await repo.result_schedule.get(Week().weekday,
+                                                             group_id=user.group_id)
+            if result_schedule is None:
+                continue
+
             await asyncio.sleep(0.05)
-            if result_schedule is not None:
-                if user.is_ban:
-                    continue
-                try:
-                    await self.bot.send_message(user.telegram_id, result_schedule.data_lessons)
-                except Exception:
-                    pass
+            try:
+                await self.bot.send_message(user.telegram_id, result_schedule.data_lessons)
+            except Exception:
+                pass

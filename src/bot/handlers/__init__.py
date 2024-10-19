@@ -16,7 +16,7 @@ def register_routers(dp: Dispatcher) -> None:
     dp.include_routers(
         start.router,
         group.router,
-        # subscribe.router,
+        subscribe.router,
         profile.router,
         setting.router,
         schedule.router,

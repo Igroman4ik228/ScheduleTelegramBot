@@ -17,17 +17,11 @@ class ScheduleFormatter:
         return self.format_header() + self.format_lessons()
 
     def format_header(self) -> str:
-        formatted_schedule = "Расписание на "
-
         weekday_name = Week().get_weekday_name()
         weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
-        formatted_schedule += f"{weekday_name} "
-
         shift = Week().get_shift_name()
-        formatted_schedule += f"({shift}):"
-        formatted_schedule += "\n"
 
-        return formatted_schedule
+        return f"Расписание на {weekday_name} ({shift}):\n"
 
     def format_lessons(self) -> str:
         formatted_lessons = ""
@@ -57,8 +51,8 @@ class ScheduleFormatter:
     def add_time_to_schedule(schedule: str) -> str:
         result_lessons: list[str] = []
 
-        splited_schedule = schedule.split('\n')
-        lessons = splited_schedule[1:]
+        lines = schedule.split('\n')
+        lessons = lines[1:]
         for lesson in lessons:
             if not lesson or not lesson[0].isdigit():
                 result_lesson = lesson
@@ -71,7 +65,7 @@ class ScheduleFormatter:
 
             result_lessons.append(result_lesson)
 
-        header_schedule = splited_schedule[0]
-
+        header_schedule = lines[0]
         result_lessons_str = '\n'.join(result_lessons)
+
         return f"{header_schedule}\n{result_lessons_str}"

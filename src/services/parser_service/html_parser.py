@@ -1,6 +1,6 @@
 from datetime import time as dt_time
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 import utils.constants as const
 from services.parser_service.lesson import Lesson
@@ -13,7 +13,7 @@ class HtmlParser:
         self.soup = BeautifulSoup(html_content, 'lxml')
 
     @property
-    def table(self) -> BeautifulSoup:
+    def table(self) -> Tag:
         """Получение таблицы"""
         table = self.soup.find('table')
         if table is None:
@@ -21,7 +21,7 @@ class HtmlParser:
         return table
 
     @property
-    def table_rows(self) -> list[BeautifulSoup]:
+    def table_rows(self) -> list[Tag]:
         """Получение строк таблицы (пропускаем заголовок)"""
         rows = self.table.find_all('tr')[1:]
         if not rows:
@@ -29,7 +29,7 @@ class HtmlParser:
         return rows
 
     @property
-    def div_elements(self) -> list[BeautifulSoup]:
+    def div_elements(self) -> list[Tag]:
         """Получение всех div элементов"""
         return self.soup.find_all('div')
 
@@ -74,7 +74,7 @@ class HtmlParser:
 
         return replacement_schedule
 
-    def get_cells(self, row: BeautifulSoup) -> list[BeautifulSoup]:
+    def get_cells(self, row: Tag) -> list[Tag]:
         """Получение ячеек строки таблицы"""
         cells = row.find_all('td')
         if not cells:
@@ -92,7 +92,7 @@ class HtmlParser:
 
         return split_text[word_index]
 
-    def _parse_replacement_lessons(self, cells: list[BeautifulSoup]) -> list[Lesson]:
+    def _parse_replacement_lessons(self, cells: list[Tag]) -> list[Lesson]:
         """Парсинг заменяемых уроков"""
         lesson_numbers, time = self._get_lesson_numbers(cells[2].text.strip())
         subject = cells[4].text.strip()
@@ -107,13 +107,16 @@ class HtmlParser:
 
         return replacement_lessons
 
-    def _parse_group(self, cells: list[BeautifulSoup]) -> str | None:
+    def _parse_group(self, cells: list[Tag]) -> str | None:
         """Парсинг группы"""
         group = cells[1].text.strip().upper()
         return group if group else None
 
     def _get_lesson_numbers(self, lesson_numbers: str) -> tuple[list[int], dt_time | None]:
         """Получение номеров уроков и времени"""
+        if lesson_numbers == "":
+            return self._parse_default_numbers(), None
+
         if ',' in lesson_numbers:
             return self._parse_comma_separated(lesson_numbers), None
         if '-' in lesson_numbers:
@@ -122,8 +125,6 @@ class HtmlParser:
             return self._parse_time_format(lesson_numbers)
         if lesson_numbers.isdigit():
             return [int(lesson_numbers)], None
-        if lesson_numbers == "":
-            return self._parse_default_numbers(), None
 
         raise ValueError(
             f"Неправильный формат номера замены: {lesson_numbers}"

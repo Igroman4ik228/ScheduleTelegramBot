@@ -72,12 +72,13 @@ class ParserService(BackgroundService, Publisher):
 
     async def _check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
         async with sessionmaker() as session:
-            group = await Repository(session).groups.get_by_name(group_name)
+            repo = Repository(session)
+            group = await repo.groups.get_by_name(group_name)
             if group is None:
                 return False
 
-            result_schedule = await Repository(session).result_schedule.get(Week().weekday,
-                                                                            group.id)
+            result_schedule = await repo.result_schedule.get(Week().weekday,
+                                                             group.id)
 
         if result_schedule is None or result_schedule.data_lessons != current_result_schedule:
             return True

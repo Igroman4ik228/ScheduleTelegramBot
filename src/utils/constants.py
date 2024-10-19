@@ -19,6 +19,7 @@ class CallbackData(StrEnum):
     CLEAR_LOG = "ClearLog"
     BAN_UNBAN = "Ban/Unban"
     WRITE_LIST_USERS = "WriteListUsers"
+    SUBSCRIBE = "Subscribe"
 
 
 # Strings

@@ -10,7 +10,7 @@ def get_profile_kb() -> InlineKeyboardMarkup:
         [InlineKeyboardButton(text="Настройки",
                               callback_data=CallbackData.SETTING.value),
          InlineKeyboardButton(text="Подписка",
-                              callback_data="Подписка")],
+                              callback_data=CallbackData.SUBSCRIBE.value)],
 
     ]
 
