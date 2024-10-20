@@ -18,4 +18,4 @@ async def handle_start(message: Message,
 
     departments = await repository.departments.get_all()
     await message.answer("Выберите отделение",
-                         reply_markup=await get_department_kb(departments))
+                         reply_markup=get_department_kb(departments))

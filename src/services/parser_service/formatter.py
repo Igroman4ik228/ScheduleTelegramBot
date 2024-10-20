@@ -21,7 +21,7 @@ class ScheduleFormatter:
         weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
         shift = Week().get_shift_name()
 
-        return f"Расписание на {weekday_name} ({shift}):\n"
+        return f"Расписание на <b>{weekday_name}</b> ({shift}):\n"
 
     def format_lessons(self) -> str:
         formatted_lessons = ""

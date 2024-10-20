@@ -16,7 +16,7 @@ router = Router(name=__name__)
 async def handle_check_group(message: Message, repository: Repository):
     departments = await repository.departments.get_all()
     await message.answer("Выберите отделение пожалуйста",
-                         reply_markup=await get_department_kb(departments))
+                         reply_markup=get_department_kb(departments))
 
 
 @router.callback_query(F.data == CallbackData.CHOOSE_DEPARTMENT.value)
@@ -24,7 +24,7 @@ async def handle_choose_department(callback_query: CallbackQuery,
                                    repository: Repository):
     departments = await repository.departments.get_all()
     await callback_query.message.answer("Выберите отделение пожалуйста",
-                                        reply_markup=await get_department_kb(departments))
+                                        reply_markup=get_department_kb(departments))
 
 
 @router.callback_query(F.data.contains("Department"))

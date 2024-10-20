@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from database.models.departments import DepartmentModel
 
 
-async def get_department_kb(departments: list[DepartmentModel]) -> InlineKeyboardMarkup:
+def get_department_kb(departments: list[DepartmentModel]) -> InlineKeyboardMarkup:
     department_builder = InlineKeyboardBuilder()
     for department in departments:
         department_builder.add(

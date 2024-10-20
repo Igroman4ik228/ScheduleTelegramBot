@@ -10,14 +10,15 @@ def register_routers(dp: Dispatcher) -> None:
     )
 
     # User routers
-    from bot.handlers.users import (group, profile, schedule, setting, start,
-                                    subscribe)
+    from bot.handlers.users import (default_schedule, group, profile, schedule,
+                                    setting, start, subscribe)
 
     dp.include_routers(
         start.router,
         group.router,
         subscribe.router,
         profile.router,
+        default_schedule.router,
         setting.router,
         schedule.router,
     )
