@@ -24,6 +24,7 @@ department_foreign_key = Annotated[int, mapped_column(
 
 str_128 = Annotated[str, 128]
 str_512 = Annotated[str, 512]
+str_1024 = Annotated[str, 1024]
 
 
 class Base(DeclarativeBase):
@@ -31,7 +32,8 @@ class Base(DeclarativeBase):
 
     type_annotation_map = {
         str_128: String(128),
-        str_512: String(512)
+        str_512: String(512),
+        str_1024: String(1024)
     }
 
     repr_cols_num: int = 4  # print first columns

@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Mapped, relationship
 
-from database.models.base import Base, group_foreign_key, str_512
+from database.models.base import Base, group_foreign_key, str_1024
 
 
 class ResultScheduleModel(Base):
     __tablename__ = 'ResultSchedule'
 
     weekday: Mapped[int]
-    data_lessons: Mapped[str_512]
+    data_lessons: Mapped[str_1024]
     group_id: Mapped[group_foreign_key]
 
     group: Mapped["GroupModel"] = relationship(

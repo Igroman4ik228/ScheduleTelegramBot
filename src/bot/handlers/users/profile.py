@@ -5,9 +5,9 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
 from bot.keyboards.inline.profile_kb import get_profile_kb
-from database.models.groups import GroupModel
 from database.models.users import UserModel
 from database.redis.profile_cache import ProfileCache
+from utils.different import get_info_text
 
 user_locks = {}
 router = Router(name=__name__)
@@ -20,24 +20,17 @@ async def handle_profile(message: Message, bot: Bot,
     async with user_locks[message.from_user.id]:
         await delete_profile_messages(bot, message.from_user.id, message.chat.id)
 
-        answer_text = get_profile_text(user)
-        sent_message = await message.answer(answer_text,
+        info_text = get_info_text(
+            user,
+            f"Профиль {html.quote(user.first_name)}"
+        )
+
+        sent_message = await message.answer(info_text,
                                             reply_markup=get_profile_kb())
 
         await ProfileCache().create(message.from_user.id,
                                     sent_message.message_id,
                                     message.message_id)
-
-
-def get_profile_text(user: UserModel) -> str:
-    group: GroupModel = user.group
-    answer_text = (
-        f"Профиль {html.quote(user.first_name)}\n"
-        f"Группа: {group.name}\n"
-        f"Отображение времени: {user.is_time_shown}\n"
-        f"Уведомления: {user.is_notify}"
-    )
-    return answer_text
 
 
 async def delete_profile_messages(bot: Bot, user_id: int, chat_id: int):

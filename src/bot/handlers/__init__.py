@@ -11,7 +11,7 @@ def register_routers(dp: Dispatcher) -> None:
 
     # User routers
     from bot.handlers.users import (default_schedule, group, profile, schedule,
-                                    setting, start, subscribe)
+                                    setting, start, subscribe, tech_support)
 
     dp.include_routers(
         start.router,
@@ -21,4 +21,5 @@ def register_routers(dp: Dispatcher) -> None:
         default_schedule.router,
         setting.router,
         schedule.router,
+        tech_support.router,
     )

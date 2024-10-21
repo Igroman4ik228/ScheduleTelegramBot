@@ -10,7 +10,8 @@ class GroupModel(Base):
     department_id: Mapped[department_foreign_key]
 
     department: Mapped["DepartmentModel"] = relationship(
-        back_populates="groups"
+        back_populates="groups",
+        lazy="subquery"
     )
 
     users: Mapped[list["UserModel"]] = relationship(

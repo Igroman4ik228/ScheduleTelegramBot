@@ -8,8 +8,8 @@ def get_main_kb(user_telegram_id: int):
         [KeyboardButton(text="🗓 Расписание")],
         [KeyboardButton(text="⬅️ Предыдущее"),
          KeyboardButton(text="Следующее ➡️"),],
-        [KeyboardButton(text="Профиль"),
-         KeyboardButton(text="Техподдержка")],
+        [KeyboardButton(text="👤 Профиль"),
+         KeyboardButton(text="Техподдержка 🛠")],
     ]
 
     if is_admin(user_telegram_id):

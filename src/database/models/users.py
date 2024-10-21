@@ -33,7 +33,8 @@ class UserModel(Base):
         back_populates="users"
     )
     subscribe: Mapped["SubscribeModel"] = relationship(
-        back_populates="users"
+        back_populates="users",
+        lazy="subquery"
     )
 
     created_at: Mapped[created_at]
