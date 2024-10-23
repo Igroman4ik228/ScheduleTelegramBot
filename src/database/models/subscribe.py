@@ -14,7 +14,7 @@ class SubscribeModel(Base):
     cost: Mapped[int]
 
     users: Mapped[list["UserModel"]] = relationship(
-        back_populates="subscribe"
+        back_populates="subscribe", lazy="selectin"
     )
 
     def __repr__(self):

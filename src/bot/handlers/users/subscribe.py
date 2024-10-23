@@ -1,5 +1,6 @@
-from aiogram import F, Router
-from aiogram.types import CallbackQuery, Message
+from aiogram import Bot, F, Router
+from aiogram.types import (CallbackQuery, ContentType, LabeledPrice, Message,
+                           PreCheckoutQuery)
 
 from bot.filters.subscribe import SubscribeFilter
 from bot.keyboards.inline.payment_kb import get_payment_kb
@@ -58,10 +59,24 @@ async def handle_choose_subscribe(callback_query: CallbackQuery, repository: Rep
 
 
 @router.callback_query(F.data.startswith("Payment:Yoomoney:"))
-async def handle_payment(callback_query: CallbackQuery):
-    cost = callback_query.data.split(":")[2]
-    await callback_query.message.answer(f"Оплата через ЮMoney: {cost}...")
+async def handle_payment(callback_query: CallbackQuery, bot: Bot):
+    await callback_query.message.answer("Оплата через ЮMoney: 30...")
+    await bot.send_invoice(chat_id=callback_query.from_user.id,
+                           title="Подписка на 1 месяц",
+                           description="Подписка на 1 месяц",
+                           payload="subscribe_30_days",
+                           provider_token="401643678:TEST:f70e61fb-e7b4-4692-8db2-6e164eb462a7",
+                           start_parameter="start",
+                           currency="RUB",
+                           prices=[LabeledPrice(label="Цена", amount=3000)])
 
 
-def update_subscribe():
-    pass
+@router.pre_checkout_query()
+async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
+    await pre_checkout_query.answer(ok=True)
+
+
+@router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
+async def handle_successful_payment(message: Message):
+    if message.successful_payment.invoice_payload == "subscribe_30_days":
+        await message.answer("Оплата прошла успешно!")

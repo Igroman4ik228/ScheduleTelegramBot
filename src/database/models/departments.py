@@ -9,7 +9,7 @@ class DepartmentModel(Base):
     name: Mapped[str_128] = mapped_column(unique=True)
 
     groups: Mapped[list["GroupModel"]] = relationship(
-        back_populates="department"
+        back_populates="department", lazy="selectin"
     )
 
     def __repr__(self):

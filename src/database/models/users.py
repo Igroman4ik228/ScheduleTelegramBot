@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +17,7 @@ class UserModel(Base):
         BigInteger,
         unique=True
     )
+    subscribe_end_time: Mapped[datetime | None]
 
     group_id: Mapped[int | None] = mapped_column(
         ForeignKey("Groups.id", ondelete="CASCADE")
@@ -30,11 +33,10 @@ class UserModel(Base):
     is_premium: Mapped[bool_false]
 
     group: Mapped["GroupModel"] = relationship(
-        back_populates="users"
+        back_populates="users", lazy="selectin"
     )
     subscribe: Mapped["SubscribeModel"] = relationship(
-        back_populates="users",
-        lazy="subquery"
+        back_populates="users", lazy="selectin"
     )
 
     created_at: Mapped[created_at]
