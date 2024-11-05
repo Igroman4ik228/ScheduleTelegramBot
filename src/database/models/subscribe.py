@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import Base, str_128, str_512
@@ -10,7 +8,7 @@ class SubscribeModel(Base):
 
     name: Mapped[str_128]
     description: Mapped[str_512] = mapped_column(nullable=True)
-    duration: Mapped[datetime]
+    duration_month: Mapped[int]
     cost: Mapped[int]
 
     users: Mapped[list["UserModel"]] = relationship(

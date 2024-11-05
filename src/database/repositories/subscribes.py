@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.subscribe import SubscribeModel
@@ -10,9 +8,13 @@ class SubscribeRepository(BaseRepositoryAlchemy[SubscribeModel]):
     def __init__(self, session: AsyncSession):
         super().__init__(session, SubscribeModel)
 
-    async def create(self, name: str, duration: datetime, cost: int, **kwargs) -> SubscribeModel | None:
+    async def create(self,
+                     name: str,
+                     duration_month: int,
+                     cost: int,
+                     **kwargs) -> SubscribeModel | None:
         return await super().create(name=name,
-                                    duration=duration,
+                                    duration_month=duration_month,
                                     cost=cost,
                                     **kwargs)
 

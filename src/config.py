@@ -13,6 +13,7 @@ class BotSettings(EnvBaseSettings):
     BOT_TOKEN: str
     RATE_LIMIT: int | float = 0.2  # for throttling control
     ADMIN_IDS: list[int] = []
+    PAYMENT_TOKEN: str
 
 
 class DBSettings(EnvBaseSettings):

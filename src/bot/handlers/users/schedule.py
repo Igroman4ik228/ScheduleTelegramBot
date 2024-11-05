@@ -49,7 +49,7 @@ async def handle_next_schedule(message: Message,
 
 def process_schedule(user: UserModel,
                      result_schedule_data: ResultScheduleModel | None) -> str:
-    if result_schedule_data is None:
+    if result_schedule_data is None or not result_schedule_data.data_lessons:
         return const.NO_SCHEDULE_TEXT
 
     result_schedule = result_schedule_data.data_lessons

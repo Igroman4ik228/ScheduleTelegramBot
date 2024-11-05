@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from config import settings
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
@@ -19,15 +21,19 @@ def is_admin(user_id: int) -> bool:
 def get_info_text(user: UserModel, header: str) -> str:
     group: GroupModel = user.group
     department: DepartmentModel = group.department
-    subscribe: SubscribeModel = user.subscribe
 
-    subscribe_name = (
-        f"(осталось 12 дн.)" if user.subscribe_id else 'отсутствует'
-    )
+    if user.subscribe_id or user.subscribe_end_time:
+        subscribe: SubscribeModel = user.subscribe
+        subscribe_name = f"{subscribe.name} "
+        end_time = user.subscribe_end_time.strftime('%d.%m.%Y')
+        subscribe_name += f"(действует до {end_time})"
+    else:
+        subscribe_name = "Подписка отсутствует"
+
     info_text = (
         f"<blockquote>{header}</blockquote>\n"
         f"Отделение: {department.name}\n"
         f"Группа: {group.name}\n"
-        f"Подписка: {subscribe_name}\n"
+        f"{subscribe_name}\n"
     )
     return info_text

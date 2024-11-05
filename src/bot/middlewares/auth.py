@@ -27,7 +27,7 @@ class AuthMiddleware(BaseMiddleware):
             data["user"] = existing_user
             return await handler(event, data)
 
-        await clear_cache(user_rep.get_with_group, self, user.id)
+        await clear_cache(user_rep.get_with_group, user_rep, user.id)
         new_user = await user_rep.create(
             first_name=user.first_name,
             user_name=user.username,
