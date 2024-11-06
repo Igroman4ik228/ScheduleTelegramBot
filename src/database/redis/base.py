@@ -1,11 +1,13 @@
 from redis.asyncio import Redis
 
+from config import settings
+
 
 def create_redis(
-    host: str = 'localhost',
-    port: int = 6379,
+    host: str = settings.REDIS_HOST,
+    port: int = settings.REDIS_PORT,
     db: int = 0,
-    password: str | None = None
+    password: str | None = settings.REDIS_PASS
 ) -> Redis:
     if password is not None:
         return Redis.from_url(f"redis://{host}:{password}{port}/{db}")

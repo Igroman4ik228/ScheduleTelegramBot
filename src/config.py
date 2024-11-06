@@ -46,7 +46,7 @@ class LoggerSettings(EnvBaseSettings):
             with open(file_path, encoding="utf-8") as file:
                 log_config = load(file)
         except FileNotFoundError:
-            log_config = {}
+            log_config = {'version': 1}
         return log_config
 
 

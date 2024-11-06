@@ -3,7 +3,8 @@
 
 # exclusion
 !/src/
-
+!/logs/
 !/alembic.ini
-!/poetry.lock
-!/pyproject.toml
+!/.env
+!/test.html
+!/requirements.txt
