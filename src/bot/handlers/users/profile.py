@@ -7,7 +7,7 @@ from aiogram.types import Message
 from bot.keyboards.inline.profile_kb import get_profile_kb
 from database.models.users import UserModel
 from database.redis.profile_cache import ProfileCache
-from utils.different import get_info_text
+from services.formatter_service.message import format_info
 
 user_locks = {}
 router = Router(name=__name__)
@@ -20,7 +20,7 @@ async def handle_profile(message: Message, bot: Bot,
     async with user_locks[message.from_user.id]:
         await delete_profile_messages(bot, message.from_user.id, message.chat.id)
 
-        info_text = get_info_text(
+        info_text = format_info(
             user,
             f"Профиль {html.quote(user.first_name)}"
         )

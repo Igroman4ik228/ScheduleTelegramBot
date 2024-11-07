@@ -4,8 +4,8 @@ from functools import wraps
 from sqlalchemy.ext.asyncio import (AsyncEngine, async_sessionmaker,
                                     create_async_engine)
 
-from config import settings
 from database.models.base import Base
+from utils.config import settings
 
 
 async def create_tables(cur_engine: AsyncEngine) -> None:

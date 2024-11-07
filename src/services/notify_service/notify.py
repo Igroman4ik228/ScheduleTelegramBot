@@ -1,12 +1,12 @@
 import asyncio
 from logging import getLogger
 
+from app.observer_pack.models import Observer
 from bot.bot import BotManager
 from bot.handlers.users.schedule import process_schedule
 from database.db import with_session_self
 from database.models.users import UserModel
 from database.repository import Repository
-from observer_pack.models import Observer
 from services.parser_service.week import Week
 
 
