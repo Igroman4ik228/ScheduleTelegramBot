@@ -6,7 +6,7 @@ from bot.keyboards.reply.main_kb import get_main_kb
 from database.models.result_schedule import ResultScheduleModel
 from database.models.users import UserModel
 from database.repository import Repository
-from services.parser_service.formatter import add_time_to_schedule
+from services.formatter_service.schedule import ScheduleFormatter
 from services.parser_service.week import Week
 
 router = Router(name=__name__)
@@ -54,7 +54,9 @@ def process_schedule(user: UserModel,
 
     result_schedule = result_schedule_data.data_lessons
     if user.is_time_shown:
-        result_schedule = add_time_to_schedule(result_schedule)
+        result_schedule = ScheduleFormatter.add_time_to_schedule(
+            result_schedule
+        )
 
     return result_schedule
 

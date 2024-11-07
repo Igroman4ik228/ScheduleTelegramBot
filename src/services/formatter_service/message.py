@@ -2,6 +2,7 @@ from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
 from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
+from helpers.html import add_html_tag
 
 
 def format_info(user: UserModel, header: str) -> str:
@@ -23,3 +24,7 @@ def format_info(user: UserModel, header: str) -> str:
         f"{subscribe_name}\n"
     )
     return info_text
+
+
+def format_header(text: str):
+    return add_html_tag(text, "blockquote") + "\n"

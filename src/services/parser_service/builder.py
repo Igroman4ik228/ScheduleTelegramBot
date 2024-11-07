@@ -2,7 +2,7 @@ from logging import getLogger
 
 from database.db import sessionmaker
 from database.repository import Repository
-from services.parser_service.formatter import ScheduleFormatter
+from services.formatter_service.schedule import ScheduleFormatter
 from services.parser_service.lesson import Lesson
 
 

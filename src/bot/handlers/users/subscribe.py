@@ -10,7 +10,7 @@ from bot.keyboards.inline.payment_kb import get_payment_kb
 from bot.keyboards.inline.subscribe_kb import get_subscribe_kb
 from database.models.users import UserModel
 from database.repository import Repository
-from services.parser_service.formatter import add_html_tag
+from helpers.html import add_html_tag
 from utils.config import settings
 from utils.constants import CallbackData
 

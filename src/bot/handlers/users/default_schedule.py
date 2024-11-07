@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, Message
 from bot.keyboards.inline.default_schedule_kb import get_default_schedule_kb
 from database.models.users import UserModel
 from database.repository import Repository
-from services.parser_service.formatter import ScheduleFormatter, add_html_tag
+from services.formatter_service.schedule import ScheduleFormatter
 from utils.constants import CallbackData
 
 router = Router(name=__name__)
