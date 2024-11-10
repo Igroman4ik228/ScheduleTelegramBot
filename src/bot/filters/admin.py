@@ -1,7 +1,7 @@
 from aiogram.filters import Filter
 from aiogram.types import Message
 
-from utils.different import is_admin
+from helpers.user_validate import is_admin
 
 
 class AdminFilter(Filter):

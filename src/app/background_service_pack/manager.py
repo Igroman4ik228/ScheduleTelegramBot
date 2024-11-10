@@ -1,6 +1,6 @@
 import asyncio
 
-from background_service_pack.models import BackgroundService
+from app.background_service_pack.models import BackgroundService
 
 
 class BackgroundManager:

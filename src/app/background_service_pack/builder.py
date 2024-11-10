@@ -1,6 +1,6 @@
 from email.parser import Parser
 
-from background_service_pack.models import BackgroundService
+from app.background_service_pack.models import BackgroundService
 
 
 class BackgroundBuilder:

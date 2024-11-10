@@ -3,9 +3,9 @@ from datetime import time as dt_time
 from bs4 import BeautifulSoup, Tag
 
 import utils.constants as const
+from helpers.algorithm import get_key
 from services.parser_service.lesson import Lesson
 from services.parser_service.week import Week
-from utils.different import get_key
 
 
 class HtmlParser:

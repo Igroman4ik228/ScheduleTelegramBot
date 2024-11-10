@@ -1,6 +1,6 @@
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-from utils.different import is_admin
+from helpers.user_validate import is_admin
 
 
 def get_main_kb(user_telegram_id: int):

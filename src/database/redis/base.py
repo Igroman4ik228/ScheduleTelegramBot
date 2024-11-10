@@ -1,6 +1,6 @@
 from redis.asyncio import Redis
 
-from config import settings
+from utils.config import settings
 
 
 def create_redis(

@@ -1,15 +1,15 @@
 from injector import inject
 
-from background_service_pack.models import BackgroundService
-from config import settings
+from app.background_service_pack.models import BackgroundService
+from app.observer_pack.models import Publisher
 from database.db import sessionmaker, with_session_self
 from database.repository import Repository
-from observer_pack.models import Publisher
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
 from services.parser_service.request import Request
 from services.parser_service.week import Week
+from utils.config import settings
 
 
 class ParserService(BackgroundService, Publisher):

@@ -1,24 +1,11 @@
-from datetime import datetime
-
-from config import settings
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
 from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
+from helpers.html import add_html_tag
 
 
-def get_key(input_dict: dict, target_value):
-    for key, value in input_dict.items():
-        if value == target_value:
-            return key
-    raise ValueError(f"{target_value} не найден в {input_dict}")
-
-
-def is_admin(user_id: int) -> bool:
-    return user_id in settings.ADMIN_IDS
-
-
-def get_info_text(user: UserModel, header: str) -> str:
+def format_info(user: UserModel, header: str) -> str:
     group: GroupModel = user.group
     department: DepartmentModel = group.department
 
@@ -37,3 +24,7 @@ def get_info_text(user: UserModel, header: str) -> str:
         f"{subscribe_name}\n"
     )
     return info_text
+
+
+def format_header(text: str):
+    return add_html_tag(text, "blockquote") + "\n"

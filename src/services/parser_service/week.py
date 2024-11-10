@@ -1,6 +1,6 @@
 import utils.constants as const
-from utils.different import get_key
-from utils.singlton import SingletonMeta
+from helpers.algorithm import get_key
+from helpers.singleton import SingletonMeta
 
 
 class Week(metaclass=SingletonMeta):

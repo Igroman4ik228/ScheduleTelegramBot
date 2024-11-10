@@ -5,15 +5,15 @@ from bot.keyboards.inline.setting_kb import (get_notification_text,
                                              get_setting_kb, get_time_text)
 from database.models.users import UserModel
 from database.repository import Repository
+from services.formatter_service.message import format_info
 from utils.constants import CallbackData
-from utils.different import get_info_text
 
 router = Router(name=__name__)
 
 
 @router.callback_query(F.data == CallbackData.SETTING.value)
 async def handle_setting(callback_query: CallbackQuery, user: UserModel):
-    info_text = get_info_text(user, "Настройки профиля")
+    info_text = format_info(user, "Настройки профиля")
     await callback_query.message.edit_text(info_text,
                                            reply_markup=get_setting_kb(user.is_notify,
                                                                        user.is_time_shown))

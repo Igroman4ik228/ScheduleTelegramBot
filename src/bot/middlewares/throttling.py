@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 from cachetools import TTLCache
 
-from config import settings
+from utils.config import settings
 
 
 class ThrottlingMiddleware(BaseMiddleware):

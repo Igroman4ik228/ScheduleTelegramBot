@@ -1,6 +1,7 @@
 import re
 from logging import getLogger
 
+from helpers.html import add_html_tag
 from services.parser_service.lesson import Lesson
 from services.parser_service.week import Week
 from utils.constants import DAY_NAME_CASES
@@ -65,41 +66,31 @@ class ScheduleFormatter:
 
         return formatted_lesson
 
+    @staticmethod
+    def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
+        result_lessons: list[str] = []
 
-def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
-    result_lessons: list[str] = []
+        lines = schedule.split('\n')
+        lessons = lines[skip_lines:]
+        for lesson in lessons:
+            if not lesson:
+                continue
 
-    lines = schedule.split('\n')
-    lessons = lines[skip_lines:]
-    for lesson in lessons:
-        if not lesson:
-            continue
+            lesson_number = ScheduleFormatter.get_lesson_number(lesson)
+            if lesson_number is None:
+                continue
 
-        lesson_number = get_lesson_number(lesson)
-        if lesson_number is None:
-            continue
+            full_time = Lesson.get_full_time(lesson_number)
+            result_lesson = f"{lesson} <i>{full_time}</i>"
 
-        full_time = Lesson.get_full_time(lesson_number)
-        result_lesson = f"{lesson} <i>{full_time}</i>"
+            result_lessons.append(result_lesson)
 
-        result_lessons.append(result_lesson)
+        header_schedule = lines[0]
+        result_lessons_str = '\n'.join(result_lessons)
 
-    header_schedule = lines[0]
-    result_lessons_str = '\n'.join(result_lessons)
+        return f"{header_schedule}\n{result_lessons_str}"
 
-    return f"{header_schedule}\n{result_lessons_str}"
-
-
-def add_html_tag(text: str, tag: str, attributes: dict = None) -> str:
-    if attributes:
-        attributes_tag = ' '.join(
-            [f'{k}="{v}"' for k, v in attributes.items()]
-        )
-        return f"<{tag} {attributes_tag}>{text}</{tag}>"
-
-    return f"<{tag}>{text}</{tag}>"
-
-
-def get_lesson_number(lesson: str) -> int | None:
-    match = re.search(r"\d+", lesson)
-    return int(match.group()) if match else None
+    @staticmethod
+    def get_lesson_number(lesson: str) -> int | None:
+        match = re.search(r"\d+", lesson)
+        return int(match.group()) if match else None
