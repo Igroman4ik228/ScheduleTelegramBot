@@ -1,9 +1,12 @@
 from logging import getLogger
 
-from database.db import sessionmaker
+from database.db import with_session_self
+from database.models.groups import GroupModel
 from database.repository import Repository
-from services.formatter_service.schedule import ScheduleFormatter
-from services.parser_service.lesson import Lesson
+from helpers.generator import generate_default_schedule
+from helpers.lesson import Lesson
+from services.formatter_service.schedule import format_schedule
+from services.parser_service.week import Week
 
 
 class Builder:
@@ -11,41 +14,36 @@ class Builder:
     def __init__(self, replacement_schedule: dict[str, list[Lesson]]):
         self.logger = getLogger(__name__)
         self.replacement_schedule = replacement_schedule
-        self.default_schedule = {
-            "ИС1-43": [Lesson(number=0, time=None,
-                              subject='Математика', classroom='Аудитория 1')],
-            "ИБ1-41": [Lesson(number=3, time=None,
-                              subject='Математика', classroom='Аудитория 1')],
-            "ИС1-31": [Lesson(number=3, time=None,
-                              subject='Математика', classroom='Аудитория 1')],
-            "СД2-22": [Lesson(number=2, time=None,
-                              subject='Физика', classroom='Аудитория 2')],
-            "ДИ1-31": [Lesson(number=1, time=None,
-                              subject='Химия', classroom='Аудитория 3')],
-            "СА1-1": [Lesson(number=2, time=None,
-                             subject='Биология', classroom='Аудитория 4')],
-        }  # for testing
+        self.default_schedule = {}
 
-    def main_build(self) -> dict[str, str]:
+    async def main_build(self) -> dict[str, str]:
+        self.default_schedule = await self._get_default_schedule()
         result_schedule_data = self._apply_replacement()
         result_schedule = {}
         for group, lessons in result_schedule_data.items():
-            schedule_formatter = ScheduleFormatter(lessons)
-            formatted_schedule = schedule_formatter.format_schedule()
+            formatted_schedule = format_schedule(lessons)
             result_schedule[group] = formatted_schedule
 
         return result_schedule
 
-    # TODO: finish it later
-    async def _get_default_schedule(self) -> dict[str, list[Lesson]]:
-        async with sessionmaker() as session:
-            default_schedule_rep = Repository(session).default_schedule
-            default_schedule_data = await default_schedule_rep.get_all()
+    @with_session_self
+    async def _get_default_schedule(self, session) -> dict[str, list[Lesson]]:
+        default_schedule_rep = Repository(session).default_schedule
+        default_schedule_data = await default_schedule_rep.get_all(weekday=Week().weekday,
+                                                                   shift=Week().shift)
 
         if default_schedule_data is None:
             return []
 
-        return []
+        default_schedule = {}
+        for default_lesson in default_schedule_data:
+            default_lesson_group: GroupModel = default_lesson.group
+            for default_schedule_lesson in generate_default_schedule(default_lesson.data_lessons):
+                default_schedule.setdefault(
+                    default_lesson_group.name, []
+                ).append(default_schedule_lesson)
+
+        return default_schedule
 
     def _apply_replacement(self) -> dict[str, list[Lesson]]:
         for group, lessons in self.replacement_schedule.items():

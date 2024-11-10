@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Mapped, relationship
 
-from database.models.base import Base, group_foreign_key, str_512
+from database.models.base import Base, group_foreign_key, str_2048
 
 
 class DefaultScheduleModel(Base):
@@ -8,7 +8,7 @@ class DefaultScheduleModel(Base):
 
     weekday: Mapped[int]
     shift: Mapped[int]
-    data_lessons: Mapped[str_512]
+    data_lessons: Mapped[str_2048]
     group_id: Mapped[group_foreign_key]
 
     group: Mapped["GroupModel"] = relationship(

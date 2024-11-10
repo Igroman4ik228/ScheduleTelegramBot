@@ -18,7 +18,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         weekday: int,
         shift: int,
         data_lessons: str,
-        group_id: str
+        group_id: int
     ) -> DefaultScheduleModel | None:
         return await super().create(weekday=weekday,
                                     shift=shift,
@@ -48,7 +48,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         self,
         weekday: int,
         shift: int,
-        group_id: str
+        group_id: int
     ) -> DefaultScheduleModel | None:
         return await super().get(weekday=weekday,
                                  shift=shift,
@@ -73,7 +73,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         self,
         weekday: int,
         shift: int,
-        group_id: str
+        group_id: int
     ):
         await super().delete(weekday=weekday,
                              shift=shift,

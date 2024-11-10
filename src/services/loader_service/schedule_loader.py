@@ -1,13 +1,14 @@
 import json
+from logging import getLogger
 from pathlib import Path
 
-from database.models.groups import GroupModel
-from database.models.default_schedule import DefaultScheduleModel
 from database.db import sessionmaker
+from database.models.default_schedule import DefaultScheduleModel
+from database.models.groups import GroupModel
 from database.repositories.users import GroupRepository
-from logging import getLogger
 
-class SchuduleLoader:
+
+class ScheduleLoader:
     def __init__(self):
         self.logger = getLogger(__name__)
 
@@ -16,15 +17,15 @@ class SchuduleLoader:
             return json.load(f)
 
     def _get_all_files(self) -> list[Path]:
-        directory = Path("src/loader/data")
+        directory = Path("src/services/loader_service/data")
 
         return [file for file in directory.iterdir() if file.is_file()]
 
     async def _get_group_id(self, group_name: str):
         async with sessionmaker() as session:
-            group: GroupModel = await GroupRepository(session).get(group_name)
+            group = await GroupRepository(session).get_by_name(group_name)
         return group.id
-    
+
     async def loading(self):
         # File
         for file in self._get_all_files():
@@ -42,23 +43,26 @@ class SchuduleLoader:
                     schedule_model = DefaultScheduleModel(
                         weekday=weekday,
                         shift=int(shift),
-                        data_lessons = "",
+                        data_lessons="",
                         group_id=group_id
                     )
-                    
+
                     lessons_list = []
 
                     # Lessons
                     for lesson in weekday_data:
                         lessons_list.append(lesson)
-                    
+
                     # List to Json
-                    schedule_model.data_lessons = json.dumps(lessons_list, ensure_ascii=False)
+                    schedule_model.data_lessons = json.dumps(
+                        lessons_list, ensure_ascii=False
+                    )
                     schedule_models.append(schedule_model)
 
             # Debug print
             for model in schedule_models:
-                self.logger.info(f"Default Schedule Information:\n  Weekday: {model.weekday}\n  Shift: {model.shift}\n  Data Lessons: {model.data_lessons}\n  Group ID: {model.group_id}\n")
+                self.logger.info(f"Default Schedule Information:\n  Weekday: {model.weekday}\n  Shift: {
+                                 model.shift}\n  Data Lessons: {model.data_lessons}\n  Group ID: {model.group_id}\n")
 
-        async def _save_to_db(self):
-            pass
+    async def _save_to_db(self):
+        ...

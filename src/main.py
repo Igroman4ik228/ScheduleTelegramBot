@@ -10,6 +10,7 @@ from bot.bot import BotManager
 from database.db import engine
 from database.redis.base import redis_client
 from services.ad_service.ad_sender import AdService
+from services.loader_service.default_schedule import DefaultScheduleLoader
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
 from utils import constants
@@ -58,6 +59,8 @@ class AppModule(Module):
 async def main():
     injector = Injector(AppModule())
     try:
+        # await DefaultScheduleLoader().process_all_files()
+
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 

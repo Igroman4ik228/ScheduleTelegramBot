@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from aiogram import Bot, F, Router
+from aiogram import Bot, F, Router, html
 from aiogram.types import (CallbackQuery, ContentType, LabeledPrice, Message,
                            PreCheckoutQuery)
 from dateutil.relativedelta import relativedelta
@@ -10,7 +10,6 @@ from bot.keyboards.inline.payment_kb import get_payment_kb
 from bot.keyboards.inline.subscribe_kb import get_subscribe_kb
 from database.models.users import UserModel
 from database.repository import Repository
-from helpers.html import add_html_tag
 from utils.config import settings
 from utils.constants import CallbackData
 
@@ -20,7 +19,7 @@ router = Router(name=__name__)
 @router.callback_query(F.data == CallbackData.SUBSCRIBE.value)
 async def handle_subscribe(callback_query: CallbackQuery, repository: Repository):
     subscribes = await repository.subscribes.get_all()
-    description = add_html_tag("Подписка", "blockquote")
+    description = html.blockquote("Подписка")
     description += "Приобретая подписку вы получаете:\n"
     await callback_query.message.edit_text(description,
                                            reply_markup=get_subscribe_kb(subscribes))

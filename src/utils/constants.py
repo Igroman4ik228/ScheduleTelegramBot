@@ -1,6 +1,6 @@
 from datetime import time as dt_time
 from enum import StrEnum
-from os import path
+from pathlib import Path
 
 
 # CALLBACK_DATA
@@ -28,7 +28,7 @@ SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
 REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
-PATH_TEMPLATE = path.join("assets", "*.json")
+PATH_TEMPLATE_DATA = Path("data/")
 NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
 
 # Integers
