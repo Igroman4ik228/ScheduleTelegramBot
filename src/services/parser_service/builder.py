@@ -21,7 +21,9 @@ class Builder:
         result_schedule_data = self._apply_replacement()
         result_schedule = {}
         for group, lessons in result_schedule_data.items():
-            formatted_schedule = format_schedule(lessons)
+            formatted_schedule = format_schedule(
+                lessons, Week().weekday, Week().shift
+            )
             result_schedule[group] = formatted_schedule
 
         return result_schedule

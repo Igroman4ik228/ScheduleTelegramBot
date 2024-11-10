@@ -3,7 +3,7 @@ from logging import getLogger
 
 from app.observer_pack.models import Observer
 from bot.bot import BotManager
-from bot.handlers.users.schedule import process_schedule
+from bot.handlers.users.schedule import get_schedule
 from database.db import with_session_self
 from database.models.users import UserModel
 from database.repository import Repository
@@ -25,17 +25,15 @@ class NotifyService(Observer):
             if self.need_notify(user):
                 continue
 
-            schedule_data = await repo.result_schedule.get(Week().weekday,
-                                                           group_id=user.group_id)
-            if schedule_data is None:
-                continue
-
-            await asyncio.sleep(0.05)
-            formatted_schedule = process_schedule(user, schedule_data)
+            formatted_schedule = get_schedule(
+                user.group_id, repo
+            )
             try:
                 await self.bot.send_message(user.telegram_id, formatted_schedule)
             except Exception:
                 pass
+
+            await asyncio.sleep(0.05)  # 50 ms
 
     def need_notify(self, user: UserModel) -> bool:
         if not user.is_notify:

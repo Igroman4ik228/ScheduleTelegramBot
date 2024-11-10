@@ -7,17 +7,29 @@ from services.parser_service.week import Week
 from utils.constants import DAY_NAME_CASES
 
 
-def format_schedule(lessons: list[Lesson]) -> str:
-    return format_header() + format_lessons(lessons)
+def format_schedule(
+    lessons: list[Lesson],
+    weekday: int = None,
+    shift: int = None
+) -> str:
+    if weekday is None:
+        weekday = Week().weekday
+    if shift is None:
+        shift = Week().shift
+    return format_header(weekday, shift) + format_lessons(lessons)
 
 
-def format_header(is_default_schedule: bool = False) -> str:
-    weekday_name = Week().get_weekday_name()
+def format_header(
+    weekday: int,
+    shift: int,
+    is_default_schedule: bool = False
+) -> str:
+    weekday_name = Week.get_weekday_name_by_weekday(weekday)
     weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
     weekday_name = html.bold(weekday_name)
 
     if not is_default_schedule:
-        shift = Week().get_shift_name()
+        shift = Week.get_shift_name_by_shift(shift)
         header = html.blockquote(f"Расписание на {weekday_name} ({shift})")
     else:
         header = f"Расписание на {weekday_name}\n"
