@@ -30,6 +30,7 @@ WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
 PATH_TEMPLATE_DATA = Path("data/")
 NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
+SCHEDULE_FILE_EXTENSION = "json"
 
 # Integers
 PARSE_TIME_SLEEP = 10  # in minutes
@@ -51,7 +52,6 @@ DAY_NAMES = {
     3: "четверг",
     4: "пятница",
     5: "суббота",
-    6: "воскресенье"
 }
 DAY_NAME_CASES = {
     "среда": "среду",

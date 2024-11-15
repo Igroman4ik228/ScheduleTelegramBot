@@ -15,11 +15,13 @@ from utils.constants import CallbackData
 
 router = Router(name=__name__)
 
+TITLE = "Подписка"
+
 
 @router.callback_query(F.data == CallbackData.SUBSCRIBE.value)
 async def handle_subscribe(callback_query: CallbackQuery, repository: Repository):
     subscribes = await repository.subscribes.get_all()
-    description = html.blockquote("Подписка")
+    description = html.blockquote(TITLE)
     description += "Приобретая подписку вы получаете:\n"
     await callback_query.message.edit_text(description,
                                            reply_markup=get_subscribe_kb(subscribes))
@@ -46,7 +48,7 @@ async def handle_payment_telegram(callback_query: CallbackQuery, bot: Bot,
     subscribe_id = callback_query.data.split(":")[2]
     subscribe = await repository.subscribes.get(subscribe_id)
 
-    description = subscribe.description if subscribe.description is not None else "Описание отсутствует"
+    description = subscribe.description if subscribe.description else "Описание отсутствует"
     await bot.send_invoice(chat_id=callback_query.from_user.id,
                            title=subscribe.name,
                            description=description,

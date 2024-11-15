@@ -3,19 +3,15 @@ import re
 from aiogram import html
 
 from helpers.lesson import Lesson
-from services.parser_service.week import Week
+from helpers.week import Week
 from utils.constants import DAY_NAME_CASES
 
 
 def format_schedule(
     lessons: list[Lesson],
-    weekday: int = None,
-    shift: int = None
+    weekday: int,
+    shift: int
 ) -> str:
-    if weekday is None:
-        weekday = Week().weekday
-    if shift is None:
-        shift = Week().shift
     return format_header(weekday, shift) + format_lessons(lessons)
 
 
@@ -78,10 +74,12 @@ def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
     lessons = lines[skip_lines:]
     for lesson in lessons:
         if not lesson:
+            result_lessons.append(lesson)
             continue
 
         lesson_number = get_lesson_number(lesson)
         if lesson_number is None:
+            result_lessons.append(lesson)
             continue
 
         full_time = Lesson.get_full_time(lesson_number)

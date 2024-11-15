@@ -7,7 +7,7 @@ from bot.handlers.users.schedule import get_schedule
 from database.db import with_session_self
 from database.models.users import UserModel
 from database.repository import Repository
-from services.parser_service.week import Week
+from helpers.week import Week
 
 
 class NotifyService(Observer):
@@ -26,7 +26,8 @@ class NotifyService(Observer):
                 continue
 
             formatted_schedule = get_schedule(
-                user.group_id, repo
+                user.group_id, repo,
+                Week().weekday, Week().shift
             )
             try:
                 await self.bot.send_message(user.telegram_id, formatted_schedule)

@@ -58,8 +58,6 @@ class AppModule(Module):
 async def main():
     injector = Injector(AppModule())
     try:
-        # await DefaultScheduleLoader().process_all_files()
-
         bot_manager = injector.get(BotManager)
         service_manager = injector.get(BackgroundManager)
 

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup, Tag
 import utils.constants as const
 from helpers.algorithm import get_key
 from helpers.lesson import Lesson
-from services.parser_service.week import Week
+from helpers.week import Week
 
 
 class HtmlParser:

@@ -3,10 +3,10 @@ from logging import getLogger
 from database.db import with_session_self
 from database.models.groups import GroupModel
 from database.repository import Repository
-from helpers.generator import generate_default_schedule
+from helpers.default_schedule_parser import generate_default_schedule
 from helpers.lesson import Lesson
+from helpers.week import Week
 from services.formatter_service.schedule import format_schedule
-from services.parser_service.week import Week
 
 
 class Builder:
