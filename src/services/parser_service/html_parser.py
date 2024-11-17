@@ -98,14 +98,11 @@ class HtmlParser:
         subject = cells[4].text.strip()
         classrooms = cells[5].text.strip()
 
-        replacement_lessons = []
-        for lesson_number in lesson_numbers:
-            replacement_lessons.append(
-                Lesson(lesson_number, time, subject,
-                       classrooms, is_replacement=True)
-            )
-
-        return replacement_lessons
+        return [
+            Lesson(lesson_number, time, subject,
+                   classrooms, is_replacement=True)
+            for lesson_number in lesson_numbers
+        ]
 
     def _parse_group(self, cells: list[Tag]) -> str | None:
         """Парсинг группы"""

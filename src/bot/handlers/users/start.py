@@ -11,13 +11,8 @@ TITLE = "Приветствие"
 
 
 @router.message(CommandStart())
-async def handle_start(message: Message,
-                       repository: Repository):
+async def handle_start(message: Message):
     user_full_name = message.from_user.full_name
     welcome_message = (f"Здравствуйте {html.quote(user_full_name)}.\n"
                        "Вас приветствует элитный бот расписания ЯГК.🥇")
     await message.answer(welcome_message)
-
-    subscribes = await repository.subscribes.get_all()
-    await message.answer("Выберите подписку пожалуйста",
-                         reply_markup=get_subscribe_kb(subscribes))

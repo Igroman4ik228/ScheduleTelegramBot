@@ -37,7 +37,7 @@ async def handle_choose_subscribe(callback_query: CallbackQuery,
     subscribe_id = callback_query.data.split(":")[1]
     subscribe = await repository.subscribes.get(subscribe_id)
     await callback_query.message.answer(f"Вы выбрали: {subscribe.name}\n"
-                                        f"Стоимость: {subscribe.cost}\n"
+                                        f"Стоимость: {subscribe.price}\n"
                                         "Выберите способ оплаты:",
                                         reply_markup=get_payment_kb(subscribe))
 
@@ -60,7 +60,7 @@ async def handle_payment_telegram(callback_query: CallbackQuery, bot: Bot,
                            currency="RUB",
                            prices=[
                                LabeledPrice(
-                                   label="Цена", amount=subscribe.cost * 100
+                                   label="Цена", amount=subscribe.price * 100
                                )
                            ])
 
@@ -85,7 +85,7 @@ async def handle_successful_payment(message: Message, user: UserModel, repositor
     subscribe = await repository.subscribes.get(subscribe_id)
 
     user.subscribe_id = subscribe.id
-    end_datetime = datetime.now() + relativedelta(months=subscribe.duration_month)
+    end_datetime = datetime.now() + relativedelta(months=subscribe.duration_days)
     user.subscribe_end_time = end_datetime
     await repository.users.update(user)
 

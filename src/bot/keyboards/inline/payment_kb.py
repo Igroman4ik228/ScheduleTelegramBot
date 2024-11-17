@@ -6,7 +6,7 @@ from database.models.subscribe import SubscribeModel
 
 def get_payment_kb(subscribe: SubscribeModel) -> InlineKeyboardMarkup:
     payment_builder = InlineKeyboardBuilder()
-    if subscribe.cost > 60:
+    if subscribe.price > 60:
         payment_builder.add(
             InlineKeyboardButton(text="В телеграм",
                                  callback_data=f"Payment:telegram:{subscribe.id}")
