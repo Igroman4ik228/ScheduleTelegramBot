@@ -28,9 +28,9 @@ class ParserService(BackgroundService, Publisher):
         parser = HtmlParser(response_text)
         parser.initialize_week()
 
-        replacement_schedule = parser.extract_replacement_schedule()
+        replacement_schedules = parser.extract_replacement_schedules()
 
-        builder = Builder(replacement_schedule)
+        builder = Builder(replacement_schedules)
         result_schedule = await builder.main_build()
 
         for group, schedule in result_schedule.items():

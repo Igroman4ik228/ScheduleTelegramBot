@@ -3,33 +3,38 @@ from logging import getLogger
 from database.db import with_session_self
 from database.models.groups import GroupModel
 from database.repository import Repository
-from helpers.default_schedule_parser import generate_default_schedule
-from helpers.lesson import Lesson
+from helpers.default_schedule_parser import get_default_lessons
+from helpers.lesson import Lesson, Schedule
 from helpers.week import Week
 from services.formatter_service.schedule import format_schedule
 
 
 class Builder:
 
-    def __init__(self, replacement_schedule: dict[str, list[Lesson]]):
+    def __init__(self, replacement_schedules: list[Schedule]):
         self.logger = getLogger(__name__)
-        self.replacement_schedule = replacement_schedule
-        self.default_schedule = {}
+        self.replacement_schedules = replacement_schedules
+        self.default_schedules: list[Schedule] = []
 
     async def main_build(self) -> dict[str, str]:
-        self.default_schedule = await self._get_default_schedule()
-        result_schedule_data = self._apply_replacement()
+        """
+        Return:
+            dict[str, str]: A dictionary with group names as keys and formatted schedules as values
+        """
+        self.default_schedule = await self._get_default_schedules()
+        result_schedules_data = self._apply_replacement()
+
         result_schedule = {}
-        for group, lessons in result_schedule_data.items():
+        for schedule in result_schedules_data:
             formatted_schedule = format_schedule(
-                lessons, Week().weekday, Week().shift
+                schedule.lessons, Week().weekday, Week().shift
             )
-            result_schedule[group] = formatted_schedule
+            result_schedule[schedule.group] = formatted_schedule
 
         return result_schedule
 
     @with_session_self
-    async def _get_default_schedule(self, session) -> dict[str, list[Lesson]]:
+    async def _get_default_schedules(self, session) -> list[Schedule]:
         default_schedule_rep = Repository(session).default_schedule
         default_schedule_data = await default_schedule_rep.get_all(weekday=Week().weekday,
                                                                    shift=Week().shift)
@@ -37,32 +42,38 @@ class Builder:
         if default_schedule_data is None:
             return []
 
-        default_schedule = {}
+        default_schedule: list[Schedule] = []
         for default_lesson in default_schedule_data:
             default_lesson_group: GroupModel = default_lesson.group
-            for default_schedule_lesson in generate_default_schedule(default_lesson.data_lessons):
-                default_schedule.setdefault(
-                    default_lesson_group.name, []
-                ).append(default_schedule_lesson)
 
+            default_lessons = get_default_lessons(default_lesson.data_lessons)
+            for default_schedule_lesson in default_lessons:
+                default_schedule.append(
+                    Schedule(
+                        week=Week(),
+                        group=default_lesson_group.name,
+                        lessons=[default_schedule_lesson]
+                    )
+                )
         return default_schedule
 
-    def _apply_replacement(self) -> dict[str, list[Lesson]]:
-        for group, lessons in self.replacement_schedule.items():
-            for lesson in lessons:
+    def _apply_replacement(self) -> list[Schedule]:
+        for replacement_schedule in self.replacement_schedules:
+            for replacement_lesson in replacement_schedule.lessons:
                 is_found = False
-                default_lessons = self.default_schedule.get(group, [])
+                for default_schedule in self.default_schedules:
+                    for default_lesson in default_schedule.lessons:
+                        if default_lesson.number == replacement_lesson.number:
+                            self._update_lesson(
+                                default_lesson, replacement_lesson)
+                            is_found = True
+                            break
 
-                for default_lesson in default_lessons:
-                    if default_lesson.number == lesson.number:
-                        self._update_lesson(default_lesson, lesson)
-                        is_found = True
-                        break
-
+                # if not found number
                 if not is_found:
-                    if group not in self.default_schedule:
-                        self.default_schedule[group] = []
-                    self.default_schedule[group].append(lesson)
+                    for default_schedule in self.default_schedules:
+                        if default_schedule.group == replacement_schedule.group:
+                            default_schedule.lessons.append(replacement_lesson)
 
         return self.default_schedule
 

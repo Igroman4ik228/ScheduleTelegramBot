@@ -9,6 +9,18 @@ def generate_default_schedule(data_lessons: str):
         yield Lesson.from_dict(default_lesson)
 
 
+def get_default_lessons(data_lessons: str) -> list[Lesson]:
+    default_lessons = ast.literal_eval(data_lessons)
+
+    default_schedule = []
+    for default_lesson in default_lessons:
+        default_schedule.append(
+            Lesson.from_dict(default_lesson)
+        )
+
+    return default_schedule
+
+
 def default_schedule_parse(data: dict[str, any]) -> dict:
     schedule_data = {}
     for shift_str, weekdays in data.items():

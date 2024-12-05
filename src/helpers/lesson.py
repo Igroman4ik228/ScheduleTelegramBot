@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import time as dt_time
 
+from helpers.week import Week
 from utils.constants import END_LESSONS_TIME, START_LESSONS_TIME
 
 
@@ -64,3 +65,10 @@ class Lesson:
         start = Lesson.get_start_time(lesson_number).strftime("%H:%M")
         end = Lesson.get_end_time(lesson_number).strftime("%H:%M")
         return f"{start} - {end}"
+
+
+@dataclass
+class Schedule:
+    week: Week
+    group: str
+    lessons: list[Lesson]

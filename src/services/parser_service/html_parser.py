@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup, Tag
 
 import utils.constants as const
 from helpers.algorithm import get_key
-from helpers.lesson import Lesson
+from helpers.lesson import Lesson, Schedule
 from helpers.week import Week
 
 
@@ -58,9 +58,9 @@ class HtmlParser:
                 f"Не удалось определить числитель/знаменатель. Значение: {shift_name}")
         return shift
 
-    def extract_replacement_schedule(self) -> dict[str, list[Lesson]]:
+    def extract_replacement_schedules(self) -> list[Schedule]:
         """Парсинг расписания замены"""
-        replacement_schedule = {}
+        replacement_schedules: list[Schedule] = []
         for row in self.table_rows:
             cells = self.get_cells(row)
             group = self._parse_group(cells)
@@ -68,11 +68,17 @@ class HtmlParser:
                 continue
 
             replacement_lessons = self._parse_replacement_lessons(cells)
-            replacement_schedule.setdefault(
-                group, []
-            ).extend(replacement_lessons)
 
-        return replacement_schedule
+            for schedule in replacement_schedules:
+                if schedule.group == group:
+                    schedule.lessons.extend(replacement_lessons)
+                    break
+            else:
+                replacement_schedules.append(
+                    Schedule(Week(), group, replacement_lessons)
+                )
+
+        return replacement_schedules
 
     def get_cells(self, row: Tag) -> list[Tag]:
         """Получение ячеек строки таблицы"""
