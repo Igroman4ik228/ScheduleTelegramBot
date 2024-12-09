@@ -31,7 +31,7 @@ class ParserService(BackgroundService, Publisher):
         replacement_schedules = parser.extract_replacement_schedules()
 
         builder = Builder(replacement_schedules)
-        builder.initialize()
+        await builder.initialize()
         result_schedule = await builder.build()
 
         for group, schedule in result_schedule.items():
