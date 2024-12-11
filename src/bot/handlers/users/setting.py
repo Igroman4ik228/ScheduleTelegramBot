@@ -1,8 +1,9 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
 
-from bot.keyboards.inline.setting_kb import (get_notification_text,
-                                             get_setting_kb, get_time_text)
+from bot.keyboards.users.inline.setting_kb import (get_notification_text,
+                                                   get_setting_kb,
+                                                   get_time_text)
 from database.models.users import UserModel
 from database.repository import Repository
 from services.formatter_service.message import ProfileFormatter

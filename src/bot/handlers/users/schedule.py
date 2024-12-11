@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 import utils.constants as const
-from bot.keyboards.reply.main_kb import get_main_kb
+from bot.keyboards.users.reply.main_kb import get_main_kb
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.result_schedule import ResultScheduleModel
 from database.models.users import UserModel

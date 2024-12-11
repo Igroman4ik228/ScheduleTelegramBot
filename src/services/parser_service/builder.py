@@ -149,6 +149,7 @@ class Builder:
         schedule_collector = DefaultScheduleCollector(week)
         return schedule_collector.collect_schedules(default_schedule_data)
 
+
 class DefaultScheduleCollector:
     """Класс для сбора основного расписания"""
 
@@ -175,4 +176,3 @@ class DefaultScheduleCollector:
             )
 
         self.schedules_by_group[group_name].lessons.extend(lessons)
-

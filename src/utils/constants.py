@@ -20,6 +20,8 @@ class CallbackData(StrEnum):
     BAN_UNBAN = "Ban/Unban"
     WRITE_LIST_USERS = "WriteListUsers"
     SUBSCRIBE = "Subscribe"
+    REFERRAL = "Referral"
+    BACK = "Back"
 
 
 # Strings
@@ -33,6 +35,7 @@ NO_SCHEDULE_TEXT = "Расписание на данный день отсутс
 SCHEDULE_FILE_EXTENSION = "json"
 
 # Integers
+MAX_REFERRAL = 5
 PARSE_TIME_SLEEP = 10  # in minutes
 LINES_PER_PAGE = 15
 

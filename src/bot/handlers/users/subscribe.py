@@ -6,8 +6,8 @@ from aiogram.types import (CallbackQuery, ContentType, LabeledPrice, Message,
 from dateutil.relativedelta import relativedelta
 
 from bot.filters.subscribe import SubscribeFilter
-from bot.keyboards.inline.payment_kb import get_payment_kb
-from bot.keyboards.inline.subscribe_kb import get_subscribe_kb
+from bot.keyboards.users.inline.payment_kb import get_payment_kb
+from bot.keyboards.users.inline.subscribe_kb import get_subscribe_kb
 from database.models.users import UserModel
 from database.repository import Repository
 from utils.config import settings

@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from database.models.subscribe import SubscribeModel
+from utils.constants import CallbackData
 
 
 def get_subscribe_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
@@ -9,7 +10,7 @@ def get_subscribe_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
 
     subscribe_builder.row(
         InlineKeyboardButton(text="Реферальная система",
-                             callback_data="123")
+                             callback_data=CallbackData.REFERRAL.value)
     )
 
     for subscribe in subscribes:

@@ -4,7 +4,7 @@ from aiogram import Bot, F, Router, html
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
-from bot.keyboards.inline.profile_kb import get_profile_kb
+from bot.keyboards.users.inline.profile_kb import get_profile_kb
 from database.models.users import UserModel
 from database.redis.profile_cache import ProfileCache
 from services.formatter_service.message import ProfileFormatter

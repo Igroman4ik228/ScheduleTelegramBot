@@ -39,10 +39,11 @@ class AuthMiddleware(BaseMiddleware):
 
     async def _create_user(self, tg_user: User, repository: Repository) -> UserModel:
         subscribes = await repository.subscribes.get_all(price=0)
-        user_rep = repository.users
         subscribe_end_time = datetime.now() + timedelta(
             days=subscribes[0].duration_days
         )
+
+        user_rep = repository.users
         new_user = await user_rep.create(
             first_name=tg_user.first_name,
             user_name=tg_user.username,
