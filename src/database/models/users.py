@@ -18,6 +18,13 @@ class UserModel(Base):
         unique=True
     )
     subscribe_end_time: Mapped[datetime | None]
+    count_referral: Mapped[int] = mapped_column(default=0)
+
+    is_bot: Mapped[bool_false]
+    is_premium: Mapped[bool_false]
+    is_time_shown: Mapped[bool_true]
+    is_notify: Mapped[bool_true]
+    is_ban: Mapped[bool_false]
 
     group_id: Mapped[int | None] = mapped_column(
         ForeignKey("Groups.id", ondelete="CASCADE")
@@ -25,12 +32,6 @@ class UserModel(Base):
     subscribe_id: Mapped[int | None] = mapped_column(
         ForeignKey("Subscribes.id", ondelete="CASCADE")
     )
-
-    is_bot: Mapped[bool_false]
-    is_time_shown: Mapped[bool_true]
-    is_notify: Mapped[bool_true]
-    is_ban: Mapped[bool_false]
-    is_premium: Mapped[bool_false]
 
     group: Mapped["GroupModel"] = relationship(
         back_populates="users", lazy="selectin"

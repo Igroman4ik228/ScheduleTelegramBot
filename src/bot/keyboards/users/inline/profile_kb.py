@@ -11,7 +11,6 @@ def get_profile_kb() -> InlineKeyboardMarkup:
                               callback_data=CallbackData.SETTING.value),
          InlineKeyboardButton(text="Подписка 💵",
                               callback_data=CallbackData.SUBSCRIBE.value)],
-
     ]
 
     return InlineKeyboardMarkup(inline_keyboard=profile_kb)

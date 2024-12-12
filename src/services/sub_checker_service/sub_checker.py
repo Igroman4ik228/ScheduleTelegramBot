@@ -1,5 +1,9 @@
 
+import datetime
+
 from app.background_service_pack.models import BackgroundService
+from database.db import sessionmaker, with_session_self
+from database.repository import Repository
 
 
 class SubCheckerService(BackgroundService):
@@ -7,17 +11,17 @@ class SubCheckerService(BackgroundService):
         super().__init__(time_span)
 
     async def do_work(self):
-        # ToDo: check user`s sub and edit data if sub is not active
+        # TODO
         pass
 
     async def active(self):
-        self.logger.info("SubCheckerSirvice active")
+        self.logger.info("SubCheckerService active")
         await super().active()
 
     async def pause(self):
-        self.logger.info("SubCheckerSirvice paused")
+        self.logger.info("SubCheckerService paused")
         await super().pause()
 
     async def stop(self):
-        self.logger.info("SubCheckerSirvice stopped")
+        self.logger.info("SubCheckerService stopped")
         await self.pause()

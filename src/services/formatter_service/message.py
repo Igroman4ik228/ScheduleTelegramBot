@@ -1,30 +1,59 @@
+from aiogram import html
+
+from database.models.default_schedule import DefaultScheduleModel
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
 from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
-from helpers.html import add_html_tag
+from helpers.default_schedule_parser import generate_default_schedule
+from services.formatter_service.schedule import format_header, format_lesson
+from utils.constants import DAY_NAMES
 
 
-def format_info(user: UserModel, header: str) -> str:
-    group: GroupModel = user.group
-    department: DepartmentModel = group.department
+class ProfileFormatter:
+    def __init__(self, user: UserModel):
+        self.user = user
+        self.group: GroupModel = user.group
+        self.department: DepartmentModel = self.group.department
+        self.subscribe: SubscribeModel | None = user.subscribe
 
-    if user.subscribe_id or user.subscribe_end_time:
-        subscribe: SubscribeModel = user.subscribe
-        subscribe_name = f"{subscribe.name} "
-        end_time = user.subscribe_end_time.strftime('%d.%m.%Y')
-        subscribe_name += f"(действует до {end_time})"
-    else:
-        subscribe_name = "Подписка отсутствует"
+    def format_info(self, title: str) -> str:
+        if self.subscribe:
+            subscribe_name = f"{self.subscribe.name} "
+            end_time = self.user.subscribe_end_time.strftime('%d.%m.%Y')
 
-    info_text = (
-        f"<blockquote>{header}</blockquote>\n"
-        f"Отделение: {department.name}\n"
-        f"Группа: {group.name}\n"
-        f"{subscribe_name}\n"
-    )
-    return info_text
+            subscribe_name += f"(действует до {end_time})"
+        else:
+            subscribe_name = "Подписка отсутствует"
+
+        return (
+            f"{html.blockquote(title)}\n"
+            f"Отделение: {self.department.name}\n"
+            f"Группа: {self.group.name}\n"
+            f"{subscribe_name}\n"
+        )
 
 
-def format_header(text: str):
-    return add_html_tag(text, "blockquote") + "\n"
+def format_default_schedules(default_schedules: list[DefaultScheduleModel], shift: int) -> str:
+    formatted_default_schedules = ""
+    for weekday, schedule in enumerate(default_schedules):
+        if weekday > len(DAY_NAMES) - 1:
+            raise IndexError("Неверный индекс дня недели")
+
+        formatted_default_schedules += format_header(
+            weekday, shift, is_default_schedule=True
+        )
+        formatted_default_schedules += format_default_schedule(schedule)
+
+        if weekday != len(DAY_NAMES) - 1:
+            formatted_default_schedules += "\n"
+
+    return formatted_default_schedules
+
+
+def format_default_schedule(default_schedule: DefaultScheduleModel) -> str:
+    formatted_default_schedule = ""
+    for default_lesson in generate_default_schedule(default_schedule.data_lessons):
+        formatted_default_schedule += format_lesson(default_lesson)
+
+    return formatted_default_schedule

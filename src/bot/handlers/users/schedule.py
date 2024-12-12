@@ -2,12 +2,16 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 import utils.constants as const
-from bot.keyboards.reply.main_kb import get_main_kb
+from bot.keyboards.users.reply.main_kb import get_main_kb
+from database.models.default_schedule import DefaultScheduleModel
 from database.models.result_schedule import ResultScheduleModel
 from database.models.users import UserModel
 from database.repository import Repository
-from services.formatter_service.schedule import ScheduleFormatter
-from services.parser_service.week import Week
+from helpers.default_schedule_parser import generate_default_schedule
+from helpers.lesson import Lesson
+from helpers.week import Week
+from services.formatter_service.schedule import (add_time_to_schedule,
+                                                 format_schedule)
 
 router = Router(name=__name__)
 
@@ -15,55 +19,97 @@ router = Router(name=__name__)
 @router.message(F.text.lower().contains("расписание"))
 async def handle_schedule(message: Message,
                           user: UserModel, repository: Repository):
-    result_schedule_data = await repository.result_schedule.get(Week().weekday,
-                                                                user.group_id)
-    result_schedule = process_schedule(user, result_schedule_data)
+    schedule = await get_schedule(user.group_id, repository,
+                                  Week().weekday, Week().shift)
+    if user.is_time_shown:
+        schedule = add_time_to_schedule(schedule)
 
-    await message.answer(result_schedule,
+    await message.answer(schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 
 
 @router.message(F.text.lower().contains("предыдущее"))
 async def handle_previous_schedule(message: Message,
                                    user: UserModel, repository: Repository):
-    previous_weekday = get_previous_weekday(Week().weekday)
-    result_schedule_data = await repository.result_schedule.get(previous_weekday,
-                                                                user.group_id)
-    result_schedule = process_schedule(user, result_schedule_data)
+    previous_weekday = Week().get_previous_weekday()
+    previous_shift = Week().get_previous_shift()
 
-    await message.answer(result_schedule,
+    schedule = await get_schedule(user.group_id, repository,
+                                  previous_weekday, previous_shift)
+    if user.is_time_shown:
+        schedule = add_time_to_schedule(schedule)
+
+    await message.answer(schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 
 
 @router.message(F.text.lower().contains("следующее"))
 async def handle_next_schedule(message: Message,
                                user: UserModel, repository: Repository):
-    next_weekday = get_next_weekday(Week().weekday)
-    result_schedule_data = await repository.result_schedule.get(next_weekday,
-                                                                user.group_id)
-    result_schedule = process_schedule(user, result_schedule_data)
+    next_weekday = Week().get_next_weekday()
+    next_shift = Week().get_next_shift()
 
-    await message.answer(result_schedule,
+    schedule = await get_default_schedule(user.group_id, repository,
+                                          next_weekday, next_shift)
+    if user.is_time_shown:
+        schedule = add_time_to_schedule(schedule)
+
+    await message.answer(schedule,
                          reply_markup=get_main_kb(message.from_user.id))
 
 
-def process_schedule(user: UserModel,
-                     result_schedule_data: ResultScheduleModel | None) -> str:
-    if result_schedule_data is None or not result_schedule_data.data_lessons:
+async def get_schedule(
+    group_id: int,
+    repository: Repository,
+    weekday: int,
+    shift: int
+) -> str:
+    result_schedule_data = await repository.result_schedule.get(weekday,
+                                                                group_id)
+    if validate_schedule(result_schedule_data):
+        result_schedule = result_schedule_data.data_lessons + "\n"
+        return result_schedule + f"{const.MARKERS[0]} {const.WITH_VERIFICATION_TEXT}"
+
+    default_schedule = await get_default_schedule(
+        group_id, repository, weekday, shift
+    )
+    return default_schedule
+
+
+async def get_default_schedule(
+    group_id: int,
+    repository: Repository,
+    weekday: int,
+    shift: int
+) -> str:
+    default_schedule_data = await repository.default_schedule.get(
+        weekday, shift, group_id
+    )
+    if not validate_schedule(default_schedule_data):
         return const.NO_SCHEDULE_TEXT
 
-    result_schedule = result_schedule_data.data_lessons
-    if user.is_time_shown:
-        result_schedule = ScheduleFormatter.add_time_to_schedule(
-            result_schedule
-        )
+    default_schedule = build_default_schedule(
+        default_schedule_data.data_lessons
+    )
+    default_schedule = format_schedule(
+        default_schedule, weekday, shift
+    ) + "\n"
 
-    return result_schedule
-
-
-def get_previous_weekday(weekday: int) -> int:
-    return weekday - 1 if weekday != 0 else 6
+    return default_schedule + f"{const.MARKERS[1]} {const.WITHOUT_VERIFICATION_TEXT}"
 
 
-def get_next_weekday(weekday: int) -> int:
-    return weekday + 1 if weekday != 6 else 0
+def build_default_schedule(
+    default_schedule: str
+) -> list[Lesson]:
+    lessons = []
+    for lesson in generate_default_schedule(default_schedule):
+        lessons.append(lesson)
+
+    return lessons
+
+
+def validate_schedule(schedule: ResultScheduleModel | DefaultScheduleModel | None) -> bool:
+    if schedule is None or schedule.data_lessons is None:
+        return False
+
+    return True

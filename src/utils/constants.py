@@ -1,6 +1,6 @@
 from datetime import time as dt_time
 from enum import StrEnum
-from os import path
+from pathlib import Path
 
 
 # CALLBACK_DATA
@@ -20,6 +20,8 @@ class CallbackData(StrEnum):
     BAN_UNBAN = "Ban/Unban"
     WRITE_LIST_USERS = "WriteListUsers"
     SUBSCRIBE = "Subscribe"
+    REFERRAL = "Referral"
+    BACK = "Back"
 
 
 # Strings
@@ -28,10 +30,12 @@ SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
 REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
-PATH_TEMPLATE = path.join("assets", "*.json")
+PATH_TEMPLATE_DATA = Path("data/")
 NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
+SCHEDULE_FILE_EXTENSION = "json"
 
 # Integers
+MAX_REFERRAL = 5
 PARSE_TIME_SLEEP = 10  # in minutes
 LINES_PER_PAGE = 15
 
@@ -51,7 +55,6 @@ DAY_NAMES = {
     3: "четверг",
     4: "пятница",
     5: "суббота",
-    6: "воскресенье"
 }
 DAY_NAME_CASES = {
     "среда": "среду",

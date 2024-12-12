@@ -1,96 +1,98 @@
 import re
-from logging import getLogger
 
-from helpers.html import add_html_tag
-from services.parser_service.lesson import Lesson
-from services.parser_service.week import Week
+from aiogram import html
+
+from helpers.lesson import Lesson
+from helpers.week import Week
 from utils.constants import DAY_NAME_CASES
 
 
-class ScheduleFormatter:
-    def __init__(self, lessons: list[Lesson]):
-        self.logger = getLogger(__name__)
-        self.lessons = sorted(
-            lessons,
-            key=lambda lesson: lesson.number
-        )
+def format_schedule(
+    lessons: list[Lesson],
+    weekday: int,
+    shift: int
+) -> str:
+    return format_header(weekday, shift) + format_lessons(lessons)
 
-    def format_schedule(self) -> str:
-        return self.format_header() + self.format_lessons()
 
-    def format_header(self) -> str:
-        weekday_name = Week().get_weekday_name()
-        weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
-        weekday_name = add_html_tag(weekday_name, "b")
+def format_header(
+    weekday: int,
+    shift: int,
+    is_default_schedule: bool = False
+) -> str:
+    weekday_name = Week.get_weekday_name_by_weekday(weekday)
+    weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
+    weekday_name = html.bold(weekday_name)
 
-        shift = Week().get_shift_name()
+    if not is_default_schedule:
+        shift = Week.get_shift_name_by_shift(shift)
+        header = html.blockquote(f"Расписание на {weekday_name} ({shift})")
+    else:
+        header = f"Расписание на {weekday_name}\n"
+    return header
 
-        header = add_html_tag(
-            f"Расписание на {weekday_name} ({shift})",
-            "blockquote"
-        )
-        return header + "\n"
 
-    def format_lessons(self) -> str:
-        formatted_lessons = ""
-        for lesson in self.lessons:
-            formatted_lessons += self.format_lesson(lesson)
+def format_lessons(lessons: list[Lesson]) -> str:
+    lessons = sort_lessons(lessons)
+    formatted_lessons = ""
+    for lesson in lessons:
+        formatted_lessons += format_lesson(lesson)
 
-        return formatted_lessons
+    return formatted_lessons
 
-    def format_lesson(self, lesson: Lesson) -> str:
-        formatted_lesson = add_html_tag(
-            f"{lesson.number}. ",
-            "a",
-            {"href": "https://ygk.edu.yar.ru"}
-        )
 
-        if lesson.time is not None:
-            formatted_lesson += add_html_tag(
-                lesson.time,
-                "i"
-            )
+def sort_lessons(lessons: list[Lesson]) -> list[Lesson]:
+    return sorted(lessons, key=lambda lesson: lesson.number)
 
-        formatted_lesson += f"{lesson.subject}"
 
-        if lesson.classroom != '':
-            classroom = add_html_tag(
-                lesson.classroom,
-                "b"
-            )
-            formatted_lesson += f" [{classroom}]"
+def format_lesson(lesson: Lesson) -> str:
+    formatted_lesson = html.link(
+        f"{lesson.number}. ",
+        "https://ygk.edu.yar.ru"
+    )
 
-        if lesson.is_replacement:
-            formatted_lesson += " (❗️ замена)"
-        formatted_lesson += "\n"
+    if lesson.time is not None:
+        formatted_lesson += html.italic(lesson.time)
 
-        return formatted_lesson
+    formatted_lesson += f"{lesson.subject}"
 
-    @staticmethod
-    def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
-        result_lessons: list[str] = []
+    if lesson.classroom != '':
+        classroom = html.bold(lesson.classroom)
+        formatted_lesson += f" [{classroom}]"
 
-        lines = schedule.split('\n')
-        lessons = lines[skip_lines:]
-        for lesson in lessons:
-            if not lesson:
-                continue
+    if lesson.is_replacement:
+        formatted_lesson += " (❗️ замена)"
+    formatted_lesson += "\n"
 
-            lesson_number = ScheduleFormatter.get_lesson_number(lesson)
-            if lesson_number is None:
-                continue
+    return formatted_lesson
 
-            full_time = Lesson.get_full_time(lesson_number)
-            result_lesson = f"{lesson} <i>{full_time}</i>"
 
-            result_lessons.append(result_lesson)
+def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
+    result_lessons: list[str] = []
 
-        header_schedule = lines[0]
-        result_lessons_str = '\n'.join(result_lessons)
+    lines = schedule.split('\n')
+    lessons = lines[skip_lines:]
+    for lesson in lessons:
+        if not lesson:
+            result_lessons.append(lesson)
+            continue
 
-        return f"{header_schedule}\n{result_lessons_str}"
+        lesson_number = get_lesson_number(lesson)
+        if lesson_number is None:
+            result_lessons.append(lesson)
+            continue
 
-    @staticmethod
-    def get_lesson_number(lesson: str) -> int | None:
-        match = re.search(r"\d+", lesson)
-        return int(match.group()) if match else None
+        full_time = Lesson.get_full_time(lesson_number)
+        result_lesson = f"{lesson} <i>{full_time}</i>"
+
+        result_lessons.append(result_lesson)
+
+    header_schedule = lines[0]
+    result_lessons_str = '\n'.join(result_lessons)
+
+    return f"{header_schedule}\n{result_lessons_str}"
+
+
+def get_lesson_number(lesson: str) -> int | None:
+    match = re.search(r"\d+", lesson)
+    return int(match.group()) if match else None

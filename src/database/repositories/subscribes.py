@@ -10,12 +10,12 @@ class SubscribeRepository(BaseRepositoryAlchemy[SubscribeModel]):
 
     async def create(self,
                      name: str,
-                     duration_month: int,
-                     cost: int,
+                     duration_days: int,
+                     price: int,
                      **kwargs) -> SubscribeModel | None:
         return await super().create(name=name,
-                                    duration_month=duration_month,
-                                    cost=cost,
+                                    duration_days=duration_days,
+                                    price=price,
                                     **kwargs)
 
     async def get(self, subscribe_id: int) -> SubscribeModel | None:

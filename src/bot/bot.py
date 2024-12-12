@@ -11,7 +11,6 @@ from database.redis.base import redis_client
 
 class BotManager:
     def __init__(self, token):
-        self.logger = getLogger(__name__)
         self.bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
         self.dp = Dispatcher(
             storage=RedisStorage(redis_client)

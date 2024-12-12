@@ -4,11 +4,11 @@ from app.background_service_pack.models import BackgroundService
 from app.observer_pack.models import Publisher
 from database.db import sessionmaker, with_session_self
 from database.repository import Repository
+from helpers.week import Week
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
 from services.parser_service.request import Request
-from services.parser_service.week import Week
 from utils.config import settings
 
 
@@ -28,10 +28,11 @@ class ParserService(BackgroundService, Publisher):
         parser = HtmlParser(response_text)
         parser.initialize_week()
 
-        replacement_schedule = parser.extract_replacement_schedule()
+        replacement_schedules = parser.extract_replacement_schedules()
 
-        builder = Builder(replacement_schedule)
-        result_schedule = builder.main_build()
+        builder = Builder(replacement_schedules)
+        await builder.initialize()
+        result_schedule = await builder.build()
 
         for group, schedule in result_schedule.items():
             if await self._check_changed_schedule(group, schedule):

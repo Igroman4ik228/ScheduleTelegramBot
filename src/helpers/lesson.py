@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import time as dt_time
 
+from helpers.week import Week
 from utils.constants import END_LESSONS_TIME, START_LESSONS_TIME
 
 
@@ -28,7 +29,7 @@ class Lesson:
         ) if data['time'] else None
 
         return Lesson(
-            number=data['number'],
+            number=int(data['number']),
             time=time_value,
             subject=data['subject'],
             classroom=data['classroom'],
@@ -65,5 +66,9 @@ class Lesson:
         end = Lesson.get_end_time(lesson_number).strftime("%H:%M")
         return f"{start} - {end}"
 
-    def __str__(self) -> str:
-        return f"{self.number} {self.time} {self.subject} {self.classroom} {self.is_replacement}"
+
+@dataclass
+class Schedule:
+    week: Week
+    group: str
+    lessons: list[Lesson]

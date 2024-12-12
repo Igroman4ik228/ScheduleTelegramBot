@@ -4,10 +4,10 @@ from aiogram import Bot, F, Router, html
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
-from bot.keyboards.inline.profile_kb import get_profile_kb
+from bot.keyboards.users.inline.profile_kb import get_profile_kb
 from database.models.users import UserModel
 from database.redis.profile_cache import ProfileCache
-from services.formatter_service.message import format_info
+from services.formatter_service.message import ProfileFormatter
 
 user_locks = {}
 router = Router(name=__name__)
@@ -20,8 +20,7 @@ async def handle_profile(message: Message, bot: Bot,
     async with user_locks[message.from_user.id]:
         await delete_profile_messages(bot, message.from_user.id, message.chat.id)
 
-        info_text = format_info(
-            user,
+        info_text = ProfileFormatter(user).format_info(
             f"Профиль {html.quote(user.first_name)}"
         )
 

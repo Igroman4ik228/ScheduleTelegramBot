@@ -4,7 +4,7 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import (RestartingTelegram, TelegramAPIError,
                                 TelegramBadRequest, TelegramNetworkError)
-from aiogram.types import TelegramObject
+from aiogram.types import Update
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
@@ -13,8 +13,8 @@ class ErrorHandlingMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        event: TelegramObject,
+        handler: Callable[[Update, Dict[str, Any]], Awaitable[Any]],
+        event: Update,
         data: Dict[str, Any]
     ) -> Any:
         user = data["event_from_user"]

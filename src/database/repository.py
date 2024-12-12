@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.repositories.default_schedule import DefaultScheduleRepository
 from database.repositories.departments import DepartmentRepository
 from database.repositories.groups import GroupRepository
+from database.repositories.referrals import ReferralRepository
 from database.repositories.result_schedule import ResultScheduleRepository
 from database.repositories.subscribes import SubscribeRepository
 from database.repositories.users import UserRepository
@@ -37,3 +38,7 @@ class Repository:
     @property
     def subscribes(self) -> SubscribeRepository:
         return SubscribeRepository(self.session)
+
+    @property
+    def referrals(self) -> ReferralRepository:
+        return ReferralRepository(self.session)
