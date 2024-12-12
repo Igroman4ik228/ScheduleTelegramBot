@@ -95,12 +95,12 @@ async def handle_successful_payment(message: Message, user: UserModel, repositor
 @router.message(~SubscribeFilter())
 async def handle_check_subscribe(message: Message, repository: Repository):
     subscribes = await repository.subscribes.get_all()
-    await message.answer("Купите пожалуйста подписку!\n",
+    await message.answer("Пожалуйста, купите подписку!\n",
                          reply_markup=get_subscribe_kb(subscribes))
 
 
 @router.callback_query(~SubscribeFilter())
 async def handle_check_subscribe_callback(callback_query: CallbackQuery, repository: Repository):
     subscribes = await repository.subscribes.get_all()
-    await callback_query.message.answer("Купите пожалуйста подписку!\n",
+    await callback_query.message.answer("Пожалуйста, купите подписку!\n",
                                         reply_markup=get_subscribe_kb(subscribes))

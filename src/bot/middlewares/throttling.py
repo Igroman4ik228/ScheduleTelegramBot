@@ -1,7 +1,7 @@
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message
+from aiogram.types import Update
 from cachetools import TTLCache
 
 from utils.config import settings
@@ -13,11 +13,13 @@ class ThrottlingMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler: Callable[[Message, dict[str, Any]], Awaitable[Any]],
-        event: Message,
+        handler: Callable[[Update, dict[str, Any]], Awaitable[Any]],
+        event: Update,
         data: dict[str, Any],
     ) -> Any:
-        if event.chat.id in self.cache:
+        user_id = data["event_from_user"].id
+        if user_id in self.cache:
             return None
-        self.cache[event.chat.id] = None
+
+        self.cache[user_id] = None
         return await handler(event, data)

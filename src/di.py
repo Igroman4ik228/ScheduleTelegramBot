@@ -7,6 +7,7 @@ from bot.bot import BotManager
 from services.ad_service.ad_sender import AdService
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
+from services.sub_checker_service.sub_checker import SubCheckerService
 from utils import constants
 from utils.config import Settings
 

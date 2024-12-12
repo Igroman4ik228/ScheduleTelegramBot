@@ -1,7 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from utils.constants import CallbackData
-
 
 def get_admin_panel_kb() -> InlineKeyboardMarkup:
     admin_panel_kb = [

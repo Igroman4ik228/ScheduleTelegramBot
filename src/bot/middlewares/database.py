@@ -14,7 +14,6 @@ class DatabaseMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
-
         async with sessionmaker() as session:
             data["repository"] = Repository(session)
             return await handler(event, data)

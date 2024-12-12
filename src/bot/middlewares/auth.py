@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable
 
 from aiogram import BaseMiddleware
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Update
 from aiogram.types.user import User
 
 from database.models.users import UserModel
@@ -18,14 +18,14 @@ class AuthMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler: Callable[[Message, dict[str, Any]], Awaitable[Any]],
-        event: Message | CallbackQuery,
+        handler: Callable[[Update, dict[str, Any]], Awaitable[Any]],
+        event: Update,
         data: dict[str, Any]
     ) -> Any:
-        user = event.from_user
         repository: Repository = data["repository"]
         user_rep = repository.users
 
+        user = data["event_from_user"]
         existing_user = await user_rep.get_with_group(user.id)
         if existing_user:
             data["user"] = existing_user
