@@ -24,8 +24,8 @@ class AppModule(Module):
         return ParserService(url=constants.SCHEDULE_URLS[1], time_span=10, notify=notify)
 
     @provider
-    def provide_ad_service(self) -> AdService:
-        return AdService(time_span=100)
+    def provide_sub_checker_service(self) -> SubCheckerService:
+        return SubCheckerService(time_span=10)
 
     @singleton
     @provider
@@ -33,8 +33,8 @@ class AppModule(Module):
         return NotifyService(bot_manager)
 
     @provider
-    def provide_builder(self, parser: ParserService) -> BackgroundBuilder:
-        return BackgroundBuilder(parser=parser)
+    def provide_builder(self, parser: ParserService, sub_checker: SubCheckerService) -> BackgroundBuilder:
+        return BackgroundBuilder(parser=parser, sub_checker=sub_checker)
 
     @provider
     def provide_manager(self, builder: BackgroundBuilder) -> BackgroundManager:
