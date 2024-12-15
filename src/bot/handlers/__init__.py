@@ -3,10 +3,22 @@ from aiogram import Dispatcher
 
 def register_routers(dp: Dispatcher) -> None:
     # Admin routers
-    from .admins import panel
+    from bot.handlers.admins import bot as bot_admin
+    from bot.handlers.admins import group as group_admin
+    from bot.handlers.admins import message as message_admin
+    from bot.handlers.admins import panel as panel_admin
+    from bot.handlers.admins import schedule as schedule_admin
+    from bot.handlers.admins import subscribe as subscribe_admin
+    from bot.handlers.admins import user as user_admin
 
     dp.include_routers(
-        panel.router,
+        panel_admin.router,
+        bot_admin.router,
+        user_admin.router,
+        group_admin.router,
+        message_admin.router,
+        schedule_admin.router,
+        subscribe_admin.router
     )
 
     # User routers

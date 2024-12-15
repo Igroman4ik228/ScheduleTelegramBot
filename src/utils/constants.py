@@ -9,19 +9,42 @@ class CallbackData(StrEnum):
     CHOOSE_DEPARTMENT = "ChooseDepartment"
     TOGGLE_NOTIFICATION = "ToggleNotification"
     TOGGLE_TIME_DISPLAY = "ToggleTimeDisplay"
-    WRITE_ERROR_LOGS = "WriteErrorLogs"
-    FORCED_PARSE = "ForcedParse"
-    BROADCAST = "Broadcast"
+
     WRITE_DEFAULT_SCHEDULE = "WriteDefaultSchedule"
     WRITE_DEFAULT_NUMERATOR_SCHEDULE = "WriteDefaultNumeratorSchedule"
     WRITE_DEFAULT_DENOMINATOR_SCHEDULE = "WriteDefaultDenominatorSchedule"
-    LOAD_DEFAULT_SCHEDULES = "LoadDefaultSchedules"
-    CLEAR_LOG = "ClearLog"
-    BAN_UNBAN = "Ban/Unban"
-    WRITE_LIST_USERS = "WriteListUsers"
     SUBSCRIBE = "Subscribe"
     REFERRAL = "Referral"
-    BACK = "Back"
+
+
+class CallbackDataAdmin(StrEnum):
+    BOT = "BotAdmin"
+    ERROR_LOGS = "ErrorLogsAdmin"
+
+    SCHEDULE = "ScheduleAdmin"
+    FORCE_PARSE = "ForceParseAdmin"
+    LIST_DEFAULT_SCHEDULE = "ListDefaultScheduleAdmin"
+    LOAD_DEFAULT_SCHEDULE = "LoadDefaultScheduleAdmin"
+    DELETE_DEFAULT_SCHEDULE = "DeleteDefaultScheduleAdmin"
+
+    MESSAGE = "MessageAdmin"
+    GLOBAL_MESSAGE = "GlobalMessageAdmin"
+    GROUP_MESSAGE = "GroupMessageAdmin"
+    PERSONAL_MESSAGE = "PersonalMessageAdmin"
+
+    SUBSCRIBE = "SubscribeAdmin"
+    LIST_SUBSCRIBES = "ListSubscribesAdmin"
+    LOAD_SUBSCRIBE = "LoadSubscribeAdmin"
+    DELETE_SUBSCRIBE = "DeleteSubscribeAdmin"
+
+    GROUP = "GroupAdmin"
+    LIST_GROUPS = "ListGroupsAdmin"
+    LOAD_GROUP = "LoadGroupAdmin"
+    DELETE_GROUP = "DeleteGroupAdmin"
+
+    USER = "UserAdmin"
+    LIST_USERS = "ListUsersAdmin"
+    BAN_UNBAN = "Ban/UnbanAdmin"
 
 
 # Strings

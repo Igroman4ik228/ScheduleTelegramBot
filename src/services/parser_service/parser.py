@@ -14,7 +14,7 @@ from utils.config import settings
 
 class ParserService(BackgroundService, Publisher):
     @inject
-    def __init__(self, url: str, time_span: int,  notify: NotifyService):
+    def __init__(self, url: str, time_span: int, notify: NotifyService):
         BackgroundService.__init__(self, time_span)
         Publisher.__init__(self)
 

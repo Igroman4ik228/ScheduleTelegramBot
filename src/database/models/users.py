@@ -27,10 +27,10 @@ class UserModel(Base):
     is_ban: Mapped[bool_false]
 
     group_id: Mapped[int | None] = mapped_column(
-        ForeignKey("Groups.id", ondelete="CASCADE")
+        ForeignKey("Groups.id", ondelete="SET NULL")
     )
     subscribe_id: Mapped[int | None] = mapped_column(
-        ForeignKey("Subscribes.id", ondelete="CASCADE")
+        ForeignKey("Subscribes.id", ondelete="SET NULL")
     )
 
     group: Mapped["GroupModel"] = relationship(

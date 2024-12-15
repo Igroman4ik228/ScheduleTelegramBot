@@ -1,0 +1,14 @@
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from utils.constants import CallbackDataAdmin
+
+
+def get_user_kb() -> InlineKeyboardMarkup:
+    user_kb = [
+        [InlineKeyboardButton(text="Список",
+                              callback_data=CallbackDataAdmin.LIST_USERS.value)],
+        [InlineKeyboardButton(text="Бан/Разбан",
+                              callback_data=CallbackDataAdmin.BAN_UNBAN.value)]
+    ]
+
+    return InlineKeyboardMarkup(inline_keyboard=user_kb)

@@ -22,6 +22,6 @@ class SubscribeModel(Base):
             "Subscribe(\n"
             f"id={self.id!r},\n"
             f"name={self.name!r},\n"
-            f"duration={self.duration!r},\n"
+            f"duration={self.duration_days!r},\n"
             ")"
         )

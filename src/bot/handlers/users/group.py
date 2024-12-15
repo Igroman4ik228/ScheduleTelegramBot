@@ -27,7 +27,7 @@ async def handle_choose_department(callback_query: CallbackQuery,
                                         reply_markup=get_department_kb(departments))
 
 
-@router.callback_query(F.data.contains("Department"))
+@router.callback_query(F.data.contains("Department:"))
 async def handle_department(callback_query: CallbackQuery,
                             repository: Repository):
     department_name = callback_query.data.split(":")[1]
@@ -37,7 +37,7 @@ async def handle_department(callback_query: CallbackQuery,
                                            reply_markup=await get_group_kb(groups))
 
 
-@router.callback_query(F.data.contains("Group"))
+@router.callback_query(F.data.contains("Group:"))
 async def handle_group(callback_query: CallbackQuery,
                        user: UserModel, repository: Repository):
     group_name = callback_query.data.split(":")[1]
