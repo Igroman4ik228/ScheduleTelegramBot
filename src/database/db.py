@@ -38,7 +38,7 @@ def with_session_self(func):
 
 engine = create_async_engine(
     url=settings.database_url,
-    echo=False,
+    echo=settings.DB_ECHO,
     pool_pre_ping=True
 )
 sessionmaker = async_sessionmaker(engine,

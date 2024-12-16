@@ -51,6 +51,7 @@ class LoggerSettings(EnvBaseSettings):
 
 
 class Settings(BotSettings, DBSettings, RedisSettings, LoggerSettings):
+    DB_ECHO: bool = False
     DEBUG: bool = False
 
 

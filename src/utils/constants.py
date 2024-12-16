@@ -48,12 +48,9 @@ class CallbackDataAdmin(StrEnum):
 
 
 # Strings
-SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
-                 "https://menu.sttec.yar.ru/timetable/rasp_second.html"]
 REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
-PATH_TEMPLATE_DATA = Path("data/")
 NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
 SCHEDULE_FILE_EXTENSION = "json"
 
@@ -63,6 +60,8 @@ PARSE_TIME_SLEEP = 10  # in minutes
 LINES_PER_PAGE = 15
 
 # Lists
+SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
+                 "https://menu.sttec.yar.ru/timetable/rasp_second.html"]
 MARKERS = ["✅", "❌"]
 RETRY_DELAYS = [60, 120, 480]
 
@@ -104,3 +103,6 @@ END_LESSONS_TIME = [dt_time(9, 10),
                     dt_time(18, 35),
                     dt_time(16, 35),
                     dt_time(19, 55)]
+
+# Other
+PATH_TEMPLATE_DATA = Path("data/schedule/")

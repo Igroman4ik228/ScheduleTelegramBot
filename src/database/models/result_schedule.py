@@ -4,8 +4,6 @@ from database.models.base import Base, group_foreign_key, str_8192
 
 
 class ResultScheduleModel(Base):
-    __tablename__ = 'ResultSchedule'
-
     weekday: Mapped[int]
     data_lessons: Mapped[str_8192]
     group_id: Mapped[group_foreign_key]

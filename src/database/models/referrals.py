@@ -5,8 +5,6 @@ from database.models.base import Base
 
 
 class ReferralModel(Base):
-    __tablename__ = 'Referrals'
-
     owner_id: Mapped[int] = mapped_column(
         ForeignKey('Users.telegram_id',
                    ondelete="CASCADE")

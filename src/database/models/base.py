@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import Annotated
 
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
+                            mapped_column)
 
 int_pk = Annotated[int, mapped_column(primary_key=True)]
 
@@ -39,6 +40,11 @@ class Base(DeclarativeBase):
         str_2048: String(2048),
         str_8192: String(8192)
     }
+
+    # Tables name
+    @declared_attr.directive
+    def __tablename__(self) -> str:
+        return f"{self.__name__[:-5]}s"
 
     repr_cols_num: int = 4  # print first columns
     repr_cols: tuple = ()  # extra printed columns

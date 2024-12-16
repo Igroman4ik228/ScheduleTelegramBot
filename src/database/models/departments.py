@@ -4,8 +4,6 @@ from database.models.base import Base, str_128
 
 
 class DepartmentModel(Base):
-    __tablename__ = 'Departments'
-
     name: Mapped[str_128] = mapped_column(unique=True)
 
     groups: Mapped[list["GroupModel"]] = relationship(

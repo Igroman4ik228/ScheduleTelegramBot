@@ -8,8 +8,6 @@ from database.models.base import (Base, bool_false, bool_true, created_at,
 
 
 class UserModel(Base):
-    __tablename__ = 'Users'
-
     first_name: Mapped[str_128]
     last_name: Mapped[str_128 | None]
     user_name: Mapped[str_128]

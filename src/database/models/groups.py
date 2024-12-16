@@ -4,8 +4,6 @@ from database.models.base import Base, department_foreign_key, str_128
 
 
 class GroupModel(Base):
-    __tablename__ = 'Groups'
-
     name: Mapped[str_128] = mapped_column(unique=True)
     department_id: Mapped[department_foreign_key]
 

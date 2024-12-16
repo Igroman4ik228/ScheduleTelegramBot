@@ -4,8 +4,6 @@ from database.models.base import Base, group_foreign_key, str_2048
 
 
 class DefaultScheduleModel(Base):
-    __tablename__ = 'DefaultSchedule'
-
     weekday: Mapped[int]
     shift: Mapped[int]
     data_lessons: Mapped[str_2048]

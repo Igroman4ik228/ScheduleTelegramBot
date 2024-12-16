@@ -1,3 +1,13 @@
+__all__ = (
+    "UserModel",
+    "SubscribeModel",
+    "ResultScheduleModel",
+    "ReferralModel",
+    "GroupModel",
+    "DepartmentModel",
+    "DefaultScheduleModel"
+)
+
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
