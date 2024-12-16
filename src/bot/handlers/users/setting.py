@@ -4,6 +4,8 @@ from aiogram.types import CallbackQuery
 from bot.keyboards.users.inline.setting_kb import (get_notification_text,
                                                    get_setting_kb,
                                                    get_time_text)
+from database.models.groups import GroupModel
+from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
 from database.repository import Repository
 from services.formatter_service.message import ProfileFormatter
@@ -15,8 +17,15 @@ TITLE = "Настройки профиля"
 
 
 @router.callback_query(F.data == CallbackData.SETTING.value)
-async def handle_setting(callback_query: CallbackQuery, user: UserModel):
-    info_text = ProfileFormatter(user).format_info(TITLE)
+async def handle_setting(callback_query: CallbackQuery,
+                         user: UserModel, repository: Repository):
+    group: GroupModel = user.group
+    department = await repository.departments.get(group.department_id)
+    subscribe: SubscribeModel = user.subscribe
+
+    info_text = ProfileFormatter(
+        user, group, department, subscribe
+    ).format_info(TITLE)
     await callback_query.message.edit_text(info_text,
                                            reply_markup=get_setting_kb(user.is_notify,
                                                                        user.is_time_shown))

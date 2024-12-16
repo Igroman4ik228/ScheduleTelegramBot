@@ -8,17 +8,17 @@ class GroupModel(Base):
     department_id: Mapped[department_foreign_key]
 
     department: Mapped["DepartmentModel"] = relationship(
-        back_populates="groups", lazy="selectin"
+        back_populates="groups"
     )
 
     users: Mapped[list["UserModel"]] = relationship(
-        back_populates="group", lazy="selectin"
+        back_populates="group"
     )
     default_schedule: Mapped[list["DefaultScheduleModel"]] = relationship(
-        back_populates="group", lazy="selectin"
+        back_populates="group"
     )
     result_schedule: Mapped[list["ResultScheduleModel"]] = relationship(
-        back_populates="group", lazy="selectin"
+        back_populates="group"
     )
 
     def __repr__(self):

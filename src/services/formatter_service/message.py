@@ -1,21 +1,24 @@
 from aiogram import html
 
+from database.db import sessionmaker
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
 from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
+from database.repository import Repository
 from helpers.default_schedule_parser import generate_default_schedule
 from services.formatter_service.schedule import format_header, format_lesson
 from utils.constants import DAY_NAMES
 
 
 class ProfileFormatter:
-    def __init__(self, user: UserModel):
+    def __init__(self, user: UserModel, group: GroupModel,
+                 department: DepartmentModel, subscribe: SubscribeModel | None):
         self.user = user
-        self.group: GroupModel = user.group
-        self.department: DepartmentModel = self.group.department
-        self.subscribe: SubscribeModel | None = user.subscribe
+        self.group: GroupModel = group
+        self.department: DepartmentModel = department
+        self.subscribe: SubscribeModel | None = subscribe
 
     def format_info(self, title: str) -> str:
         if self.subscribe:

@@ -10,7 +10,7 @@ class DefaultScheduleModel(Base):
     group_id: Mapped[group_foreign_key]
 
     group: Mapped["GroupModel"] = relationship(
-        back_populates="default_schedule", lazy="selectin"
+        back_populates="default_schedule"
     )
 
     def __repr__(self):

@@ -3,6 +3,7 @@ from logging import getLogger
 from typing import Dict, List
 
 from database.db import with_session_self
+from database.models.default_schedule import DefaultScheduleModel
 from database.repository import Repository
 from helpers.default_schedule_parser import get_default_lessons
 from helpers.lesson import Lesson, Schedule
@@ -139,6 +140,7 @@ class Builder:
         week = Week()
         default_schedule_rep = Repository(session).default_schedule
         default_schedule_data = await default_schedule_rep.get_all(
+            "group",
             weekday=week.weekday,
             shift=week.shift
         )
@@ -157,7 +159,7 @@ class DefaultScheduleCollector:
         self.week = week
         self.schedules_by_group: Dict[str, Schedule] = {}
 
-    def collect_schedules(self, schedule_data: List) -> List[Schedule]:
+    def collect_schedules(self, schedule_data: list[DefaultScheduleModel]) -> List[Schedule]:
         """Собрать расписания из данных БД"""
         for lesson_data in schedule_data:
             self._process_lesson_data(lesson_data)

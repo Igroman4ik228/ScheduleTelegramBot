@@ -32,10 +32,10 @@ class UserModel(Base):
     )
 
     group: Mapped["GroupModel"] = relationship(
-        back_populates="users", lazy="selectin"
+        back_populates="users"
     )
     subscribe: Mapped["SubscribeModel"] = relationship(
-        back_populates="users", lazy="selectin"
+        back_populates="users"
     )
 
     created_at: Mapped[created_at]

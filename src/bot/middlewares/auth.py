@@ -26,7 +26,7 @@ class AuthMiddleware(BaseMiddleware):
         user_rep = repository.users
 
         user = data["event_from_user"]
-        existing_user = await user_rep.get(user.id)
+        existing_user = await user_rep.get(user.id, "group", "subscribe")
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)

@@ -25,8 +25,8 @@ class UserFilter:
                 return [UserModel]
 
             if self._filter is FilterAction.BY_GROUP:
-                return user_repository.get_by_group(self.target_obj)
+                return user_repository.get(self.target_obj)
             if self._filter is FilterAction.BY_PREMIUM:
-                return user_repository.get_by_premium(self.target_obj)
+                return user_repository.get(self.target_obj)
 
         self.logger.log(f"Get Users by {self._filter}")

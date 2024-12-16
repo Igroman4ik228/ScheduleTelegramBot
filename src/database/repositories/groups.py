@@ -14,7 +14,7 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
         self.department_repo = DepartmentRepository(session)
 
     async def create(self, name: str, department_name: str) -> GroupModel | None:
-        department = await self.department_repo.get(department_name)
+        department = await self.department_repo.get_by_name(department_name)
         if department is None:
             self.logger.debug("Department with name "
                               f"'{department_name}' not found")
@@ -30,7 +30,7 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
         return await super().get(name=name, *options)
 
     async def get_all_by_department(self, department_name: str) -> list[GroupModel]:
-        department = await self.department_repo.get(department_name)
+        department = await self.department_repo.get_by_name(department_name)
         return await super().get_all(department_id=department.id)
 
     async def delete(self, group_id: int):

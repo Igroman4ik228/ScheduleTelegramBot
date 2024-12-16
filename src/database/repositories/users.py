@@ -53,4 +53,6 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         await self._clear_user_cache(telegram_id)
 
     async def _clear_user_cache(self, telegram_id):
+        await clear_cache(self.get, self, telegram_id, "group", "subscribe")
+        await clear_cache(self.get, self, telegram_id, "group")
         await clear_cache(self.get, self, telegram_id)

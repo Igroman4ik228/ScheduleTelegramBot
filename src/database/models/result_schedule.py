@@ -9,7 +9,7 @@ class ResultScheduleModel(Base):
     group_id: Mapped[group_foreign_key]
 
     group: Mapped["GroupModel"] = relationship(
-        back_populates="result_schedule", lazy="selectin"
+        back_populates="result_schedule"
     )
 
     def __repr__(self):

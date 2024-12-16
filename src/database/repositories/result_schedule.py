@@ -75,5 +75,7 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
         await self._clear_result_schedule_cache(weekday, group.id)
 
     async def _clear_result_schedule_cache(self, weekday: int, group_id: int):
+        await clear_cache(self.get, self, weekday, group_id, "group")
         await clear_cache(self.get, self, weekday, group_id)
+        await clear_cache(self.get_by_group_name, self, "group")
         await clear_cache(self.get_by_group_name, self)

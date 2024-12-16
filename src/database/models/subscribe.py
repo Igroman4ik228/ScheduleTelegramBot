@@ -12,7 +12,7 @@ class SubscribeModel(Base):
     discount: Mapped[int | None]  # in percent
 
     users: Mapped[list["UserModel"]] = relationship(
-        back_populates="subscribe", lazy="selectin"
+        back_populates="subscribe"
     )
 
     def __repr__(self):

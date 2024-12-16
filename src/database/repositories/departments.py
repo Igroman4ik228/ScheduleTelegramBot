@@ -11,7 +11,10 @@ class DepartmentRepository(BaseRepositoryAlchemy[DepartmentModel]):
     async def create(self, name: str) -> DepartmentModel | None:
         return await super().create(name=name)
 
-    async def get(self, name: str, *options) -> DepartmentModel | None:
+    async def get(self, department_id: str, *options) -> DepartmentModel | None:
+        return await super().get(id=department_id, *options)
+
+    async def get_by_name(self, name: str, *options) -> DepartmentModel | None:
         return await super().get(name=name, *options)
 
     async def delete(self, name: str):
