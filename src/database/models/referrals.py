@@ -16,11 +16,9 @@ class ReferralModel(Base):
     )
 
     owner: Mapped["UserModel"] = relationship(
-        foreign_keys=[owner_id],
-        lazy="selectin",
+        foreign_keys=[owner_id], lazy="selectin"
 
     )
     user: Mapped["UserModel"] = relationship(
-        foreign_keys=[user_id],
-        lazy="selectin"
+        foreign_keys=[user_id], lazy="selectin"
     )

@@ -40,19 +40,21 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
                                     group_id=group.id)
 
     @cached(ttl=60*60*12)
-    async def get(self, weekday: int, group_id: int) -> ResultScheduleModel | None:
+    async def get(self, weekday: int, group_id: int, *options) -> ResultScheduleModel | None:
         return await super().get(weekday=weekday,
-                                 group_id=group_id)
+                                 group_id=group_id,
+                                 *options)
 
     @cached(ttl=60*60*12)
-    async def get_by_group_name(self, weekday: int, group_name: str) -> ResultScheduleModel | None:
+    async def get_by_group_name(self, weekday: int, group_name: str, *options) -> ResultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.debug(f"Group {group_name} not found for get")
             return
 
         return await super().get(weekday=weekday,
-                                 group_id=group.id)
+                                 group_id=group.id,
+                                 *options)
 
     async def get_all(self, **kwargs):
         return await super().get_all(**kwargs)

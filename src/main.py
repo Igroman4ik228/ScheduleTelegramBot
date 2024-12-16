@@ -1,6 +1,4 @@
 import asyncio
-import logging
-from logging.config import dictConfig
 
 from injector import Injector
 
@@ -10,10 +8,6 @@ from database.db import engine
 from database.redis.base import redis_client
 from di import AppModule
 from utils.config import settings
-
-dictConfig(settings.logger_conf)
-
-logger = logging.getLogger(__name__)
 
 
 async def main():
@@ -32,6 +26,8 @@ async def main():
         await redis_client.aclose()
 
 if __name__ == '__main__':
+    settings.configure_logging()
+
     try:
         asyncio.run(main())
     except (KeyboardInterrupt, SystemExit):

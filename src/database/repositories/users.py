@@ -41,12 +41,8 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         )
 
     @cached(ttl=60*3)
-    async def get(self, telegram_id: int) -> UserModel | None:
-        return await super().get(telegram_id=telegram_id)
-
-    @cached(ttl=60*3)
-    async def get_with_group(self, telegram_id: int) -> UserModel | None:
-        return await super().get_with_option("group", telegram_id=telegram_id)
+    async def get(self, telegram_id: int, *options) -> UserModel | None:
+        return await super().get(telegram_id=telegram_id, *options)
 
     async def get_all(self, **kwargs) -> list[UserModel]:
         return await super().get_all(**kwargs)
@@ -61,4 +57,3 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
 
     async def _clear_user_cache(self, telegram_id):
         await clear_cache(self.get, self, telegram_id)
-        await clear_cache(self.get_with_group, self, telegram_id)

@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
 
 from bot.filters.admin import AdminFilter
-from bot.keyboards.admins.inline.schedule_kb import get_schedule_kb
+from bot.keyboards.admins.inline.schedule.schedule_kb import get_schedule_kb
 from utils.constants import CallbackDataAdmin
 
 router = Router(name=__name__)

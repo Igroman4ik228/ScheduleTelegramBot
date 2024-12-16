@@ -23,6 +23,8 @@ class DBSettings(EnvBaseSettings):
     DB_PASS: str | None = None
     DB_NAME: str = "mysql"
 
+    DB_ECHO: bool = False
+
     @property
     def database_url(self) -> str:
         if self.DB_PASS:
@@ -51,8 +53,17 @@ class LoggerSettings(EnvBaseSettings):
 
 
 class Settings(BotSettings, DBSettings, RedisSettings, LoggerSettings):
-    DB_ECHO: bool = False
     DEBUG: bool = False
+
+    def configure_logging(self):
+        import logging
+        from logging.config import dictConfig
+
+        dictConfig(settings.logger_conf)
+
+        logging.getLogger("sqlalchemy.engine.Engine").handlers = [
+            logging.NullHandler()
+        ]
 
 
 settings = Settings()

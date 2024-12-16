@@ -34,7 +34,7 @@ async def handle_department(callback_query: CallbackQuery,
     groups = await repository.groups.get_all_by_department(department_name)
 
     await callback_query.message.edit_text("Выберите группу",
-                                           reply_markup=await get_group_kb(groups))
+                                           reply_markup=get_group_kb(groups))
 
 
 @router.callback_query(F.data.contains("Group:"))

@@ -23,11 +23,11 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
         return await super().create(name=name,
                                     department_id=department.id)
 
-    async def get(self, group_id: int) -> GroupModel | None:
-        return await super().get(id=group_id)
+    async def get(self, group_id: int, *options) -> GroupModel | None:
+        return await super().get(id=group_id, *options)
 
-    async def get_by_name(self, name: str) -> GroupModel | None:
-        return await super().get(name=name)
+    async def get_by_name(self, name: str, *options) -> GroupModel | None:
+        return await super().get(name=name, *options)
 
     async def get_all_by_department(self, department_name: str) -> list[GroupModel]:
         department = await self.department_repo.get(department_name)

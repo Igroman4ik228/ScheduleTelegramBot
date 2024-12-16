@@ -41,6 +41,7 @@ engine = create_async_engine(
     echo=settings.DB_ECHO,
     pool_pre_ping=True
 )
+
 sessionmaker = async_sessionmaker(engine,
                                   autoflush=False,
                                   expire_on_commit=False)

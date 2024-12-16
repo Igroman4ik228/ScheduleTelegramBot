@@ -18,11 +18,11 @@ class SubscribeRepository(BaseRepositoryAlchemy[SubscribeModel]):
                                     price=price,
                                     **kwargs)
 
-    async def get(self, subscribe_id: int) -> SubscribeModel | None:
-        return await super().get(id=subscribe_id)
+    async def get(self, subscribe_id: int, *options) -> SubscribeModel | None:
+        return await super().get(id=subscribe_id, *options)
 
-    async def get_by_name(self, name: str) -> SubscribeModel | None:
-        return await super().get(name=name)
+    async def get_by_name(self, name: str, *options) -> SubscribeModel | None:
+        return await super().get(name=name, *options)
 
     async def delete(self, subscribe_id):
         await super().delete(id=subscribe_id)

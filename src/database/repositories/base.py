@@ -22,27 +22,22 @@ class BaseRepositoryAlchemy[T]:
             return instance
         return
 
-    async def get(self, **kwargs) -> T | None:
-        query = await self.session.execute(
-            select(self.model)
-            .filter_by(**kwargs)
-        )
-        return query.scalar_one_or_none()
+    async def get(self, *options, **kwargs) -> T | None:
+        for option in options:
+            if not hasattr(self.model, option):
+                self.logger.warning(
+                    f"Model {self.model.__name__}"
+                    f"has no attribute {option}"
+                )
+                return
 
-    async def get_with_option(self, option: str, **kwargs) -> T | None:
-        if not hasattr(self.model, option):
-            self.logger.warning(
-                f"Model {self.model.__name__}"
-                f"has no attribute {option}"
-            )
-            return
+        query = select(self.model).filter_by(**kwargs)
 
-        query = await self.session.execute(
-            select(self.model)
-            .filter_by(**kwargs)
-            .options(joinedload(getattr(self.model, option)))
-        )
-        return query.scalar_one_or_none()
+        for option in options:
+            query = query.options(joinedload(getattr(self.model, option)))
+
+        result = await self.session.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_all(self, **kwargs) -> list[T]:
         query = await self.session.execute(

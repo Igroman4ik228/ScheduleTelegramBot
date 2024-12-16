@@ -4,7 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from database.models.groups import GroupModel
 
 
-async def get_group_kb(groups: list[GroupModel]) -> InlineKeyboardMarkup:
+def get_group_kb(groups: list[GroupModel]) -> InlineKeyboardMarkup:
     group_builder = InlineKeyboardBuilder()
     for group in groups:
         group_builder.add(

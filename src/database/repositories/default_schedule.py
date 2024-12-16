@@ -48,17 +48,20 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         self,
         weekday: int,
         shift: int,
-        group_id: int
+        group_id: int,
+        *options
     ) -> DefaultScheduleModel | None:
         return await super().get(weekday=weekday,
                                  shift=shift,
-                                 group_id=group_id)
+                                 group_id=group_id,
+                                 *options)
 
     async def get_by_group_name(
         self,
         weekday: int,
         shift: int,
-        group_name: str
+        group_name: str,
+        *options
     ) -> DefaultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
@@ -67,7 +70,8 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
 
         return await super().get(weekday=weekday,
                                  shift=shift,
-                                 group_id=group.id)
+                                 group_id=group.id,
+                                 *options)
 
     async def delete(
         self,

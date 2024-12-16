@@ -45,6 +45,7 @@ class CallbackDataAdmin(StrEnum):
     USER = "UserAdmin"
     LIST_USERS = "ListUsersAdmin"
     BAN_UNBAN = "Ban/UnbanAdmin"
+    GROUP_LIST_USERS = "GroupListUsersAdmin"
 
 
 # Strings

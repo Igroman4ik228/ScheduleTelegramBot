@@ -26,12 +26,12 @@ class AuthMiddleware(BaseMiddleware):
         user_rep = repository.users
 
         user = data["event_from_user"]
-        existing_user = await user_rep.get_with_group(user.id)
+        existing_user = await user_rep.get(user.id)
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
 
-        await clear_cache(user_rep.get_with_group, user_rep, user.id)
+        await clear_cache(user_rep.get, user_rep, user.id)
         new_user = await self._create_user(user, repository)
         data["user"] = new_user
 
