@@ -13,32 +13,31 @@ class SubCheckerService(BackgroundService):
 
     async def do_work(self):
         # Todo:
-        pass
-        # async with sessionmaker() as session:
-        #     repo = Repository(session)
-        #     users = await repo.users.get_all()
+        async with sessionmaker() as session:
+            repo = Repository(session)
+            users = await repo.users.get_all("subscribe")
 
-        # for user in users:
-        #     user_sub: SubscribeModel = user.subscribe
-        #     current_time = datetime.now().date()
-        #     subscribe_end_time = user.subscribe_end_time.date()
-        #     sub_half_time_span = user_sub.duration_days / 2
+        for user in users:
+            user_sub: SubscribeModel = user.subscribe
+            current_time = datetime.now().date()
+            subscribe_end_time = user.subscribe_end_time.date()
+            sub_half_time_span = user_sub.duration_days / 2
 
-        #     # Check 5 days before end sub
-        #     if subscribe_end_time - current_time == timedelta(days=5):
-        #         pass
+            # Check 5 days before end sub
+            if subscribe_end_time - current_time == timedelta(days=5):
+                pass
 
-        #     # Check 1 day before end sub
-        #     if subscribe_end_time - current_time == timedelta(days=1):
-        #         pass
+            # Check 1 day before end sub
+            if subscribe_end_time - current_time == timedelta(days=1):
+                pass
 
-        #     # Check half time of end sub
-        #     if subscribe_end_time - current_time == timedelta(days=sub_half_time_span):
-        #         pass
+            # Check half time of end sub
+            if subscribe_end_time - current_time == timedelta(days=sub_half_time_span):
+                pass
 
-        #     # Check end time of sub
-        #     if subscribe_end_time <= current_time:
-        #         await self._del_sub(user.telegram_id)
+            # Check end time of sub
+            if subscribe_end_time <= current_time:
+                await self._del_sub(user.telegram_id)
 
     async def _del_sub(self, user_tg_id):
         async with sessionmaker() as session:

@@ -39,12 +39,22 @@ class BaseRepositoryAlchemy[T]:
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_all(self, **kwargs) -> list[T]:
-        query = await self.session.execute(
-            select(self.model)
-            .filter_by(**kwargs)
-        )
-        return query.scalars().all()
+    async def get_all(self, *options, **kwargs) -> list[T]:
+        for option in options:
+            if not hasattr(self.model, option):
+                self.logger.warning(
+                    f"Model {self.model.__name__}"
+                    f"has no attribute {option}"
+                )
+                return
+
+        query = select(self.model).filter_by(**kwargs)
+
+        for option in options:
+            query = query.options(joinedload(getattr(self.model, option)))
+
+        result = await self.session.execute(query)
+        return result.unique().scalars().all()
 
     async def update(self, instance: T):
         instance_id = getattr(instance, "id", None)

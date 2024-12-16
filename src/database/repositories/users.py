@@ -44,9 +44,6 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
     async def get(self, telegram_id: int, *options) -> UserModel | None:
         return await super().get(telegram_id=telegram_id, *options)
 
-    async def get_all(self, **kwargs) -> list[UserModel]:
-        return await super().get_all(**kwargs)
-
     async def update(self, instance: UserModel):
         await super().update(instance)
         await self._clear_user_cache(instance.telegram_id)
