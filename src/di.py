@@ -24,8 +24,8 @@ class AppModule(Module):
         return ParserService(url=constants.SCHEDULE_URLS[1], time_span=10, notify=notify)
 
     @provider
-    def provide_sub_checker_service(self) -> SubCheckerService:
-        return SubCheckerService(time_span=10)
+    def provide_sub_checker_service(self, bot_manager: BotManager) -> SubCheckerService:
+        return SubCheckerService(time_span=10, bot_manager=bot_manager)
 
     @singleton
     @provider
