@@ -1,13 +1,16 @@
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, group_foreign_key, str_2048
+from database.models.base import Base, Str2048
 
 
 class DefaultScheduleModel(Base):
     weekday: Mapped[int]
     shift: Mapped[int]
-    data_lessons: Mapped[str_2048]
-    group_id: Mapped[group_foreign_key]
+    data_lessons: Mapped[Str2048]
+    group_id: Mapped[int] = mapped_column(
+        ForeignKey("Groups.id", ondelete="CASCADE")
+    )
 
     group: Mapped["GroupModel"] = relationship(
         back_populates="default_schedule"

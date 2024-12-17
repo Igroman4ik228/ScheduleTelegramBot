@@ -1,11 +1,14 @@
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, department_foreign_key, str_128
+from database.models.base import Base, Str128
 
 
 class GroupModel(Base):
-    name: Mapped[str_128] = mapped_column(unique=True)
-    department_id: Mapped[department_foreign_key]
+    name: Mapped[Str128] = mapped_column(unique=True)
+    department_id: Mapped[int] = mapped_column(
+        ForeignKey("Departments.id")
+    )
 
     department: Mapped["DepartmentModel"] = relationship(
         back_populates="groups"
