@@ -7,7 +7,8 @@ from database.models.base import Base, Str128
 class GroupModel(Base):
     name: Mapped[Str128] = mapped_column(unique=True)
     department_id: Mapped[int] = mapped_column(
-        ForeignKey("Departments.id")
+        ForeignKey("Departments.id",
+                   ondelete="CASCADE")
     )
 
     department: Mapped["DepartmentModel"] = relationship(

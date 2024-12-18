@@ -37,7 +37,7 @@ class UserModel(Base):
         back_populates="users"
     )
 
-    CreatedAt: Mapped[CreatedAt]
+    created_at: Mapped[CreatedAt]
 
     def __repr__(self):
         return (

@@ -9,7 +9,8 @@ class DefaultScheduleModel(Base):
     shift: Mapped[int]
     data_lessons: Mapped[Str2048]
     group_id: Mapped[int] = mapped_column(
-        ForeignKey("Groups.id", ondelete="CASCADE")
+        ForeignKey("Groups.id",
+                   ondelete="CASCADE")
     )
 
     group: Mapped["GroupModel"] = relationship(
