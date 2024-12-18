@@ -35,9 +35,11 @@ async def handle_list_users(callback_query: CallbackQuery, repository: Repositor
 
 
 @router.callback_query(GroupCallbackFactory.filter())
-async def handle_group_list_users(callback_query: CallbackQuery,
-                                  callback_data: GroupCallbackFactory,
-                                  repository: Repository):
+async def handle_group_list_users(
+    callback_query: CallbackQuery,
+    callback_data: GroupCallbackFactory,
+    repository: Repository
+):
     users = await repository.users.get_all(group_id=callback_data.group_id)
 
     title = get_title_list_users(len(users))

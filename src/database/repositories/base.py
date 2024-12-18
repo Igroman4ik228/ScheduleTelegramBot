@@ -83,10 +83,10 @@ class BaseRepositoryAlchemy[T]:
     async def _handle_commit(self) -> bool:
         try:
             await self.session.commit()
-            return True
         except IntegrityError:
             await self.session.rollback()
             return False
         except Exception as e:
             await self.session.rollback()
             raise f"Ошибка в репозиториях: {e}"
+        return True

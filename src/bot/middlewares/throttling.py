@@ -17,7 +17,7 @@ class ThrottlingMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
-        user_id = data["event_from_user"].id
+        user_id: int = data["event_from_user"].id
         if user_id in self.cache:
             return None
 

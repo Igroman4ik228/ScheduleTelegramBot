@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.redis import RedisStorage
@@ -11,7 +9,10 @@ from database.redis.base import redis_client
 
 class BotManager:
     def __init__(self, token):
-        self.bot = Bot(token, default=DefaultBotProperties(parse_mode="HTML"))
+        self.bot = Bot(
+            token,
+            default=DefaultBotProperties(parse_mode="HTML")
+        )
         self.dp = Dispatcher(
             storage=RedisStorage(redis_client)
         )
