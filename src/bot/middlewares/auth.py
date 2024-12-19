@@ -14,8 +14,6 @@ from database.repository import Repository
 
 
 class AuthMiddleware(BaseMiddleware):
-    USER_FETCH_OPTIONS: tuple[str, ...] = ("group", "subscribe")
-
     def __init__(self):
         self.logger = getLogger(__name__)
 
@@ -48,14 +46,14 @@ class AuthMiddleware(BaseMiddleware):
     ) -> UserModel | None:
         user = await user_repo.get(
             user_id,
-            self.USER_FETCH_OPTIONS
+            "group", "subscribe"
         )
         if user is None:
             await clear_cache(
                 user_repo.get,
                 user_repo,
                 user_id,
-                self.USER_FETCH_OPTIONS
+                "group", "subscribe"
             )
         return user
 

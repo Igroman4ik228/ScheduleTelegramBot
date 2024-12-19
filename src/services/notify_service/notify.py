@@ -25,7 +25,7 @@ class NotifyService(Observer):
             if self.need_notify(user):
                 continue
 
-            formatted_schedule = get_schedule(
+            formatted_schedule = await get_schedule(
                 user.group_id, repo,
                 Week().weekday, Week().shift
             )
