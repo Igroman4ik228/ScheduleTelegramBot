@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from enum import Enum
 from logging import getLogger
 from re import match
 
@@ -11,16 +12,12 @@ from database.repository import Repository
 
 
 class SubCheckerService(BackgroundService):
+
     def __init__(self, time_span: int, bot_manager: BotManager):
         super().__init__(time_span)
 
         self.bot = bot_manager.bot
         self._service_cache = ServiceCache(self)
-
-        self._end_time_message = "Hi, дорогой пользователь!\nУ меня для тебя плохая новость. Срок действия твоей подписки закончился. 😥\nНо не стоит унывать, ты всегда можешь оформить её прямо тут! 🤩\n#ЭтоТебеНужно"
-        self._half_time_message = "Hi, дорогой пользователь!\nНу, как? Нравится? Удобно? Практично?\nКонечно да!\nНапомню, что прошла уже половина подписки. 🤓\n#ВремяЛетит"
-        self._five_time_message = "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится через 5 дней.\nОтложи деньги на оформление новой зарнее. 🤑\n#ЭтоПросто"
-        self._one_time_message = "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится уже завтра\nПриготовья оформить новую подписку. 💳\n#ЭтоУдобно"
 
     async def do_work(self):
         async with sessionmaker() as session:
@@ -42,22 +39,22 @@ class SubCheckerService(BackgroundService):
 
             # Check 1 day before end sub
             if subscribe_end_time - current_time == timedelta(days=1):
-                await self.bot.send_message(user.telegram_id, self._one_time_message)
+                await self.bot.send_message(user.telegram_id, TimeMessage.ONE.value)
 
             # Check 5 days before end sub
             elif subscribe_end_time - current_time == timedelta(days=5):
-                await self.bot.send_message(user.telegram_id, self._five_time_message)
+                await self.bot.send_message(user.telegram_id, TimeMessage.FIVE.value)
 
             # Check half time of end sub
             elif subscribe_end_time - current_time == timedelta(days=sub_half_time_span):
-                await self.bot.send_message(user.telegram_id, self._half_time_message)
+                await self.bot.send_message(user.telegram_id, TimeMessage.HALF.value)
 
             # Check end time of sub
             elif subscribe_end_time <= current_time:
                 await self._del_sub(user.telegram_id)
                 self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {
                                  user.telegram_id}")
-                await self.bot.send_message(user.telegram_id, self._end_time_message)
+                await self.bot.send_message(user.telegram_id, TimeMessage.END.value)
 
             await self._service_cache.create(user.telegram_id, "true")
 
@@ -82,3 +79,22 @@ class SubCheckerService(BackgroundService):
     async def stop(self):
         self.logger.info("SubCheckerService stopped")
         await self.pause()
+
+
+class TimeMessage(Enum):
+    END = "Hi, дорогой пользователь!\n\
+        У меня для тебя плохая новость. Срок действия твоей подписки закончился. 😥\n\
+        Но не стоит унывать, ты всегда можешь оформить её прямо тут! 🤩\n\
+        #ЭтоТебеНужно"
+    HALF = "Hi, дорогой пользователь!\n\
+        Ну, как? Нравится? Удобно? Практично?\n\
+        Конечно да!\nНапомню, что прошла уже половина подписки. 🤓\n\
+        #ВремяЛетит"
+    FIVE = "Hi, дорогой пользователь!\n\
+        Срок действия твоей подписки закончится через 5 дней.\n\
+        Отложи деньги на оформление новой заранее. 🤑\n\
+        #ЭтоПросто"
+    ONE = "Hi, дорогой пользователь!\n\
+        Срок действия твоей подписки закончится уже завтра\n\
+        Приготовься оформить новую подписку. 💳\n\
+        #ЭтоУдобно"

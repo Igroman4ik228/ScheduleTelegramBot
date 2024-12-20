@@ -1,21 +1,10 @@
 from logging import getLogger
+
 from redis.asyncio import Redis
 
 from utils.config import settings
 
-
-def create_redis(
-    host: str = settings.REDIS_HOST,
-    port: int = settings.REDIS_PORT,
-    db: int = 0,
-    password: str | None = settings.REDIS_PASS
-) -> Redis:
-    if password is not None:
-        return Redis.from_url(f"redis://{host}:{password}{port}/{db}")
-    return Redis.from_url(f"redis://{host}:{port}/{db}")
-
-
-redis_client = create_redis()
+redis_client = Redis.from_url(settings.redis_url)
 
 
 class BaseCache:

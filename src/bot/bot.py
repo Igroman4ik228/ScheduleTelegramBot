@@ -4,7 +4,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 
 from bot.handlers import register_routers
 from bot.middlewares import register_middlewares
-from database.redis.base import redis_client
+from utils.config import settings
 
 
 class BotManager:
@@ -13,7 +13,9 @@ class BotManager:
             token,
             default=DefaultBotProperties(parse_mode="HTML")
         )
-        self.dp = Dispatcher()
+        self.dp = Dispatcher(storage=RedisStorage.from_url(
+            url=settings.redis_url
+        ))
 
     async def start(self):
         await self.bot.delete_webhook(drop_pending_updates=True)
@@ -29,3 +31,4 @@ class BotManager:
 
     async def _on_shutdown(self):
         await self.bot.session.close()
+        await self.dp.storage.close()

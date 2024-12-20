@@ -4,7 +4,6 @@ from injector import Module, provider, singleton
 from app.background_service_pack.builder import BackgroundBuilder
 from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
-from services.ad_service.ad_sender import AdService
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
 from services.sub_checker_service.sub_checker import SubCheckerService
@@ -21,11 +20,18 @@ class AppModule(Module):
 
     @provider
     def provide_parser_service(self, notify: NotifyService) -> ParserService:
-        return ParserService(url=constants.SCHEDULE_URLS[1], time_span=10, notify=notify)
+        return ParserService(
+            url=constants.SCHEDULE_URLS[1],
+            time_span=constants.PARSER_TIME_SPAN,
+            notify=notify
+        )
 
     @provider
     def provide_sub_checker_service(self, bot_manager: BotManager) -> SubCheckerService:
-        return SubCheckerService(time_span=10, bot_manager=bot_manager)
+        return SubCheckerService(
+            time_span=constants.SUB_CHECKER_TIME_SPAN,
+            bot_manager=bot_manager
+        )
 
     @singleton
     @provider
@@ -33,7 +39,11 @@ class AppModule(Module):
         return NotifyService(bot_manager)
 
     @provider
-    def provide_builder(self, parser: ParserService, sub_checker: SubCheckerService) -> BackgroundBuilder:
+    def provide_builder(
+        self,
+        parser: ParserService,
+        sub_checker: SubCheckerService
+    ) -> BackgroundBuilder:
         return BackgroundBuilder(parser=parser, sub_checker=sub_checker)
 
     @provider

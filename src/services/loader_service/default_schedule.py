@@ -5,7 +5,7 @@ from database.db import with_session_self
 from database.repositories.default_schedule import DefaultScheduleRepository
 from helpers.default_schedule_parser import default_schedule_parse
 from helpers.file import get_file_paths, load_from_json
-from utils.constants import PATH_TEMPLATE_DATA, SCHEDULE_FILE_EXTENSION
+from utils.constants import FILE_EXTENSION, PATH_TEMPLATE_DATA
 
 
 class DefaultScheduleLoader:
@@ -13,7 +13,7 @@ class DefaultScheduleLoader:
 
     async def process_all_files(self):
         file_paths = get_file_paths(
-            PATH_TEMPLATE_DATA, SCHEDULE_FILE_EXTENSION
+            PATH_TEMPLATE_DATA, FILE_EXTENSION
         )
         await asyncio.gather(*(self.process_file(file_path) for file_path in file_paths))
 

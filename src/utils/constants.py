@@ -1,4 +1,5 @@
 from datetime import time as dt_time
+from datetime import timedelta
 from enum import StrEnum
 from pathlib import Path
 
@@ -53,12 +54,15 @@ REPLACEMENT_TEXT = "(❗ замена)"
 WITH_VERIFICATION_TEXT = "С проверкой замен"
 WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
 NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
-SCHEDULE_FILE_EXTENSION = "json"
+FILE_EXTENSION = "json"
 
 # Integers
 MAX_REFERRAL = 5
-PARSE_TIME_SLEEP = 10  # in minutes
-LINES_PER_PAGE = 15
+CACHE_TTL_USER = timedelta(minutes=3).seconds
+CACHE_TTL_RESULT_SCHEDULE = timedelta(hours=6).seconds
+SUB_CHECKER_TIME_SPAN = timedelta(seconds=60).seconds
+PARSER_TIME_SPAN = timedelta(seconds=10).seconds
+
 
 # Lists
 SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
