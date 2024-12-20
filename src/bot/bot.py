@@ -13,9 +13,7 @@ class BotManager:
             token,
             default=DefaultBotProperties(parse_mode="HTML")
         )
-        self.dp = Dispatcher(
-            storage=RedisStorage(redis_client)
-        )
+        self.dp = Dispatcher()
 
     async def start(self):
         await self.bot.delete_webhook(drop_pending_updates=True)
