@@ -3,14 +3,13 @@ from datetime import datetime
 from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import (Base, bool_false, bool_true, created_at,
-                                  str_128)
+from database.models.base import Base, BoolFalse, BoolTrue, CreatedAt, Str128
 
 
 class UserModel(Base):
-    first_name: Mapped[str_128]
-    last_name: Mapped[str_128 | None]
-    user_name: Mapped[str_128]
+    first_name: Mapped[Str128]
+    last_name: Mapped[Str128 | None]
+    user_name: Mapped[Str128]
     telegram_id: Mapped[int] = mapped_column(
         BigInteger,
         unique=True
@@ -18,11 +17,11 @@ class UserModel(Base):
     subscribe_end_time: Mapped[datetime | None]
     count_referral: Mapped[int] = mapped_column(default=0)
 
-    is_bot: Mapped[bool_false]
-    is_premium: Mapped[bool_false]
-    is_time_shown: Mapped[bool_true]
-    is_notify: Mapped[bool_true]
-    is_ban: Mapped[bool_false]
+    is_bot: Mapped[BoolFalse]
+    is_premium: Mapped[BoolFalse]
+    is_time_shown: Mapped[BoolTrue]
+    is_notify: Mapped[BoolTrue]
+    is_ban: Mapped[BoolFalse]
 
     group_id: Mapped[int | None] = mapped_column(
         ForeignKey("Groups.id", ondelete="SET NULL")
@@ -38,7 +37,7 @@ class UserModel(Base):
         back_populates="users"
     )
 
-    created_at: Mapped[created_at]
+    created_at: Mapped[CreatedAt]
 
     def __repr__(self):
         return (
@@ -54,7 +53,7 @@ class UserModel(Base):
             f"is_notify={self.is_notify!r},\n"
             f"is_ban={self.is_ban!r},\n"
             f"is_premium={self.is_premium!r},\n"
-            f"created_at={self.created_at!r}\n"
+            f"CreatedAt={self.CreatedAt!r}\n"
             ")"
         )
 

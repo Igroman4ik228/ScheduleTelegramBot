@@ -25,7 +25,8 @@ async def main():
         await engine.dispose()
         await redis_client.aclose()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     settings.configure_logging()
 
     try:

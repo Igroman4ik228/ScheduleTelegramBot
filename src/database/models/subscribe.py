@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Mapped, relationship
 
-from database.models.base import Base, bool_true, str_128, str_512
+from database.models.base import Base, BoolTrue, Str128, Str512
 
 
 class SubscribeModel(Base):
-    name: Mapped[str_128]
-    description: Mapped[str_512 | None]
+    name: Mapped[Str128]
+    description: Mapped[Str512 | None]
     duration_days: Mapped[int]
     price: Mapped[int]
-    can_referral: Mapped[bool_true]
+    can_referral: Mapped[BoolTrue]
     discount: Mapped[int | None]  # in percent
 
     users: Mapped[list["UserModel"]] = relationship(

@@ -44,8 +44,11 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         await bot.send_message(
             chat_id,
             "Произошла ошибка запроса. "
-            "Пожалуйста, проверьте корректность введённых данных.")
+            "Пожалуйста, проверьте корректность введённых данных."
+        )
 
     async def _send_api_error_message(self, chat_id: int, bot: Bot):
-        await bot.send_message(chat_id,
-                               "Произошла ошибка. Попробуйте позже.")
+        await bot.send_message(
+            chat_id,
+            "Произошла ошибка. Попробуйте позже."
+        )

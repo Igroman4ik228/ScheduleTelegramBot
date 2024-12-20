@@ -12,17 +12,18 @@ from database.repository import Repository
 from utils.constants import CallbackDataAdmin
 
 router = Router(name=__name__)
+router.callback_query.filter(AdminFilter())
 
 TITLE = "Панель управления пользователями"
 
 
-@router.callback_query(F.data == CallbackDataAdmin.USER.value, AdminFilter())
+@router.callback_query(F.data == CallbackDataAdmin.USER.value)
 async def handle_user(callback_query: CallbackQuery):
     await callback_query.message.edit_text(html.blockquote(TITLE),
                                            reply_markup=get_user_kb())
 
 
-@router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value, AdminFilter())
+@router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
 async def handle_list_users(callback_query: CallbackQuery, repository: Repository):
     groups = await repository.groups.get_all()
     users = await repository.users.get_all()
@@ -35,9 +36,11 @@ async def handle_list_users(callback_query: CallbackQuery, repository: Repositor
 
 
 @router.callback_query(GroupCallbackFactory.filter())
-async def handle_group_list_users(callback_query: CallbackQuery,
-                                  callback_data: GroupCallbackFactory,
-                                  repository: Repository):
+async def handle_group_list_users(
+    callback_query: CallbackQuery,
+    callback_data: GroupCallbackFactory,
+    repository: Repository
+):
     users = await repository.users.get_all(group_id=callback_data.group_id)
 
     title = get_title_list_users(len(users))

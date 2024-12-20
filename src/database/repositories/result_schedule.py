@@ -46,7 +46,12 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
                                  *options)
 
     @cached(ttl=60*60*12)
-    async def get_by_group_name(self, weekday: int, group_name: str, *options) -> ResultScheduleModel | None:
+    async def get_by_group_name(
+        self,
+        weekday: int,
+        group_name: str,
+        *options
+    ) -> ResultScheduleModel | None:
         group = await self.group_repo.get_by_name(group_name)
         if group is None:
             self.logger.debug(f"Group {group_name} not found for get")

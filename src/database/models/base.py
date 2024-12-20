@@ -1,44 +1,33 @@
 from datetime import datetime
 from typing import Annotated
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import String
 from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
                             mapped_column)
 
-int_pk = Annotated[int, mapped_column(primary_key=True)]
+Pk = Annotated[int, mapped_column(primary_key=True)]
 
-bool_false = Annotated[bool, mapped_column(default=False)]
-bool_true = Annotated[bool, mapped_column(default=True)]
+BoolFalse = Annotated[bool, mapped_column(default=False)]
+BoolTrue = Annotated[bool, mapped_column(default=True)]
 
-created_at = Annotated[
-    datetime,
-    mapped_column(default=datetime.now())
-]
+CreatedAt = Annotated[datetime, mapped_column(default=datetime.now())]
 
-group_foreign_key = Annotated[int, mapped_column(
-    ForeignKey("Groups.id", ondelete="CASCADE")
-)]
-
-department_foreign_key = Annotated[int, mapped_column(
-    ForeignKey("Departments.id")
-)]
-
-str_128 = Annotated[str, 128]
-str_512 = Annotated[str, 512]
-str_1024 = Annotated[str, 1024]
-str_2048 = Annotated[str, 2048]
-str_8192 = Annotated[str, 8192]
+Str128 = Annotated[str, 128]
+Str512 = Annotated[str, 512]
+Str1024 = Annotated[str, 1024]
+Str2048 = Annotated[str, 2048]
+Str8192 = Annotated[str, 8192]
 
 
 class Base(DeclarativeBase):
-    id: Mapped[int_pk]
+    id: Mapped[Pk]
 
     type_annotation_map = {
-        str_128: String(128),
-        str_512: String(512),
-        str_1024: String(1024),
-        str_2048: String(2048),
-        str_8192: String(8192)
+        Str128: String(128),
+        Str512: String(512),
+        Str1024: String(1024),
+        Str2048: String(2048),
+        Str8192: String(8192),
     }
 
     # Tables name
