@@ -6,42 +6,59 @@ from app.background_service_pack.models import BackgroundService
 from bot.bot import BotManager
 from database.db import sessionmaker, with_session_self
 from database.models.subscribe import SubscribeModel
+from database.redis.service_cache import ServiceCache
 from database.repository import Repository
 
 
 class SubCheckerService(BackgroundService):
     def __init__(self, time_span: int, bot_manager: BotManager):
         super().__init__(time_span)
+
         self.bot = bot_manager.bot
+        self._service_cache = ServiceCache(self)
+
+        self._end_time_message = "Hi, дорогой пользователь!\nУ меня для тебя плохая новость. Срок действия твоей подписки закончился. 😥\nНо не стоит унывать, ты всегда можешь оформить её прямо тут! 🤩\n#ЭтоТебеНужно"
+        self._half_time_message = "Hi, дорогой пользователь!\nНу, как? Нравится? Удобно? Практично?\nКонечно да!\nНапомню, что прошла уже половина подписки. 🤓\n#ВремяЛетит"
+        self._five_time_message = "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится через 5 дней.\nОтложи деньги на оформление новой зарнее. 🤑\n#ЭтоПросто"
+        self._one_time_message = "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится уже завтра\nПриготовья оформить новую подписку. 💳\n#ЭтоУдобно"
 
     async def do_work(self):
-        # ToDo: isCheck value to redis for each user
         async with sessionmaker() as session:
             repo = Repository(session)
             users = await repo.users.get_all("subscribe")
 
         for user in users:
+            if await self._service_cache.get(user.telegram_id) == "true":
+                continue
+
             user_sub: SubscribeModel = user.subscribe
             current_time = datetime.now().date()
+
             if user.subscribe_end_time == None:
                 continue
+
             subscribe_end_time = user.subscribe_end_time.date()
             sub_half_time_span = int(user_sub.duration_days / 2)
 
-            # Check 5 days before end sub
-            if subscribe_end_time - current_time == timedelta(days=5):
-                await self.bot.send_message(user.telegram_id, "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится через 5 дней.\nОтложи деньги на оформление новой зарнее. 🤑\n#ЭтоПросто")
             # Check 1 day before end sub
-            elif subscribe_end_time - current_time == timedelta(days=1):
-                await self.bot.send_message(user.telegram_id, "Hi, дорогой пользователь!\nСрок действия твоей подписки закончится уже завтра\nПриготовья оформить новую подписку. 💳\n#ЭтоУдобно")
+            if subscribe_end_time - current_time == timedelta(days=1):
+                await self.bot.send_message(user.telegram_id, self._one_time_message)
+            
+            # Check 5 days before end sub
+            elif subscribe_end_time - current_time == timedelta(days=5):
+                await self.bot.send_message(user.telegram_id, self._five_time_message)
+
             # Check half time of end sub
             elif subscribe_end_time - current_time == timedelta(days=sub_half_time_span):
-                await self.bot.send_message(user.telegram_id, "Hi, дорогой пользователь!\nНу, как? Нравится? Удобно? Практично?\nКонечно да!\nНапомню, что прошла уже половина подписки. 🤓\n#ВремяЛетит")
+                await self.bot.send_message(user.telegram_id, self._half_time_message)
+            
             # Check end time of sub
             elif subscribe_end_time <= current_time:
                 await self._del_sub(user.telegram_id)
                 self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {user.telegram_id}")
-                await self.bot.send_message(user.telegram_id, "Hi, дорогой пользователь!\nУ меня для тебя плохая новость. Срок действия твоей подписки закончился. 😥\nНо не стоит унывать, ты всегда можешь оформить её прямо тут! 🤩\n#ЭтоТебеНужно")
+                await self.bot.send_message(user.telegram_id, self._end_time_message)
+
+            await self._service_cache.create(user.telegram_id, "true")
 
     async def _del_sub(self, user_tg_id):
         async with sessionmaker() as session:
