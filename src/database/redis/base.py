@@ -1,3 +1,4 @@
+from logging import getLogger
 from redis.asyncio import Redis
 
 from utils.config import settings
@@ -20,6 +21,7 @@ redis_client = create_redis()
 class BaseCache:
     def __init__(self):
         self.redis = redis_client
+        self.logger = getLogger(__class__.__name__)
 
     # ex=86400 - set TTL(seconds) = 24 hours
     async def create(self, key, value, ex=86400):
