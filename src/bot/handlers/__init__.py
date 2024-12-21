@@ -1,32 +1,37 @@
 from aiogram import Dispatcher
 
+from bot.filters.admin import AdminFilter
 
-def register_routers(dp: Dispatcher) -> None:
+
+def get_admin_routers():
     # Admin routers
-    from bot.handlers.admins import bot as bot_admin
-    from bot.handlers.admins import group as group_admin
-    from bot.handlers.admins import message as message_admin
-    from bot.handlers.admins import panel as panel_admin
-    from bot.handlers.admins import schedule as schedule_admin
-    from bot.handlers.admins import subscribe as subscribe_admin
-    from bot.handlers.admins import user as user_admin
+    from bot.handlers.admins import (bot, group, message, panel, schedule,
+                                     subscribe, user)
 
-    dp.include_routers(
-        panel_admin.router,
-        bot_admin.router,
-        user_admin.router,
-        group_admin.router,
-        message_admin.router,
-        schedule_admin.router,
-        subscribe_admin.router
+    admin_routers = (
+        panel.router,
+        bot.router,
+        user.router,
+        group.router,
+        message.router,
+        schedule.router,
+        subscribe.router
     )
 
+    for router in admin_routers:
+        router.message.filter(AdminFilter())
+        router.callback_query.filter(AdminFilter())
+
+    return admin_routers
+
+
+def get_user_routers():
     # User routers
     from bot.handlers.users import (default_schedule, group, profile, referral,
                                     schedule, setting, start, subscribe,
                                     tech_support)
 
-    dp.include_routers(
+    user_routers = (
         start.router,
         subscribe.router,
         group.router,
@@ -37,3 +42,12 @@ def register_routers(dp: Dispatcher) -> None:
         tech_support.router,
         referral.router
     )
+
+    return user_routers
+
+
+def register_routers(dp: Dispatcher) -> None:
+    admin_routers = get_admin_routers()
+    user_routers = get_user_routers()
+
+    dp.include_routers(*admin_routers, *user_routers)

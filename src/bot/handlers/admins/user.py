@@ -1,22 +1,18 @@
-from dataclasses import dataclass
-
 from aiogram import F, Router, html
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from bot.filters.admin import AdminFilter
 from bot.keyboards.admins.inline.user.group_list_users_kb import (
     GroupCallbackFactory, get_group_kb)
 from bot.keyboards.admins.inline.user.pagination_user_kb import (
     PaginationUsersCallbackFactory, get_pagination_user_kb)
 from bot.keyboards.admins.inline.user.user_kb import get_user_kb
-from database.models.users import UserModel
+from bot.views.user import format_users
 from database.repository import Repository
 from helpers.text import split_text_with_wrap
 from utils.constants import CallbackDataAdmin
 
 router = Router(name=__name__)
-router.callback_query.filter(AdminFilter())
 
 TITLE = "Панель управления пользователями"
 
@@ -100,38 +96,3 @@ async def handle_users_page(
 
 def get_title_list_users(users_count: int) -> str:
     return html.blockquote(f"Количество пользователей: {users_count}") + "\n"
-
-
-def format_users(users: list[UserModel]) -> str:
-    formatted_users = ""
-    for user in users:
-        userdto = UserDTO(
-            user.first_name,
-            user.user_name,
-            user.telegram_id,
-            user.is_ban,
-            user.is_bot
-        )
-        formatted_users += str(userdto)
-        formatted_users += "\n"  # separator
-
-    return formatted_users
-
-
-@ dataclass
-class UserDTO:
-    first_name: str
-    user_name: str
-    tg_id: int
-    is_ban: bool
-    is_bot: bool
-
-    def __str__(self):
-        result = f"{self.first_name}"
-        result += f"(@{self.user_name})"
-        result += f" - {html.bold(self.tg_id)}"
-        if self.is_ban:
-            result += " ⚰️"
-        if self.is_bot:
-            result += " 🤖"
-        return result

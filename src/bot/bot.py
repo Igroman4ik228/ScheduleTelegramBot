@@ -8,9 +8,9 @@ from utils.config import settings
 
 
 class BotManager:
-    def __init__(self, token):
+    def __init__(self, token: str):
         self.bot = Bot(
-            token,
+            token=token,
             default=DefaultBotProperties(parse_mode="HTML")
         )
         self.dp = Dispatcher(storage=RedisStorage.from_url(
