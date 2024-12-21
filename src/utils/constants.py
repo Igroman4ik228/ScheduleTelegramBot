@@ -1,7 +1,6 @@
 from datetime import time as dt_time
 from datetime import timedelta
-from enum import StrEnum
-from pathlib import Path
+from enum import Enum, StrEnum
 
 
 # CALLBACK_DATA
@@ -49,26 +48,17 @@ class CallbackDataAdmin(StrEnum):
     GROUP_LIST_USERS = "GroupListUsersAdmin"
 
 
-# Strings
-REPLACEMENT_TEXT = "(❗ замена)"
-WITH_VERIFICATION_TEXT = "С проверкой замен"
-WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
-NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
-FILE_EXTENSION = "json"
+class CacheTTL(Enum):
+    USER = timedelta(minutes=3).seconds
+    RESULT_SCHEDULE = timedelta(hours=6).seconds
+    DEFAULT = timedelta(hours=24).seconds
+
 
 # Integers
 MAX_REFERRAL = 5
-CACHE_TTL_USER = timedelta(minutes=3).seconds
-CACHE_TTL_RESULT_SCHEDULE = timedelta(hours=6).seconds
-SUB_CHECKER_TIME_SPAN = timedelta(seconds=60).seconds
-PARSER_TIME_SPAN = timedelta(seconds=10).seconds
 
-
-# Lists
-SCHEDULE_URLS = ["https://menu.sttec.yar.ru/timetable/rasp_first.html",
-                 "https://menu.sttec.yar.ru/timetable/rasp_second.html"]
-MARKERS = ["✅", "❌"]
-RETRY_DELAYS = [60, 120, 480]
+# Strings
+FILE_EXTENSION = "json"
 
 # Dictionaries
 WEEK_SCHEDULE_MAPPING = {
@@ -88,10 +78,6 @@ DAY_NAME_CASES = {
     "пятница": "пятницу",
     "суббота": "субботу",
 }
-ON_OFF_NAMES = {
-    False: "Выключено",
-    True: "Включено"
-}
 
 # Tuple
 START_LESSONS_TIME = [dt_time(8, 00),
@@ -108,6 +94,3 @@ END_LESSONS_TIME = [dt_time(9, 10),
                     dt_time(18, 35),
                     dt_time(16, 35),
                     dt_time(19, 55)]
-
-# Other
-PATH_TEMPLATE_DATA = Path("data/schedule/")

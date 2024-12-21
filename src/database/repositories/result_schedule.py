@@ -6,7 +6,7 @@ from database.models.result_schedule import ResultScheduleModel
 from database.redis.repositories import cached, clear_cache
 from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.groups import GroupRepository
-from utils.constants import CACHE_TTL_RESULT_SCHEDULE
+from utils.constants import CacheTTL
 
 
 class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
@@ -40,13 +40,13 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
                                     data_lessons=data_lessons,
                                     group_id=group.id)
 
-    @cached(ttl=CACHE_TTL_RESULT_SCHEDULE)
+    @cached(ttl=CacheTTL.RESULT_SCHEDULE.value)
     async def get(self, weekday: int, group_id: int, *options) -> ResultScheduleModel | None:
         return await super().get(weekday=weekday,
                                  group_id=group_id,
                                  *options)
 
-    @cached(ttl=CACHE_TTL_RESULT_SCHEDULE)
+    @cached(ttl=CacheTTL.RESULT_SCHEDULE.value)
     async def get_by_group_name(
         self,
         weekday: int,

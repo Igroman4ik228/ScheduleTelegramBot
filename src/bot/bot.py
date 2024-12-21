@@ -14,7 +14,7 @@ class BotManager:
             default=DefaultBotProperties(parse_mode="HTML")
         )
         self.dp = Dispatcher(storage=RedisStorage.from_url(
-            url=settings.redis_url
+            url=settings.redis_url(db=1)
         ))
 
     async def start(self):

@@ -36,13 +36,15 @@ class RedisSettings(EnvBaseSettings):
     REDIS_HOST: str = "redis"
     REDIS_PORT: int = 6379
     REDIS_PASS: str | None = None
-    REDIS_DB: int = 0
 
-    @property
-    def redis_url(self) -> str:
+    def redis_url(self, db: int = 0) -> str:
+        """
+        Args:
+            db (int) <= 15: DB number to connect 
+        """
         if self.REDIS_PASS:
-            return f"redis://{self.REDIS_HOST}:{self.REDIS_PASS}{self.REDIS_PORT}/{self.REDIS_DB}"
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+            return f"redis://{self.REDIS_HOST}:{self.REDIS_PASS}{self.REDIS_PORT}/{db}"
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{db}"
 
 
 class LoggerSettings(EnvBaseSettings):

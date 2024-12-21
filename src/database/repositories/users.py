@@ -6,7 +6,7 @@ from database.models.users import UserModel
 from database.redis.repositories import cached, clear_cache
 from database.repositories.base import BaseRepositoryAlchemy
 from database.repositories.groups import GroupRepository
-from utils.constants import CACHE_TTL_USER
+from utils.constants import CacheTTL
 
 
 class UserRepository(BaseRepositoryAlchemy[UserModel]):
@@ -41,7 +41,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             **kwargs
         )
 
-    @cached(ttl=CACHE_TTL_USER)
+    @cached(ttl=CacheTTL.USER.value)
     async def get(self, telegram_id: int, *options) -> UserModel | None:
         return await super().get(telegram_id=telegram_id, *options)
 

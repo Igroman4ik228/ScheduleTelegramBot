@@ -5,7 +5,9 @@ from database.db import with_session_self
 from database.repositories.default_schedule import DefaultScheduleRepository
 from helpers.default_schedule_parser import default_schedule_parse
 from helpers.file import get_file_paths, load_from_json
-from utils.constants import FILE_EXTENSION, PATH_TEMPLATE_DATA
+from utils.constants import FILE_EXTENSION
+
+PATH_TEMPLATE_DATA = Path("data/schedule/")
 
 
 class DefaultScheduleLoader:

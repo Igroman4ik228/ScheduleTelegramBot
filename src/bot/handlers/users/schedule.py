@@ -1,7 +1,6 @@
 from aiogram import F, Router
 from aiogram.types import Message
 
-import utils.constants as const
 from bot.keyboards.users.reply.main_kb import get_main_kb
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.result_schedule import ResultScheduleModel
@@ -14,6 +13,11 @@ from services.formatter_service.schedule import (add_time_to_schedule,
                                                  format_schedule)
 
 router = Router(name=__name__)
+
+NO_SCHEDULE_TEXT = "Расписание на данный день отсутствует"
+WITHOUT_VERIFICATION_TEXT = "Без проверки замен"
+WITH_VERIFICATION_TEXT = "С проверкой замен"
+MARKERS = ["✅", "❌"]
 
 
 @router.message(F.text.lower().contains("расписание"))
@@ -68,7 +72,7 @@ async def get_schedule(
                                                                 group_id)
     if validate_schedule(result_schedule_data):
         result_schedule = result_schedule_data.data_lessons + "\n"
-        return result_schedule + f"{const.MARKERS[0]} {const.WITH_VERIFICATION_TEXT}"
+        return result_schedule + f"{MARKERS[0]} {WITH_VERIFICATION_TEXT}"
 
     default_schedule = await get_default_schedule(
         group_id, repository, weekday, shift
@@ -86,7 +90,7 @@ async def get_default_schedule(
         weekday, shift, group_id
     )
     if not validate_schedule(default_schedule_data):
-        return const.NO_SCHEDULE_TEXT
+        return NO_SCHEDULE_TEXT
 
     default_schedule = build_default_schedule(
         default_schedule_data.data_lessons
@@ -95,7 +99,7 @@ async def get_default_schedule(
         default_schedule, weekday, shift
     ) + "\n"
 
-    return default_schedule + f"{const.MARKERS[1]} {const.WITHOUT_VERIFICATION_TEXT}"
+    return default_schedule + f"{MARKERS[1]} {WITHOUT_VERIFICATION_TEXT}"
 
 
 def build_default_schedule(

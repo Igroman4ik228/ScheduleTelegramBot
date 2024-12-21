@@ -1,10 +1,12 @@
+from datetime import timedelta
 from logging import getLogger
 
 from redis.asyncio import Redis
 
 from utils.config import settings
+from utils.constants import CacheTTL
 
-redis_client = Redis.from_url(settings.redis_url)
+redis_client = Redis.from_url(settings.redis_url())
 
 
 class BaseCache:
@@ -12,8 +14,7 @@ class BaseCache:
         self.redis = redis_client
         self.logger = getLogger(__class__.__name__)
 
-    # ex=86400 - set TTL(seconds) = 24 hours
-    async def create(self, key, value, ex=86400):
+    async def create(self, key, value, ex=CacheTTL.DEFAULT.value):
         await self.redis.set(key, value, ex=ex)
 
     async def hcreate(self, name: str, key, value):

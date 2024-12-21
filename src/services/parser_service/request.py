@@ -1,31 +1,57 @@
 import asyncio
-import logging
+from datetime import timedelta
+from functools import wraps
+from logging import getLogger
 
-from aiohttp import ClientError, ClientResponseError, ClientSession
+from aiohttp import (ClientError, ClientResponseError, ClientSession,
+                     ClientTimeout)
+
+DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
+DEFAULT_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+}
+DEFAULT_RETRY_DELAYS = [
+    timedelta(seconds=10).seconds,
+    timedelta(seconds=30).seconds,
+    timedelta(seconds=60).seconds
+]
 
 
 def retry_request(func):
-
+    @wraps(func)
     async def wrapper(self, *args, **kwargs):
-        for seconds in [15, 30, 60]:
+        for seconds in self.retry_delays:
             try:
                 return await func(self, *args, **kwargs)
-            except (ClientResponseError, ClientError):
-                self.logger.error("Не удалось подключиться к сайту. "
-                                  f"Повторная попытка через {seconds} секунд.")
+            except (ClientResponseError, ClientError) as e:
+                self.logger.error(
+                    "Ошибка подключения к %s: %s. "
+                    "Повторная попытка через %d секунд.",
+                    self.url, str(e), seconds
+                )
                 await asyncio.sleep(seconds)
         return await func(self, *args, **kwargs)
     return wrapper
 
 
 class Request:
-    def __init__(self, url: str) -> None:
+    def __init__(
+        self,
+        url: str,
+        timeout: int = DEFAULT_TIMEOUT,
+        retry_delays: list[int] = None,
+        headers: dict[str, str] = None
+    ) -> None:
         self.url = url
-        self.logger = logging.getLogger(__name__)
+        self.timeout = timeout
+        self.retry_delays = retry_delays or DEFAULT_RETRY_DELAYS
+        self.headers = headers or DEFAULT_HEADERS.copy()
+        self.logger = getLogger(__name__)
 
     @retry_request
     async def fetch(self) -> str:
-        async with ClientSession() as session:
-            async with session.get(self.url, timeout=20) as response:
+        timeout = ClientTimeout(total=self.timeout)
+        async with ClientSession(headers=self.headers) as session:
+            async with session.get(self.url, timeout=timeout) as response:
                 response.raise_for_status()
                 return await response.text()

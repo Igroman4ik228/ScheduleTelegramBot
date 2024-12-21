@@ -6,6 +6,8 @@ from helpers.lesson import Lesson
 from helpers.week import Week
 from utils.constants import DAY_NAME_CASES
 
+REPLACEMENT_TEXT = "(❗️ замена)"
+
 
 def format_schedule(
     lessons: list[Lesson],
@@ -61,7 +63,7 @@ def format_lesson(lesson: Lesson) -> str:
         formatted_lesson += f" [{classroom}]"
 
     if lesson.is_replacement:
-        formatted_lesson += " (❗️ замена)"
+        formatted_lesson += " " + REPLACEMENT_TEXT
     formatted_lesson += "\n"
 
     return formatted_lesson

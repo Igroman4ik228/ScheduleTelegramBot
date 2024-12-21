@@ -1,3 +1,5 @@
+from datetime import timedelta
+from enum import Enum
 
 from injector import Module, provider, singleton
 
@@ -7,8 +9,17 @@ from bot.bot import BotManager
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
 from services.sub_checker_service.sub_checker import SubCheckerService
-from utils import constants
 from utils.config import Settings
+
+SCHEDULE_URLS = [
+    "https://menu.sttec.yar.ru/timetable/rasp_first.html",
+    "https://menu.sttec.yar.ru/timetable/rasp_second.html"
+]
+
+
+class TimeSpan(Enum):
+    SUB_CHECKER = timedelta(seconds=60).seconds
+    PARSER = timedelta(seconds=10).seconds
 
 
 class AppModule(Module):
@@ -21,15 +32,15 @@ class AppModule(Module):
     @provider
     def provide_parser_service(self, notify: NotifyService) -> ParserService:
         return ParserService(
-            url=constants.SCHEDULE_URLS[1],
-            time_span=constants.PARSER_TIME_SPAN,
+            url=SCHEDULE_URLS[1],
+            time_span=TimeSpan.PARSER.value,
             notify=notify
         )
 
     @provider
     def provide_sub_checker_service(self, bot_manager: BotManager) -> SubCheckerService:
         return SubCheckerService(
-            time_span=constants.SUB_CHECKER_TIME_SPAN,
+            time_span=TimeSpan.SUB_CHECKER.value,
             bot_manager=bot_manager
         )
 
