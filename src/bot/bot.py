@@ -13,9 +13,9 @@ class BotManager:
             token=token,
             default=DefaultBotProperties(parse_mode="HTML")
         )
-        self.dp = Dispatcher(storage=RedisStorage.from_url(
-            url=settings.redis_url(db=1)
-        ))
+        self.dp = Dispatcher(
+            storage=RedisStorage.from_url(url=settings.redis_url(db=1))
+        )
 
     async def start(self):
         await self.bot.delete_webhook(drop_pending_updates=True)
@@ -23,7 +23,10 @@ class BotManager:
         self.dp.startup.register(self._on_startup)
         self.dp.shutdown.register(self._on_shutdown)
 
-        await self.dp.start_polling(self.bot)
+        await self.dp.start_polling(
+            self.bot,
+            allowed_updates=["message", "callback_query"]
+        )
 
     def _on_startup(self):
         register_middlewares(self.dp)
