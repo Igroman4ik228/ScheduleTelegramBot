@@ -1,3 +1,5 @@
+from enum import Enum
+
 from aiogram import Bot, F, Router, html
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
@@ -30,6 +32,7 @@ async def handle_user(callback_query: CallbackQuery):
                                            reply_markup=get_user_kb())
 
 
+# *List
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
 async def handle_list_users(callback_query: CallbackQuery, repository: Repository):
     groups = await repository.groups.get_all()
@@ -102,17 +105,25 @@ async def handle_users_page(
                                            )
 
 
+def get_title_list_users(users_count: int) -> str:
+    return html.blockquote(f"Количество пользователей: {users_count}") + "\n"
+
+
+# *Ban/Unban
 @router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.BAN_UNBAN.value)
 async def handle_request_ban_unban(
     callback_query: CallbackQuery,
     state: FSMContext
 ):
-    await callback_query.message.edit_text("Введите tg_id пользователя, которого хотите забанить/разбанить", reply_markup=None)
+    await callback_query.message.edit_text(
+        "Введите tg_id пользователя, которого хотите забанить/разбанить",
+        reply_markup=None
+    )
 
     await state.set_state(BanUnbanStates.tg_user_id)
 
 
-@router.message(BanUnbanStates.tg_user_id, F.text.lower() == "отмена")
+@router.message(BanUnbanStates.tg_user_id, F.text.lower().contains("отмена"))
 async def handle_cancel_ban_unban(
     message: Message,
     state: FSMContext
@@ -144,7 +155,6 @@ async def handle_ban_unban(
     user.is_ban = not user.is_ban
     await repository.users.update(user)
 
-    # todo: добавить уведомление
     await ban_unban_notify(user.is_ban, user.telegram_id, bot)
 
     ban_text = "забанен" if user.is_ban else "разбанен"
@@ -156,17 +166,16 @@ async def handle_ban_unban(
 async def ban_unban_notify(is_ban: bool, tg_id: int, bot: Bot):
     try:
         if is_ban:
-            await bot.send_message(tg_id,
-                                   "<b>Вы были забанены администратором</b>\n"
-                                   "<i>Для разбана обратитесь к разработчикам\n"
-                                   "Контакты указаны в описании бота</i>")
+            await bot.send_message(tg_id, BanMessage.BAN.value)
             return
-        await bot.send_message(tg_id,
-                               "<b>Вы были разбанены администратором</b>\n"
-                               "<i>Поздравляем</i>😉")
+        await bot.send_message(tg_id, BanMessage.UNBAN.value)
     except Exception:
         pass
 
 
-def get_title_list_users(users_count: int) -> str:
-    return html.blockquote(f"Количество пользователей: {users_count}") + "\n"
+class BanMessage(Enum):
+    BAN = f"{html.bold("Вы были забанены администратором")}\n" + \
+        f"{html.italic("Для разбана обратитесь к разработчикам\n")}" + \
+        f"{html.italic("Контакты указаны в описании бота")}"
+    UNBAN = f"{html.bold("Вы были разбанены администратором")}\n" + \
+        f"{html.italic("Поздравляем")}"
