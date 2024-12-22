@@ -9,7 +9,7 @@ from database.models.base import Base, BoolFalse, BoolTrue, CreatedAt, Str128
 class UserModel(Base):
     first_name: Mapped[Str128]
     last_name: Mapped[Str128 | None]
-    user_name: Mapped[Str128]
+    user_name: Mapped[Str128 | None]
     telegram_id: Mapped[int] = mapped_column(
         BigInteger,
         unique=True
