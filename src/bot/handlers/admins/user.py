@@ -1,6 +1,8 @@
-from aiogram import F, Router, html
+from aiogram import Bot, F, Router, html
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.types import CallbackQuery, Message
 
 from bot.keyboards.admins.inline.user.group_list_users_kb import (
     GroupCallbackFactory, get_group_kb)
@@ -13,6 +15,11 @@ from helpers.text import split_text_with_wrap
 from utils.constants import CallbackDataAdmin
 
 router = Router(name=__name__)
+
+
+class BanUnbanStates(StatesGroup):
+    tg_user_id = State()
+
 
 TITLE = "Панель управления пользователями"
 
@@ -72,7 +79,7 @@ async def handle_group_list_users(
                                            )
 
 
-@ router.callback_query(PaginationUsersCallbackFactory.filter())
+@router.callback_query(PaginationUsersCallbackFactory.filter())
 async def handle_users_page(
     callback_query: CallbackQuery,
     callback_data: PaginationUsersCallbackFactory,
@@ -85,13 +92,80 @@ async def handle_users_page(
     total_pages = len(texts)
     current_page = callback_data.current_page
 
+    await state.update_data(current_page=current_page)
+
     await callback_query.message.edit_text(texts[current_page - 1],
                                            reply_markup=get_pagination_user_kb(
                                                total_pages=total_pages,
                                                current_page=current_page,
                                                group_id=group_id)
                                            )
-    await state.update_data(current_page=current_page)
+
+
+@router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.BAN_UNBAN.value)
+async def handle_request_ban_unban(
+    callback_query: CallbackQuery,
+    state: FSMContext
+):
+    await callback_query.message.edit_text("Введите tg_id пользователя, которого хотите забанить/разбанить", reply_markup=None)
+
+    await state.set_state(BanUnbanStates.tg_user_id)
+
+
+@router.message(BanUnbanStates.tg_user_id, F.text.lower() == "отмена")
+async def handle_cancel_ban_unban(
+    message: Message,
+    state: FSMContext
+):
+    await message.answer(html.bold("Действие отменено!"))
+    await state.clear()
+
+
+@router.message(BanUnbanStates.tg_user_id, F.text)
+async def handle_ban_unban(
+    message: Message,
+    repository: Repository,
+    bot: Bot,
+    state: FSMContext
+):
+    user_input = message.text
+    await state.update_data(tg_user_id=user_input)
+
+    if not user_input.isdigit():
+        await message.answer(html.bold("ID пользователя должен быть числом"))
+        return
+
+    user = await repository.users.get(int(user_input))
+    if user is None:
+        await message.answer(html.bold("Данный пользователь отсутствует"))
+        await state.clear()
+        return
+
+    user.is_ban = not user.is_ban
+    await repository.users.update(user)
+
+    # todo: добавить уведомление
+    await ban_unban_notify(user.is_ban, user.telegram_id, bot)
+
+    ban_text = "забанен" if user.is_ban else "разбанен"
+    await message.answer(html.bold(f"Пользователь успешно {ban_text} и уведомлен об этом"))
+
+    await state.clear()
+
+
+async def ban_unban_notify(is_ban: bool, tg_id: int, bot: Bot):
+    try:
+        if is_ban:
+            await bot.send_message(tg_id,
+                                   "<b>Вы были забанены администратором</b>\n"
+                                   "<i>Для разбана обратитесь к разработчикам\n"
+                                   "Контакты указаны в описании бота</i>")
+            return
+        await bot.send_message(tg_id,
+                               "<b>Вы были разбанены администратором</b>\n"
+                               "<i>Поздравляем</i>😉")
+    except Exception:
+        pass
 
 
 def get_title_list_users(users_count: int) -> str:

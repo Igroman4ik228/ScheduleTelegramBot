@@ -16,7 +16,7 @@ class UserView:
     def __str__(self):
         result = f"{self.first_name}"
         result += f"(@{self.user_name})"
-        result += f" - {html.bold(self.tg_id)}"
+        result += f" - {html.code(self.tg_id)}"
         if self.is_ban:
             result += " ⚰️"
         if self.is_bot:
