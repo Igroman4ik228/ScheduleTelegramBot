@@ -8,6 +8,7 @@ from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
+from services.sender_service.sender import SenderService
 from services.sub_checker_service.sub_checker import SubCheckerService
 from utils.config import Settings
 
@@ -30,6 +31,10 @@ class AppModule(Module):
         return Settings()
 
     @provider
+    def provide_sender_service(self, bot_manager: BotManager) -> SenderService:
+        return SenderService(bot_manager=bot_manager)
+
+    @provider
     def provide_parser_service(self, notify: NotifyService) -> ParserService:
         return ParserService(
             url=SCHEDULE_URLS[1],
@@ -38,10 +43,10 @@ class AppModule(Module):
         )
 
     @provider
-    def provide_sub_checker_service(self, bot_manager: BotManager) -> SubCheckerService:
+    def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:
         return SubCheckerService(
             time_span=TimeSpan.SUB_CHECKER.value,
-            bot_manager=bot_manager
+            sender=sender
         )
 
     @singleton

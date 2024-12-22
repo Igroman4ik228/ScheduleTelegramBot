@@ -9,14 +9,15 @@ from database.db import sessionmaker, with_session_self
 from database.models.subscribe import SubscribeModel
 from database.redis.service_cache import ServiceCache
 from database.repository import Repository
+from services.sender_service.sender import SenderService
 
 
 class SubCheckerService(BackgroundService):
 
-    def __init__(self, time_span: int, bot_manager: BotManager):
+    def __init__(self, time_span: int, sender: SenderService):
         super().__init__(time_span)
 
-        self.bot = bot_manager.bot
+        self.sender = sender
         self._service_cache = ServiceCache(self)
 
     async def do_work(self):

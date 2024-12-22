@@ -7,6 +7,7 @@ from bot.bot import BotManager
 from database.db import engine
 from database.redis.base import redis_client
 from di import AppModule
+from services.sender_service.sender import SenderService
 from utils.config import settings
 
 
