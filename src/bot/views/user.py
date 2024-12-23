@@ -26,10 +26,17 @@ class UserView:
 
         return result
 
+    @staticmethod
+    def format_users(users: list[UserModel], separator: str = "\n") -> str:
+        formatted_users = ""
+        for user in users:
+            formatted_users += UserView.format_user(user)
+            formatted_users += separator
 
-def format_users(users: list[UserModel]) -> str:
-    formatted_users = ""
-    for user in users:
+        return formatted_users
+
+    @staticmethod
+    def format_user(user: UserModel) -> str:
         user_view = UserView(
             user.first_name[:15],
             user.user_name[:15],
@@ -37,7 +44,4 @@ def format_users(users: list[UserModel]) -> str:
             user.is_ban,
             user.is_bot
         )
-        formatted_users += str(user_view)
-        formatted_users += "\n"  # separator
-
-    return formatted_users
+        return str(user_view)

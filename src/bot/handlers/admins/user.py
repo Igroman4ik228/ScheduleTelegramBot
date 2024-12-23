@@ -11,7 +11,7 @@ from bot.keyboards.admins.inline.user.group_list_users_kb import (
 from bot.keyboards.admins.inline.user.pagination_user_kb import (
     PaginationUsersCallbackFactory, get_pagination_user_kb)
 from bot.keyboards.admins.inline.user.user_kb import get_user_kb
-from bot.views.user import format_users
+from bot.views.user import UserView
 from database.repository import Repository
 from helpers.text import split_text_with_wrap
 from utils.constants import CallbackDataAdmin
@@ -67,7 +67,7 @@ async def handle_group_list_users(
         return
 
     title = get_title_list_users(len(users))
-    formatted_users = format_users(users)
+    formatted_users = UserView.format_users(users)
 
     texts = split_text_with_wrap(title + formatted_users)
 
