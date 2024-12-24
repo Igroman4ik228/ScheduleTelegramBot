@@ -39,6 +39,11 @@ class UserModel(Base):
 
     created_at: Mapped[CreatedAt]
 
+    def get_full_name(self):
+        if self.last_name is None:
+            return self.first_name
+        return f"{self.first_name} {self.last_name}"
+
     def __repr__(self):
         return (
             "User(\n"
@@ -53,7 +58,7 @@ class UserModel(Base):
             f"is_notify={self.is_notify!r},\n"
             f"is_ban={self.is_ban!r},\n"
             f"is_premium={self.is_premium!r},\n"
-            f"CreatedAt={self.CreatedAt!r}\n"
+            f"CreatedAt={self.created_at!r}\n"
             ")"
         )
 
