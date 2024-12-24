@@ -11,15 +11,9 @@ class IBackgroundServiceFactory(ABC):
     def get(self) -> (list[BackgroundService] | None):
         if self.additional_param.count == 0:
             return None
-        elif self.additional_param.count == 1:
-            return self._create()
         else:
-            return self._create_range()
+            return self._create()
 
     @abstractmethod
-    def _create(self) -> BackgroundService:
-        pass
-
-    @abstractmethod
-    def _create_range(self) -> list[BackgroundService]:
+    def _create(self) -> list[BackgroundService]:
         pass

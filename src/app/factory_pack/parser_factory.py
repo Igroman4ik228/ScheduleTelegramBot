@@ -13,7 +13,4 @@ class ParserFactory(IBackgroundServiceFactory):
         return super().get()
 
     def _create(self):
-        return [ParserService(self.additional_param[0], self.time_span, self.notify)]
-
-    def _create_range(self):
         return [ParserService(param, self.time_span, self.notify) for param in self.additional_param]
