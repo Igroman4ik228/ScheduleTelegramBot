@@ -1,4 +1,7 @@
-def split_text_with_wrap(text: str, max_length: int = 150) -> list[str]:
+from aiogram import html
+
+
+def split_text_with_wrap(text: str, max_length: int = 250) -> list[str]:
     if not text:
         return []
 
@@ -23,3 +26,13 @@ def split_text_with_wrap(text: str, max_length: int = 150) -> list[str]:
         result.append(current_message.strip())
 
     return result
+
+
+def quote_html(text: str | None) -> str | None:
+    if text is None:
+        return None
+    return html.quote(text)
+
+
+def quote_html_range(texts: list[str | None]) -> tuple[str | None]:
+    return (quote_html(text) for text in texts)

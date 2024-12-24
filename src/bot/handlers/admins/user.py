@@ -32,7 +32,7 @@ async def handle_user(callback_query: CallbackQuery):
                                            reply_markup=get_user_kb())
 
 
-# *List
+# *List users
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
 async def handle_list_users(callback_query: CallbackQuery, repository: Repository):
     groups = await repository.groups.get_all()
@@ -109,17 +109,17 @@ def get_title_list_users(users_count: int) -> str:
     return html.blockquote(f"Количество пользователей: {users_count}") + "\n"
 
 
-# *Ban/Unban
+# *Ban/Unban user
 @router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.BAN_UNBAN.value)
 async def handle_request_ban_unban(
     callback_query: CallbackQuery,
     state: FSMContext
 ):
     await callback_query.message.edit_text(
-        "Введите tg_id пользователя, которого хотите забанить/разбанить",
+        "Введите tg_id пользователя, которого хотите забанить/разбанить\n"
+        "Для отмены введите 'отмена'",
         reply_markup=None
     )
-
     await state.set_state(BanUnbanStates.tg_user_id)
 
 
@@ -179,3 +179,6 @@ class BanMessage(Enum):
         f"{html.italic("Контакты указаны в описании бота")}"
     UNBAN = f"{html.bold("Вы были разбанены администратором")}\n" + \
         f"{html.italic("Поздравляем")}"
+
+
+# *Give subscribe

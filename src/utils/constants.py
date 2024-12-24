@@ -46,6 +46,7 @@ class CallbackDataAdmin(StrEnum):
     LIST_USERS = "ListUsersAdmin"
     BAN_UNBAN = "Ban/UnbanAdmin"
     GROUP_LIST_USERS = "GroupListUsersAdmin"
+    GIVE_SUBSCRIPTION = "GiveSubscriptionAdmin"
 
 
 class CacheTTL(Enum):

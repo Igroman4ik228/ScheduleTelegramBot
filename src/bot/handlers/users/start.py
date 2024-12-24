@@ -1,8 +1,10 @@
-from aiogram import Router, html
+from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
+from database.repositories.referrals import ReferralRepository
 from database.repository import Repository
+from helpers.text import quote_html
 from utils.constants import MAX_REFERRAL
 
 router = Router(name=__name__)
@@ -24,16 +26,16 @@ class SelfReferralError(Exception):
 
 @router.message(CommandStart())
 async def handle_start(message: Message, repository: Repository):
-    user_full_name = message.from_user.full_name
+    user_full_name = quote_html(message.from_user.full_name)
     welcome_message = WELCOME_TEXT.format(
-        user_name=html.quote(user_full_name)
+        user_name=user_full_name
     )
 
     owner_id = parse_owner_id(message.text)
     if owner_id != 0:
         user_id = message.from_user.id
         try:
-            await register_referral(owner_id, user_id, repository)
+            await register_referral(owner_id, user_id, repository.referrals)
         except (MaxReferralExceededError, SelfReferralError) as e:
             await message.answer(
                 str(e)
@@ -56,8 +58,7 @@ def parse_owner_id(text: str) -> int:
     return owner_id
 
 
-async def register_referral(owner_id: int, user_id: int, repository: Repository):
-    referral_repo = repository.referrals
+async def register_referral(owner_id: int, user_id: int, referral_repo: ReferralRepository):
     referrals = await referral_repo.get_all(owner_id=owner_id)
     if len(referrals) > MAX_REFERRAL:
         raise MaxReferralExceededError(
@@ -69,4 +70,4 @@ async def register_referral(owner_id: int, user_id: int, repository: Repository)
             "Пользователь не может быть своим собственным рефералом."
         )
 
-    await repository.referrals.create(owner_id, user_id)
+    await referral_repo.create(owner_id, user_id)

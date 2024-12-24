@@ -29,7 +29,7 @@ async def handle_profile(message: Message, bot: Bot,
 
         info_text = ProfileFormatter(
             user, group, department, subscribe
-        ).format_info(f"Профиль {html.quote(user.first_name)}")
+        ).format_info(f"Профиль {user.user_name}")
 
         sent_message = await message.answer(info_text,
                                             reply_markup=get_profile_kb())

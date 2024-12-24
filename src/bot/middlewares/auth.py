@@ -6,11 +6,12 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from aiogram.types.user import User
 
+from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
 from database.redis.repositories import clear_cache
-from database.repositories.subscribes import SubscribeRepository
 from database.repositories.users import UserRepository
 from database.repository import Repository
+from helpers.text import quote_html_range
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -31,9 +32,11 @@ class AuthMiddleware(BaseMiddleware):
             data["user"] = existing_user
             return await handler(event, data)
 
+        subscribes = await repository.subscribes.get_all(price=0)
+        trail_subscribe = subscribes[0]
         new_user = await self._create_user(
             tg_user,
-            repository.subscribes,
+            trail_subscribe,
             repository.users
         )
         data["user"] = new_user
@@ -60,22 +63,25 @@ class AuthMiddleware(BaseMiddleware):
     async def _create_user(
         self,
         tg_user: User,
-        subscribe_repo: SubscribeRepository,
+        trail_subscribe: SubscribeModel,
         user_repo: UserRepository
     ) -> UserModel:
-        subscribes = await subscribe_repo.get_all(price=0)
         subscribe_end_time = datetime.now() + timedelta(
-            days=subscribes[0].duration_days
+            days=trail_subscribe.duration_days
+        )
+
+        first_name, last_name = quote_html_range(
+            [tg_user.first_name, tg_user.last_name]
         )
 
         new_user = await user_repo.create(
-            first_name=tg_user.first_name,
+            first_name=first_name,
+            last_name=last_name,
             user_name=tg_user.username,
             telegram_id=tg_user.id,
-            last_name=tg_user.last_name,
             is_bot=tg_user.is_bot,
             is_premium=tg_user.is_premium,
-            subscribe_id=subscribes[0].id,
+            subscribe_id=trail_subscribe.id,
             subscribe_end_time=subscribe_end_time
         )
 
