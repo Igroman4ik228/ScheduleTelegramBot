@@ -5,6 +5,7 @@ from injector import Module, provider, singleton
 
 from app.background_service_pack.builder import BackgroundBuilder
 from app.background_service_pack.manager import BackgroundManager
+from app.factory_pack.parser_factory import ParserFactory
 from bot.bot import BotManager
 from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
@@ -35,12 +36,8 @@ class AppModule(Module):
         return SenderService(bot_manager=bot_manager)
 
     @provider
-    def provide_parser_service(self, notify: NotifyService) -> ParserService:
-        return ParserService(
-            url=SCHEDULE_URLS[1],
-            time_span=TimeSpan.PARSER.value,
-            notify=notify
-        )
+    def provide_parser_factory(self, notify: NotifyService) -> ParserFactory:
+        return ParserFactory(additional_param=SCHEDULE_URLS, time_span=TimeSpan.PARSER.value, notify=notify)
 
     @provider
     def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:
@@ -57,14 +54,14 @@ class AppModule(Module):
     @provider
     def provide_builder(
         self,
-        parser: ParserService,
+        parser_factory: ParserFactory,
         sub_checker: SubCheckerService
     ) -> BackgroundBuilder:
-        return BackgroundBuilder(parser=parser, sub_checker=sub_checker)
+        return BackgroundBuilder(parser_factory=parser_factory, sub_checker=sub_checker)
 
     @provider
     def provide_manager(self, builder: BackgroundBuilder) -> BackgroundManager:
-        return BackgroundManager(builder.get_services())
+        return BackgroundManager(builder=builder)
 
     @singleton
     @provider

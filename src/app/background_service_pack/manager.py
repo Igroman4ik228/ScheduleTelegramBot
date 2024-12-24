@@ -1,11 +1,12 @@
 import asyncio
 
+from app.background_service_pack.builder import BackgroundBuilder
 from app.background_service_pack.models import BackgroundService
 
 
 class BackgroundManager:
-    def __init__(self, services: list[BackgroundService]):
-        self.services = services
+    def __init__(self, builder: BackgroundBuilder):
+        self.services = builder.get_services()
 
     async def start_services(self):
         tasks = (service.active() for service in self.services)
