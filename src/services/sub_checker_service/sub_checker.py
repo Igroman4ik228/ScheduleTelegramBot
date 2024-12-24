@@ -1,11 +1,8 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from logging import getLogger
-from re import match
 
 from app.background_service_pack.models import BackgroundService
-from bot.bot import BotManager
-from database.db import sessionmaker, with_session_self
+from database.db import sessionmaker
 from database.models.subscribe import SubscribeModel
 from database.redis.service_cache import ServiceCache
 from database.repository import Repository
@@ -40,22 +37,21 @@ class SubCheckerService(BackgroundService):
 
             # Check 1 day before end sub
             if subscribe_end_time - current_time == timedelta(days=1):
-                await self.bot.send_message(user.telegram_id, TimeMessage.ONE.value)
+                await self.sender.safe_send_message(user.telegram_id, TimeMessage.ONE.value)
 
             # Check 5 days before end sub
             elif subscribe_end_time - current_time == timedelta(days=5):
-                await self.bot.send_message(user.telegram_id, TimeMessage.FIVE.value)
+                await self.sender.safe_send_message(user.telegram_id, TimeMessage.FIVE.value)
 
             # Check half time of end sub
             elif subscribe_end_time - current_time == timedelta(days=sub_half_time_span):
-                await self.bot.send_message(user.telegram_id, TimeMessage.HALF.value)
+                await self.sender.safe_send_message(user.telegram_id, TimeMessage.HALF.value)
 
             # Check end time of sub
             elif subscribe_end_time <= current_time:
                 await self._del_sub(user.telegram_id)
-                self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {
-                                 user.telegram_id}")
-                await self.bot.send_message(user.telegram_id, TimeMessage.END.value)
+                self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {user.telegram_id}")
+                await self.sender.safe_send_message(user.telegram_id, TimeMessage.END.value)
 
             await self._service_cache.create(user.telegram_id, "true")
 
