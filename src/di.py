@@ -37,7 +37,7 @@ class AppModule(Module):
 
     @provider
     def provide_parser_factory(self, notify: NotifyService) -> ParserFactory:
-        return ParserFactory(additional_param=SCHEDULE_URLS, time_span=TimeSpan.PARSER.value, notify=notify)
+        return ParserFactory(TimeSpan.PARSER.value, notify, SCHEDULE_URLS)
 
     @provider
     def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:
