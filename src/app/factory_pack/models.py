@@ -10,7 +10,7 @@ class IBackgroundServiceFactory(ABC):
         self.time_span = time_span
 
     def get(self) -> (list[BackgroundService] | None):
-        if self.args.count() == 0:
+        if self.args.count == 0:
             return None
         return self._create()
 
