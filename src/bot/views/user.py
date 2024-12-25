@@ -18,7 +18,7 @@ class UserView:
     is_ban: bool
     is_bot: bool
 
-    def __str__(self):
+    def __str__(self) -> str:
         result = f"{self.first_name}"
 
         if self.last_name:

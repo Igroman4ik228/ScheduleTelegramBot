@@ -50,7 +50,8 @@ class SubCheckerService(BackgroundService):
             # Check end time of sub
             elif subscribe_end_time <= current_time:
                 await self._del_sub(user.telegram_id)
-                self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {user.telegram_id}")
+                self.logger.info(f"Subscribe: {user.subscribe.id} del for user: {
+                                 user.telegram_id}")
                 await self.sender.safe_send_message(user.telegram_id, TimeMessage.END.value)
 
             await self._service_cache.create(user.telegram_id, "true")

@@ -5,33 +5,39 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 
 from bot.keyboards.users.inline.profile_kb import get_profile_kb
+from bot.views.profile import ProfileView
 from database.models.groups import GroupModel
 from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
 from database.redis.profile_cache import ProfileCache
 from database.repository import Repository
-from services.formatter_service.message import ProfileFormatter
 
 user_locks = {}
 router = Router(name=__name__)
+
+TITLE = "Профиль {user_name}"
 
 
 @router.message(F.text.lower().contains("профиль"))
 async def handle_profile(message: Message, bot: Bot,
                          user: UserModel, repository: Repository):
+    title = html.blockquote(TITLE.format(user_name=user.user_name))
+
     group: GroupModel = user.group
     department = await repository.departments.get(group.department_id)
     subscribe: SubscribeModel = user.subscribe
+    info_text = ProfileView.format_info(
+        department.name,
+        group.name,
+        subscribe.name,
+        user.subscribe_end_time
+    )
 
     user_locks.setdefault(message.from_user.id, asyncio.Lock())
     async with user_locks[message.from_user.id]:
         await delete_profile_messages(bot, message.from_user.id, message.chat.id)
 
-        info_text = ProfileFormatter(
-            user, group, department, subscribe
-        ).format_info(f"Профиль {user.user_name}")
-
-        sent_message = await message.answer(info_text,
+        sent_message = await message.answer(title + info_text,
                                             reply_markup=get_profile_kb())
 
         await ProfileCache().create(message.from_user.id,
