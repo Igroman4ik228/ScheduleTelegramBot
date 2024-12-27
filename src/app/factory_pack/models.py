@@ -5,13 +5,10 @@ from app.background_service_pack.models import BackgroundService
 
 
 class IBackgroundServiceFactory(ABC):
-    def __init__(self, time_span: int, *args: object):
-        self.args = args
+    def __init__(self, time_span: int):
         self.time_span = time_span
 
     def get(self) -> (list[BackgroundService] | None):
-        if self.args.count == 0:
-            return None
         return self._create()
 
     @abstractmethod

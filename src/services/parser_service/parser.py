@@ -64,12 +64,12 @@ class ParserService(BackgroundService, Publisher):
 
     @with_session_self
     async def _save_schedule_to_db(self, session, result_schedule: dict[str, str]):
-        result_schedule_rep = Repository(session).result_schedule
+        result_schedule_repo = Repository(session).result_schedule
 
         for group, schedule in result_schedule.items():
-            await result_schedule_rep.delete_by_group_name(Week().weekday, group)
+            await result_schedule_repo.delete_by_group_name(Week().weekday, group)
 
-            await result_schedule_rep.create_by_group_name(Week().weekday, schedule, group)
+            await result_schedule_repo.create_by_group_name(Week().weekday, schedule, group)
 
     async def _check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
         async with sessionmaker() as session:

@@ -8,13 +8,12 @@ from app.background_service_pack.manager import BackgroundManager
 from app.factory_pack.parser_factory import ParserFactory
 from bot.bot import BotManager
 from services.notify_service.notify import NotifyService
-from services.parser_service.parser import ParserService
 from services.sender_service.sender import SenderService
 from services.sub_checker_service.sub_checker import SubCheckerService
 from utils.config import Settings
 
+# "https://menu.sttec.yar.ru/timetable/rasp_first.html",
 SCHEDULE_URLS = [
-    "https://menu.sttec.yar.ru/timetable/rasp_first.html",
     "https://menu.sttec.yar.ru/timetable/rasp_second.html"
 ]
 

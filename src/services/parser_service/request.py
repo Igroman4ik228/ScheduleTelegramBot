@@ -7,9 +7,9 @@ from aiohttp import (ClientError, ClientResponseError, ClientSession,
                      ClientTimeout)
 
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
-DEFAULT_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-}
+# DEFAULT_HEADERS = {
+#     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+# }
 DEFAULT_RETRY_DELAYS = [
     timedelta(seconds=10).seconds,
     timedelta(seconds=30).seconds,
@@ -25,9 +25,8 @@ def retry_request(func):
                 return await func(self, *args, **kwargs)
             except (ClientResponseError, ClientError) as e:
                 self.logger.error(
-                    "Ошибка подключения к %s: %s. "
-                    "Повторная попытка через %d секунд.",
-                    self.url, str(e), seconds
+                    f"Ошибка подключения к {self.url}: {e}. "
+                    f"Повторная попытка через {seconds} секунд."
                 )
                 await asyncio.sleep(seconds)
         return await func(self, *args, **kwargs)
@@ -45,13 +44,13 @@ class Request:
         self.url = url
         self.timeout = timeout
         self.retry_delays = retry_delays or DEFAULT_RETRY_DELAYS
-        self.headers = headers or DEFAULT_HEADERS.copy()
+        self.headers = headers
         self.logger = getLogger(__name__)
 
     @retry_request
     async def fetch(self) -> str:
         timeout = ClientTimeout(total=self.timeout)
-        async with ClientSession(headers=self.headers) as session:
+        async with ClientSession() as session:
             async with session.get(self.url, timeout=timeout) as response:
                 response.raise_for_status()
                 return await response.text()
