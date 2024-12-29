@@ -51,7 +51,8 @@ class HtmlParser:
     def _get_shift(self) -> int:
         """Извлекает информацию о смене (числитель/знаменатель) из HTML"""
         shift_name = self.get_text_from_div(
-            index=3, word_index=0).strip("()").lower()
+            index=3, word_index=0
+        ).strip("()").lower()
         shift = const.WEEK_SCHEDULE_MAPPING.get(shift_name)
         if shift is None:
             raise ValueError(

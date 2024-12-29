@@ -6,6 +6,8 @@ from aiogram.exceptions import (RestartingTelegram, TelegramAPIError,
                                 TelegramBadRequest, TelegramNetworkError)
 from aiogram.types import Update
 
+from utils.config import settings
+
 
 class ErrorHandlingMiddleware(BaseMiddleware):
     def __init__(self):
@@ -25,30 +27,39 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         except TelegramBadRequest as e:
             self.logger.error(f"Неверный запрос: {e}")
             await self._send_bad_request_message(user.id, bot)
-            return
         except RestartingTelegram as e:
             self.logger.error(f"Telegram перезагружается: {e}")
-            return
+            self._send_message_to_admins("Telegram перезагружается", bot)
         except TelegramNetworkError as e:
             self.logger.error(f"TelegramNetworkError: {e}", exc_info=True)
-            return
+            self._send_message_to_admins("TelegramNetworkError", bot)
         except TelegramAPIError as e:
             self.logger.error(f"TelegramAPIError: {e}")
             await self._send_api_error_message(user.id, bot)
-            return
         except Exception as e:
-            self.logger.exception(f"Необработанное исключение: {e}")
-            return
+            self.logger.error(f"Необработанное исключение: {e}")
+            self._send_message_to_admins("Необработанное исключение", bot)
 
     async def _send_bad_request_message(self, chat_id: int, bot: Bot):
+        text = "Произошла ошибка запроса. " \
+            "Пожалуйста, проверьте корректность введённых данных."
         await bot.send_message(
             chat_id,
-            "Произошла ошибка запроса. "
-            "Пожалуйста, проверьте корректность введённых данных."
+            text
         )
+        self._send_message_to_admins(text, bot)
 
     async def _send_api_error_message(self, chat_id: int, bot: Bot):
+        text = "Произошла ошибка. Попробуйте позже."
         await bot.send_message(
             chat_id,
-            "Произошла ошибка. Попробуйте позже."
+            text
         )
+        self._send_message_to_admins(text, bot)
+
+    async def _send_message_to_admins(self, text: str, bot: Bot):
+        for admin_id in settings.ADMIN_IDS:
+            await bot.send_message(
+                admin_id,
+                text
+            )

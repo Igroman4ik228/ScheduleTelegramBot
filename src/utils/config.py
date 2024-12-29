@@ -1,3 +1,4 @@
+import logging
 from json import load
 from os import getcwd
 from os.path import join
@@ -65,7 +66,6 @@ class Settings(BotSettings, DBSettings, RedisSettings, LoggerSettings):
     DEBUG: bool = False
 
     def configure_logging(self):
-        import logging
         from logging.config import dictConfig
 
         dictConfig(settings.logger_conf)
@@ -73,6 +73,15 @@ class Settings(BotSettings, DBSettings, RedisSettings, LoggerSettings):
         logging.getLogger("sqlalchemy.engine.Engine").handlers = [
             logging.NullHandler()
         ]
+
+
+class LevelFilter(logging.Filter):
+    def __init__(self, level):
+        super().__init__()
+        self.level = level
+
+    def filter(self, record):
+        return record.levelno == self.level
 
 
 settings = Settings()
