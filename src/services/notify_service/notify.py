@@ -2,18 +2,20 @@ import asyncio
 from logging import getLogger
 
 from app.observer_pack.models import Observer
-from bot.bot import BotManager
 from bot.handlers.users.schedule import get_schedule
 from database.db import with_session_self
 from database.models.users import UserModel
 from database.repository import Repository
 from helpers.week import Week
+from services.sender_service.sender import SenderService
+from utils.constants import SENDER_TIME_SLEEP
 
 
 class NotifyService(Observer):
-    def __init__(self, bot_manager: BotManager):
-        self.logger = getLogger(__class__.__name__)
-        self.bot = bot_manager.bot
+
+    def __init__(self, sender: SenderService):
+        self.logger = getLogger(self.__class__.__name__)
+        self.sender = sender
 
     @with_session_self
     async def update(self, session):
@@ -29,12 +31,9 @@ class NotifyService(Observer):
                 user.group_id, repo,
                 Week().weekday, Week().shift
             )
-            try:
-                await self.bot.send_message(user.telegram_id, formatted_schedule)
-            except Exception:
-                pass
+            await self.sender.safe_send_message(user.telegram_id, formatted_schedule)
 
-            await asyncio.sleep(0.05)  # 50 ms
+            await asyncio.sleep(SENDER_TIME_SLEEP)
 
     def need_notify(self, user: UserModel) -> bool:
         if not user.is_notify:
