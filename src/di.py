@@ -32,7 +32,7 @@ class AppModule(Module):
 
     @provider
     def provide_sender_service(self, bot_manager: BotManager) -> SenderService:
-        return SenderService(bot_manager=bot_manager)
+        return SenderService(bot_manager.bot)
 
     @provider
     def provide_parser_factory(self, notify: NotifyService) -> ParserFactory:
@@ -41,14 +41,14 @@ class AppModule(Module):
     @provider
     def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:
         return SubCheckerService(
-            time_span=TimeSpan.SUB_CHECKER.value,
-            sender=sender
+            TimeSpan.SUB_CHECKER.value,
+            sender
         )
 
     @singleton
     @provider
-    def provide_notify_service(self, bot_manager: BotManager) -> NotifyService:
-        return NotifyService(bot_manager)
+    def provide_notify_service(self, sender: SenderService) -> NotifyService:
+        return NotifyService(sender)
 
     @provider
     def provide_builder(
@@ -56,11 +56,11 @@ class AppModule(Module):
         parser_factory: ParserFactory,
         sub_checker: SubCheckerService
     ) -> BackgroundBuilder:
-        return BackgroundBuilder(parser_factory=parser_factory, sub_checker=sub_checker)
+        return BackgroundBuilder(parser_factory, sub_checker)
 
     @provider
     def provide_manager(self, builder: BackgroundBuilder) -> BackgroundManager:
-        return BackgroundManager(builder=builder)
+        return BackgroundManager(builder)
 
     @singleton
     @provider
