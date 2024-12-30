@@ -57,6 +57,7 @@ class CacheTTL(Enum):
 
 # Integers
 MAX_REFERRAL = 5
+SENDER_TIME_SLEEP = timedelta(milliseconds=100).seconds
 
 # Strings
 FILE_EXTENSION = "json"
