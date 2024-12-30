@@ -144,6 +144,20 @@
             {
                 "number": "5",
                 "time": null,
+                "subject": "Теория вероятностей и мат.статистика Шереметьева Н.В.",
+                "classroom": "М106",
+                "is_replacement": false
+            },
+            {
+                "number": "5",
+                "time": null,
+                "subject": "Основы проектирования баз данных Гудкова А.Л. Панасюк А.Д.",
+                "classroom": "Б301 Б406",
+                "is_replacement": false
+            },
+            {
+                "number": "5",
+                "time": null,
                 "subject": "МДК.02.03 Мат. моделирование Кувшинова В.С.",
                 "classroom": "Б502",
                 "is_replacement": false
@@ -175,6 +189,13 @@
                 "number": "5",
                 "time": null,
                 "subject": "Компьютерные сети Юров А.А.",
+                "classroom": "ДОТ",
+                "is_replacement": false
+            },
+            {
+                "number": "6",
+                "time": null,
+                "subject": "УП.02 Учебная практика Пронина Л.Ю. Юров А.А.",
                 "classroom": "ДОТ",
                 "is_replacement": false
             }
@@ -213,13 +234,6 @@
         ],
         "4": [
             {
-                "number": "3",
-                "time": null,
-                "subject": "УП.02 Учебная практика Пронина Л.Ю. Юров А.А.",
-                "classroom": "Б305 Б308",
-                "is_replacement": false
-            },
-            {
                 "number": "4",
                 "time": null,
                 "subject": "МДК.02.03 Мат. моделирование Кувшинова В.С. Вакансия",
@@ -231,13 +245,6 @@
                 "time": null,
                 "subject": "Иностранный язык Зубковская А.Е. Загородних Е.С.",
                 "classroom": "А413 А404-3",
-                "is_replacement": false
-            },
-            {
-                "number": "6",
-                "time": null,
-                "subject": "Безопасность жизнедеятельности Корсаков С.В.",
-                "classroom": "Б101",
                 "is_replacement": false
             }
         ],
