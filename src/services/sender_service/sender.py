@@ -1,35 +1,47 @@
 import asyncio
 from logging import getLogger
-from bot.bot import BotManager
-from database.db import sessionmaker
+
+from aiogram import Bot
+
+from database.db import with_session_self
+from database.models.users import UserModel
 from database.repository import Repository
+from utils.constants import SENDER_TIME_SLEEP
 
 
 class SenderService:
 
-    def __init__(self, bot_manager: BotManager):
-        self.bot = bot_manager.bot
-        self.logger = getLogger(__class__.__name__)
+    def __init__(self, bot: Bot):
+        self.logger = getLogger(self.__class__.__name__)
+        self.bot = bot
 
     async def safe_send_range(self, message: str, tg_ids: list[int]):
         self.logger.info(f"Start range send with message: {message}")
         for tg_id in tg_ids:
+            await self.safe_send_message(tg_id, message)
+            await asyncio.sleep(SENDER_TIME_SLEEP)
+            self.logger.debug(f"Send {tg_id} : {message}")
+
+    @with_session_self
+    async def safe_send_message(self, session, tg_id: int, message: str):
+        user = await Repository(session).users.get(tg_id)
+
+        if await self.is_valid_user(user):
             try:
-                await self.safe_send_message(tg_id, message)
+                await self.bot.send_message(tg_id, message)
             except Exception as e:
-                self.logger.info(f"Failed send message to user {tg_id}\n{e}")
-            await asyncio.sleep(0.3)
-            self.logger.info(f"Send {tg_id} : {message}")
+                self.logger.debug(f"Failed send message to user {tg_id}\n{e}")
+        else:
+            self.logger.debug(
+                f"Dont send message to {user}"
+                "because user is banned or bot"
+            )
 
-    async def safe_send_message(self, tg_id, message):
-        if await self.check_user(tg_id):
-            await self.bot.send_message(tg_id, message)
-
-    async def check_user(self, tg_id: int):
-        async with sessionmaker() as session:
-            repo = Repository(session)
-            user = await repo.users.get(tg_id)
-
-            if not user.is_ban and not user.is_bot:
-                return True
+    async def is_valid_user(self, user: UserModel | None) -> bool:
+        if user is None:
             return False
+
+        if user.is_ban or user.is_bot:
+            return False
+
+        return True
