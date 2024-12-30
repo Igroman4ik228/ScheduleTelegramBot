@@ -10,10 +10,12 @@ from utils.constants import MAX_REFERRAL
 router = Router(name=__name__)
 
 TITLE = "Приветствие"
+
 WELCOME_TEXT = """
 Здравствуйте, {user_name}!
 Вас приветствует элитный бот расписания ЯГК 🥇
 Это бета версия бота. Идёт активная разработка.
+По всем вопросам пишите разработчикам (контакты указаны в описании бота)
 """
 
 
@@ -25,9 +27,14 @@ class SelfReferralError(Exception):
     """Исключение для попытки самореферала."""
 
 
+MAX_FULLNAME_LENGTH = 100
+
+
 @router.message(CommandStart())
 async def handle_start(message: Message, repository: Repository):
-    user_full_name = quote_html(message.from_user.full_name)
+    user_full_name = quote_html(
+        message.from_user.full_name[:MAX_FULLNAME_LENGTH]
+    )
     welcome_message = WELCOME_TEXT.format(
         user_name=user_full_name
     )
