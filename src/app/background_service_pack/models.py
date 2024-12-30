@@ -10,7 +10,7 @@ class BackgroundService(ABC):
         args:
             time_span - in second
         '''
-        self.logger = getLogger(__class__.__name__)
+        self.logger = getLogger(self.__class__.__name__)
         self.is_active: bool = False
         self.time_span = time_span
 

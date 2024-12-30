@@ -9,7 +9,7 @@ from database.repositories.departments import DepartmentRepository
 
 class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     def __init__(self, session: AsyncSession):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, GroupModel)
         self.department_repo = DepartmentRepository(session)
 

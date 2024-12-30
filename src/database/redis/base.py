@@ -11,8 +11,8 @@ redis_client = Redis.from_url(settings.redis_url())
 
 class BaseCache:
     def __init__(self):
+        self.logger = getLogger(self.__class__.__name__)
         self.redis = redis_client
-        self.logger = getLogger(__class__.__name__)
 
     async def create(self, key, value, ex=CacheTTL.DEFAULT.value):
         await self.redis.set(key, value, ex=ex)

@@ -9,7 +9,7 @@ from database.repositories.groups import GroupRepository
 
 class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     def __init__(self, session: AsyncSession):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, DefaultScheduleModel)
         self.group_repo = GroupRepository(session)
 

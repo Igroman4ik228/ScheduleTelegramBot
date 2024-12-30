@@ -16,7 +16,7 @@ from helpers.text import quote_html_range
 
 class AuthMiddleware(BaseMiddleware):
     def __init__(self):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
 
     async def __call__(
         self,

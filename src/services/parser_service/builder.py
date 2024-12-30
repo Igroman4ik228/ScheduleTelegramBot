@@ -112,7 +112,7 @@ class Builder:
     """Основной класс для построения расписания"""
 
     def __init__(self, replacement_schedules: List[Schedule]):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
         self.replacement_schedules = replacement_schedules
         self.default_schedules: List[Schedule] = []
 

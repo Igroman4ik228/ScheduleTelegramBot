@@ -11,7 +11,7 @@ from utils.config import settings
 
 class ErrorHandlingMiddleware(BaseMiddleware):
     def __init__(self):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
 
     async def __call__(
         self,

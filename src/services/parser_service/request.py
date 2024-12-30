@@ -41,11 +41,11 @@ class Request:
         retry_delays: list[int] = None,
         headers: dict[str, str] = None
     ) -> None:
+        self.logger = getLogger(self.__class__.__name__)
         self.url = url
         self.timeout = timeout
         self.retry_delays = retry_delays or DEFAULT_RETRY_DELAYS
         self.headers = headers
-        self.logger = getLogger(__name__)
 
     @retry_request
     async def fetch(self) -> str:

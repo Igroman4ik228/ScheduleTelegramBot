@@ -28,7 +28,6 @@ class ProfileView:
                else 'Подписка отсутствует'}"
         )
 
-    @staticmethod
     def format_info(
         department_name: str,
         group_name: str,

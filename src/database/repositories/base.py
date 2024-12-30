@@ -11,7 +11,7 @@ T = TypeVar('T')
 
 class BaseRepositoryAlchemy[T]:
     def __init__(self, session: AsyncSession, model: type[T]):
-        self.logger = getLogger(__name__)
+        self.logger = getLogger(self.__class__.__name__)
         self.session = session
         self.model = model
 
