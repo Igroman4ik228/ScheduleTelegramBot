@@ -55,7 +55,7 @@ async def handle_payment_telegram(callback_query: CallbackQuery, bot: Bot,
 
                            payload=f"{subscribe.id}",
 
-                           provider_token=settings.PAYMENT_TOKEN,
+                           provider_token=settings.bot.payment_token,
                            start_parameter="start",
                            currency="RUB",
                            prices=[

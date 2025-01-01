@@ -27,7 +27,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    settings.configure_logging()
+    settings.logger.configure()
 
     try:
         asyncio.run(main())

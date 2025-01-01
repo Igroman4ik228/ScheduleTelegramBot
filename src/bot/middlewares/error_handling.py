@@ -58,7 +58,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         self._send_message_to_admins(text, bot)
 
     async def _send_message_to_admins(self, text: str, bot: Bot):
-        for admin_id in settings.ADMIN_IDS:
+        for admin_id in settings.bot.admin_ids:
             await bot.send_message(
                 admin_id,
                 text

@@ -14,12 +14,3 @@ class SubscribeModel(Base):
     users: Mapped[list["UserModel"]] = relationship(
         back_populates="subscribe"
     )
-
-    def __repr__(self):
-        return (
-            "Subscribe(\n"
-            f"id={self.id!r},\n"
-            f"name={self.name!r},\n"
-            f"duration={self.duration_days!r},\n"
-            ")"
-        )

@@ -65,4 +65,4 @@ class AppModule(Module):
     @singleton
     @provider
     def provide_bot(self, setting: Settings) -> BotManager:
-        return BotManager(setting.BOT_TOKEN)
+        return BotManager(setting.bot.token)

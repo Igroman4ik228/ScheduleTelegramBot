@@ -69,19 +69,19 @@
   },
   "filters": {
     "debug_filter": {
-      "()": "utils.config.LevelFilter",
+      "()": "utils.log_filter.LevelFilter",
       "level": 10
     },
     "info_filter": {
-      "()": "utils.config.LevelFilter",
+      "()": "utils.log_filter.LevelFilter",
       "level": 20
     },
     "warning_filter": {
-      "()": "utils.config.LevelFilter",
+      "()": "utils.log_filter.LevelFilter",
       "level": 30
     },
     "error_filter": {
-      "()": "utils.config.LevelFilter",
+      "()": "utils.log_filter.LevelFilter",
       "level": 40
     }
   },

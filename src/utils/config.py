@@ -1,87 +1,128 @@
-import logging
 from json import load
 from os import getcwd
-from os.path import join
+from os.path import exists, join
 
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class EnvBaseSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+class BotSettings(BaseModel):
+    token: str = ""
+    payment_token: str = ""
+    admin_ids: list[int] = Field(default_factory=list)
+    rate_limit: float = Field(
+        default=0.2,
+        ge=0,
+        description="Rate limit for throttling control"
+    )
+
+    @field_validator("admin_ids", mode="before")
+    @classmethod
+    def validate_admin_ids(cls, value):
+        if isinstance(value, str):
+            return [int(x) for x in value.split(",")]
+        return value
 
 
-class BotSettings(EnvBaseSettings):
-    BOT_TOKEN: str
-    RATE_LIMIT: int | float = 0.2  # for throttling control
-    ADMIN_IDS: list[int] = []
-    PAYMENT_TOKEN: str
+class DatabaseSettings(BaseModel):
+    host: str = "mysql"
+    port: int = 3306
+    user: str = "mysql"
+    password: str | None = None
+    name: str = "mysql"
 
-
-class DBSettings(EnvBaseSettings):
-    DB_HOST: str = "mysql"
-    DB_PORT: int = 3306
-    DB_USER: str = "mysql"
-    DB_PASS: str | None = None
-    DB_NAME: str = "mysql"
-
-    DB_ECHO: bool = False
+    echo: bool = False
+    pre_ping: bool = True
+    pool_size: int = 50
+    max_overflow: int = 10
 
     @property
-    def database_url(self) -> str:
-        if self.DB_PASS:
-            return f"mysql+aiomysql://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-        return f"mysql+aiomysql://{self.DB_USER}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    def url(self) -> str:
+        if self.password:
+            return f"mysql+aiomysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        return f"mysql+aiomysql://{self.user}@{self.host}:{self.port}/{self.name}"
 
 
-class RedisSettings(EnvBaseSettings):
-    REDIS_HOST: str = "redis"
-    REDIS_PORT: int = 6379
-    REDIS_PASS: str | None = None
+class RedisSettings(BaseModel):
+    host: str = "redis"
+    port: int = 6379
+    password: str | None = None
 
-    def redis_url(self, db: int = 0) -> str:
+    def url(self, db: int = Field(default=0, ge=0, le=15)) -> str:
         """
         Args:
-            db (int) <= 15: DB number to connect 
+            db (int): DB number (0-15)
+        Returns:
+            str: Redis connection URL
         """
-        if self.REDIS_PASS:
-            return f"redis://{self.REDIS_HOST}:{self.REDIS_PASS}{self.REDIS_PORT}/{db}"
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{db}"
+        if self.password:
+            return f"redis://{self.host}:{self.password}{self.port}/{db}"
+        return f"redis://{self.host}:{self.port}/{db}"
 
 
-class LoggerSettings(EnvBaseSettings):
-    LOG_PATH: str = join(getcwd(), "logs")
+class LoggerSettings(BaseModel):
+    path: str = join(getcwd(), "logs")
+    config_file_name: str = "logger.conf.json"
 
     @property
     def logger_conf(self) -> dict:
-        file_path = join(self.LOG_PATH, "logger.conf.json")
-        try:
-            with open(file_path, encoding="utf-8") as file:
-                log_config = load(file)
-        except FileNotFoundError:
-            log_config = {'version': 1}
-        return log_config
+        file_path = join(self.path, self.config_file_name)
 
+        if not file_path.endswith(".json"):
+            raise ValueError("Logger config file must be a json file")
 
-class Settings(BotSettings, DBSettings, RedisSettings, LoggerSettings):
-    DEBUG: bool = False
+        if not exists(file_path):
+            return {
+                'version': 1,
+                "disable_existing_loggers": False,
+                'handlers': {
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                        'formatter': 'default'
+                    },
+                },
+                'formatters': {
+                    'default': {
+                        'format': '(%(levelname)s) %(asctime)s - %(name)s: %(message)s',
+                        'datefmt': '%d-%m-%Y %H:%M:%S'
+                    },
+                },
+                'root': {
+                    'handlers': ['console'],
+                    'level': 'INFO'
+                },
+            }
 
-    def configure_logging(self):
+        with open(file_path, encoding="utf-8") as file:
+            return load(file)
+
+    def configure(self):
+        from logging import NullHandler, getLogger
         from logging.config import dictConfig
 
-        dictConfig(settings.logger_conf)
+        dictConfig(self.logger_conf)
 
-        logging.getLogger("sqlalchemy.engine.Engine").handlers = [
-            logging.NullHandler()
+        # Disable sqlalchemy engine logs
+        getLogger("sqlalchemy.engine.Engine").handlers = [
+            NullHandler()
         ]
 
 
-class LevelFilter(logging.Filter):
-    def __init__(self, level):
-        super().__init__()
-        self.level = level
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=(".env.example", ".env"),
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
-    def filter(self, record):
-        return record.levelno == self.level
+    bot = BotSettings()
+    db = DatabaseSettings()
+    redis = RedisSettings()
+    logger = LoggerSettings()
+
+    debug: bool = False
 
 
 settings = Settings()

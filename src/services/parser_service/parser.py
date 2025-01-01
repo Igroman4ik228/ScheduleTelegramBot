@@ -57,7 +57,7 @@ class ParserService(BackgroundService, Publisher):
         await self.pause()
 
     async def _get_response_text(self):
-        if settings.DEBUG:
+        if settings.debug:
             with open('test.html', 'r', encoding='utf-8') as file:
                 return file.read()
         return await self.request.fetch()

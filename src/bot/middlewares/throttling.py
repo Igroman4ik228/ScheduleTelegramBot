@@ -4,11 +4,9 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from cachetools import TTLCache
 
-from utils.config import settings
-
 
 class ThrottlingMiddleware(BaseMiddleware):
-    def __init__(self, rate_limit: float = settings.RATE_LIMIT) -> None:
+    def __init__(self, rate_limit: float) -> None:
         self.cache = TTLCache(maxsize=10_000, ttl=rate_limit)
 
     async def __call__(

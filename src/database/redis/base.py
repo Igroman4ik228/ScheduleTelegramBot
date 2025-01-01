@@ -1,4 +1,3 @@
-from datetime import timedelta
 from logging import getLogger
 
 from redis.asyncio import Redis
@@ -6,7 +5,7 @@ from redis.asyncio import Redis
 from utils.config import settings
 from utils.constants import CacheTTL
 
-redis_client = Redis.from_url(settings.redis_url())
+redis_client = Redis.from_url(settings.redis.url())
 
 
 class BaseCache:

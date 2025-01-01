@@ -1,6 +1,8 @@
 from aiogram import Dispatcher
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
+from utils.config import settings
+
 
 def register_middlewares(dp: Dispatcher):
     from .auth import AuthMiddleware
@@ -12,7 +14,7 @@ def register_middlewares(dp: Dispatcher):
 
     dp.update.outer_middleware(ErrorHandlingMiddleware())
 
-    dp.update.outer_middleware(ThrottlingMiddleware())
+    dp.update.outer_middleware(ThrottlingMiddleware(settings.bot.rate_limit))
 
     dp.update.outer_middleware(DatabaseMiddleware())
 
