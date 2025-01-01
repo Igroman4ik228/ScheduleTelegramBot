@@ -24,7 +24,7 @@ class BaseRepositoryAlchemy[T]:
 
     async def get(self, *options: str, **kwargs) -> T | None:
         query = self._build_get_query(*options, **kwargs)
-        if not query:
+        if query is None:
             return
 
         result = await self.session.execute(query)
@@ -32,7 +32,7 @@ class BaseRepositoryAlchemy[T]:
 
     async def get_all(self, *options: str, **kwargs) -> list[T]:
         query = self._build_get_query(*options, **kwargs)
-        if not query:
+        if query is None:
             return []
 
         result = await self.session.execute(query)

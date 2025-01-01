@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 from app.background_service_pack.models import BackgroundService
-from database.db import sessionmaker
+from database.db import db_helper
 from database.models.subscribe import SubscribeModel
 from database.redis.service_cache import ServiceCache
 from database.repository import Repository
@@ -18,7 +18,7 @@ class SubCheckerService(BackgroundService):
         self._service_cache = ServiceCache(self)
 
     async def do_work(self):
-        async with sessionmaker() as session:
+        async with db_helper.get_session() as session:
             repo = Repository(session)
             users = await repo.users.get_all("subscribe")
 
@@ -57,7 +57,7 @@ class SubCheckerService(BackgroundService):
             await self._service_cache.create(user.telegram_id, "true")
 
     async def _del_sub(self, user_tg_id):
-        async with sessionmaker() as session:
+        async with db_helper.get_session() as session:
             repo = Repository(session)
             user = await repo.users.get(user_tg_id)
 

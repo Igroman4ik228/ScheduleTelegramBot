@@ -3,7 +3,7 @@ from logging import getLogger
 
 from aiogram import Bot
 
-from database.db import with_session_self
+from database.db import with_session
 from database.models.users import UserModel
 from database.repository import Repository
 from utils.constants import SENDER_TIME_SLEEP
@@ -22,7 +22,7 @@ class SenderService:
             await asyncio.sleep(SENDER_TIME_SLEEP)
             self.logger.debug(f"Send {tg_id} : {message}")
 
-    @with_session_self
+    @with_session
     async def safe_send_message(self, session, tg_id: int, message: str):
         user = await Repository(session).users.get(tg_id)
 

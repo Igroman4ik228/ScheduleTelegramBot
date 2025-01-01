@@ -3,7 +3,7 @@ from logging import getLogger
 
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
-from database.db import with_session_self
+from database.db import with_session
 from database.models.users import UserModel
 from database.repository import Repository
 from helpers.week import Week
@@ -17,7 +17,7 @@ class NotifyService(Observer):
         self.logger = getLogger(self.__class__.__name__)
         self.sender = sender
 
-    @with_session_self
+    @with_session
     async def update(self, session):
         self.logger.info("Start NotifyService")
 

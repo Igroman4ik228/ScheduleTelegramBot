@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import Dict, List
 
-from database.db import with_session_self
+from database.db import with_session
 from database.models.default_schedule import DefaultScheduleModel
 from database.repository import Repository
 from helpers.default_schedule_parser import get_default_lessons
@@ -116,7 +116,7 @@ class Builder:
         self.replacement_schedules = replacement_schedules
         self.default_schedules: List[Schedule] = []
 
-    @with_session_self
+    @with_session
     async def initialize(self, session) -> None:
         """Инициализация билдера - загрузка основного расписания"""
         self.default_schedules = await self._get_default_schedules(session)

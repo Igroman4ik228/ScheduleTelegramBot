@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import Update
 
-from database.db import sessionmaker
+from database.db import db_helper
 from database.repository import Repository
 
 
@@ -14,6 +14,6 @@ class DatabaseMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
-        async with sessionmaker() as session:
+        async with db_helper.get_session() as session:
             data["repository"] = Repository(session)
             return await handler(event, data)

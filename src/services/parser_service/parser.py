@@ -2,7 +2,7 @@ from injector import inject
 
 from app.background_service_pack.models import BackgroundService
 from app.observer_pack.models import Publisher
-from database.db import sessionmaker, with_session_self
+from database.db import db_helper, with_session
 from database.repository import Repository
 from helpers.week import Week
 from services.notify_service.notify import NotifyService
@@ -62,7 +62,7 @@ class ParserService(BackgroundService, Publisher):
                 return file.read()
         return await self.request.fetch()
 
-    @with_session_self
+    @with_session
     async def _save_schedule_to_db(self, session, result_schedule: dict[str, str]):
         result_schedule_repo = Repository(session).result_schedule
 
@@ -72,7 +72,7 @@ class ParserService(BackgroundService, Publisher):
             await result_schedule_repo.create_by_group_name(Week().weekday, schedule, group)
 
     async def _check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
-        async with sessionmaker() as session:
+        async with db_helper.get_session() as session:
             repo = Repository(session)
             group = await repo.groups.get_by_name(group_name)
             if group is None:

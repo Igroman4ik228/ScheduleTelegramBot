@@ -4,7 +4,7 @@ from injector import Injector
 
 from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
-from database.db import engine
+from database.db import db_helper
 from database.redis.base import redis_client
 from di import AppModule
 from utils.config import settings
@@ -22,7 +22,7 @@ async def main():
         )
 
     finally:
-        await engine.dispose()
+        await db_helper.dispose()
         await redis_client.aclose()
 
 

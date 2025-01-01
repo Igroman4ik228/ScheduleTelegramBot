@@ -117,10 +117,10 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    bot = BotSettings()
-    db = DatabaseSettings()
-    redis = RedisSettings()
-    logger = LoggerSettings()
+    bot: BotSettings = BotSettings()
+    db: DatabaseSettings = DatabaseSettings()
+    redis: RedisSettings = RedisSettings()
+    logger: LoggerSettings = LoggerSettings()
 
     debug: bool = False
 
