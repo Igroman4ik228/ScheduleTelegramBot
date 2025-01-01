@@ -2,7 +2,7 @@ from json import load
 from os import getcwd
 from os.path import exists, join
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, MySQLDsn, RedisDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +25,7 @@ class BotSettings(BaseModel):
 
 
 class DatabaseSettings(BaseModel):
+    scheme: str = "mysql+aiomysql"
     host: str = "mysql"
     port: int = 3306
     user: str = "mysql"
@@ -38,12 +39,20 @@ class DatabaseSettings(BaseModel):
 
     @property
     def url(self) -> str:
-        if self.password:
-            return f"mysql+aiomysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
-        return f"mysql+aiomysql://{self.user}@{self.host}:{self.port}/{self.name}"
+        return str(
+            MySQLDsn.build(
+                scheme=self.scheme,
+                username=self.user,
+                password=self.password,
+                host=self.host,
+                port=self.port,
+                path=self.name
+            )
+        )
 
 
 class RedisSettings(BaseModel):
+    scheme: str = "redis"
     host: str = "redis"
     port: int = 6379
     password: str | None = None
@@ -55,9 +64,15 @@ class RedisSettings(BaseModel):
         Returns:
             str: Redis connection URL
         """
-        if self.password:
-            return f"redis://{self.host}:{self.password}{self.port}/{db}"
-        return f"redis://{self.host}:{self.port}/{db}"
+        return str(
+            RedisDsn.build(
+                scheme=self.scheme,
+                password=self.password,
+                host=self.host,
+                port=self.port,
+                path=str(db)
+            )
+        )
 
 
 class LoggerSettings(BaseModel):
