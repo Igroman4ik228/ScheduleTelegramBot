@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import TypeVar
 
-from sqlalchemy import select
+from sqlalchemy import Select, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -22,45 +22,33 @@ class BaseRepositoryAlchemy[T]:
             return instance
         return
 
-    async def get(self, *options, **kwargs) -> T | None:
-        for option in options:
-            if not hasattr(self.model, option):
-                self.logger.warning(
-                    f"Model {self.model.__name__}"
-                    f"has no attribute {option}"
-                )
-                return
-
-        query = select(self.model).filter_by(**kwargs)
-
-        for option in options:
-            query = query.options(joinedload(getattr(self.model, option)))
+    async def get(self, *options: str, **kwargs) -> T | None:
+        query = self._build_get_query(*options, **kwargs)
+        if not query:
+            return
 
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_all(self, *options, **kwargs) -> list[T]:
-        for option in options:
-            if not hasattr(self.model, option):
-                self.logger.warning(
-                    f"Model {self.model.__name__}"
-                    f"has no attribute {option}"
-                )
-                return
-
-        query = select(self.model).filter_by(**kwargs)
-
-        for option in options:
-            query = query.options(joinedload(getattr(self.model, option)))
+    async def get_all(self, *options: str, **kwargs) -> list[T]:
+        query = self._build_get_query(*options, **kwargs)
+        if not query:
+            return []
 
         result = await self.session.execute(query)
         return result.unique().scalars().all()
 
     async def update(self, instance: T):
         instance_id = getattr(instance, "id", None)
+        if instance_id is None:
+            self.logger.warning(
+                "Instance must have an 'id' attribute for update."
+            )
+            return
+
         exist_instance = await BaseRepositoryAlchemy.get(self, id=instance_id)
         if exist_instance is None:
-            self.logger.debug(
+            self.logger.warning(
                 "Instance with id "
                 f"{instance_id} not exist for update"
             )
@@ -72,7 +60,7 @@ class BaseRepositoryAlchemy[T]:
     async def delete(self, **kwargs):
         exist_instance = await BaseRepositoryAlchemy.get(self, **kwargs)
         if exist_instance is None:
-            self.logger.debug(
+            self.logger.warning(
                 f"Instance with {kwargs} not exist for delete"
             )
             return
@@ -90,3 +78,21 @@ class BaseRepositoryAlchemy[T]:
             await self.session.rollback()
             raise f"Ошибка в репозиториях: {e}"
         return True
+
+    def _build_get_query(self, *options: str, **filters):
+        for option in options:
+            if not hasattr(self.model, option):
+                self.logger.warning(
+                    f"Model {self.model.__name__} has no attribute '{option}'"
+                )
+                return
+
+        query = (
+            select(self.model)
+            .filter_by(**filters)
+        )
+        for option in options:
+            query = query.options(
+                joinedload(getattr(self.model, option))
+            )
+        return query
