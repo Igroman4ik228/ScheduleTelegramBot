@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from aiogram import html
-
 
 @dataclass
 class SubscribeView:
@@ -28,6 +26,7 @@ class ProfileView:
                else 'Подписка отсутствует'}"
         )
 
+    @staticmethod
     def format_info(
         department_name: str,
         group_name: str,
@@ -43,7 +42,3 @@ class ProfileView:
                 SubscribeView(subscribe_name, subscribe_end_time)
             )
         )
-
-    @staticmethod
-    def format_title(title: str) -> str:
-        return f"{html.blockquote(title)}"
