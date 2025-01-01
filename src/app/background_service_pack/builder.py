@@ -1,7 +1,6 @@
 from app.background_service_pack.models import BackgroundService
 from app.factory_pack.models import IBackgroundServiceFactory
 from app.factory_pack.parser_factory import ParserFactory
-from services.parser_service.parser import ParserService
 from services.sub_checker_service.sub_checker import SubCheckerService
 
 
