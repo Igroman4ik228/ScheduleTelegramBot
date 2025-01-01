@@ -1,6 +1,5 @@
 import asyncio
 from abc import ABC, abstractmethod
-from logging import getLogger
 
 
 class Observer(ABC):
@@ -14,7 +13,6 @@ class Publisher(ABC):
 
     @abstractmethod
     def __init__(self) -> None:
-        self.logger = getLogger(self.__class__.__name__)
         self.services: list[Observer] = []
         self.is_update: bool = False
 
