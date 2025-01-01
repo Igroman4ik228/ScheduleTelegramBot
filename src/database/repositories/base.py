@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import TypeVar
 
-from sqlalchemy import Select, select
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -91,6 +91,7 @@ class BaseRepositoryAlchemy[T]:
             select(self.model)
             .filter_by(**filters)
         )
+
         for option in options:
             query = query.options(
                 joinedload(getattr(self.model, option))
