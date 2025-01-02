@@ -1,4 +1,3 @@
-from database.models.base import Base
 from database.models.default_schedule import DefaultScheduleModel
 from database.models.departments import DepartmentModel
 from database.models.groups import GroupModel
@@ -8,7 +7,6 @@ from database.models.subscribe import SubscribeModel
 from database.models.users import UserModel
 
 __all__ = (
-    "Base",
     "UserModel",
     "SubscribeModel",
     "ResultScheduleModel",
