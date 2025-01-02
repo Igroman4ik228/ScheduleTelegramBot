@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import DepartmentModel
-from database.repositories import BaseRepositoryAlchemy
+from database.repositories.base import BaseRepositoryAlchemy
 
 
 class DepartmentRepository(BaseRepositoryAlchemy[DepartmentModel]):

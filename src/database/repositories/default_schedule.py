@@ -3,7 +3,8 @@ from logging import getLogger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import DefaultScheduleModel
-from database.repositories import BaseRepositoryAlchemy, GroupRepository
+from database.repositories.base import BaseRepositoryAlchemy
+from database.repositories.groups import GroupRepository
 
 
 class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):

@@ -4,7 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import UserModel
 from database.redis.repositories import cached, clear_cache
-from database.repositories import BaseRepositoryAlchemy, GroupRepository
+from database.repositories import GroupRepository
+from database.repositories.base import BaseRepositoryAlchemy
 from utils.constants import CacheTTL
 
 
