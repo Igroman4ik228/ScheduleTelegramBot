@@ -63,7 +63,7 @@ class ParserService(BackgroundService, Publisher):
         return await self.request.fetch()
 
     @with_session
-    async def _save_schedule_to_db(self, session, result_schedule: dict[str, str]):
+    async def _save_schedule_to_db(self, result_schedule: dict[str, str], session=None):
         result_schedule_repo = Repository(session).result_schedule
 
         for group, schedule in result_schedule.items():

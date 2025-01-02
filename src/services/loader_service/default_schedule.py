@@ -37,11 +37,11 @@ class DefaultScheduleLoader:
     @with_session
     async def _save_to_db(
         self,
-        session,
         weekday: int,
         shift: int,
         data_lessons: str,
-        group_name: str
+        group_name: str,
+        session=None,
     ):
         default_schedule_repo = DefaultScheduleRepository(session)
         exist_default_schedule = await default_schedule_repo.get_by_group_name(

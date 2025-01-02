@@ -18,31 +18,30 @@ class NotifyService(Observer):
         self.sender = sender
 
     @with_session
-    async def update(self, session):
+    async def update(self, session=None):
         self.logger.info("Start NotifyService")
 
         repo = Repository(session)
         users = await repo.users.get_all()
         for user in users:
-            if self.need_notify(user):
+            if not self.need_notify(user):
                 continue
 
             formatted_schedule = await get_schedule(
                 user.group_id, repo,
                 Week().weekday, Week().shift
             )
-            await self.sender.safe_send_message(user.telegram_id, formatted_schedule)
+            await self.sender.safe_send_message(
+                user.telegram_id,
+                formatted_schedule,
+                session=session
+            )
 
             await asyncio.sleep(SENDER_TIME_SLEEP)
 
     def need_notify(self, user: UserModel) -> bool:
-        if not user.is_notify:
-            return False
-
-        if user.is_ban:
-            return False
-
-        if user.subscribe_id is None:
-            return False
-
-        return True
+        return (
+            user.is_notify and
+            not user.is_ban and
+            user.subscribe_id is not None
+        )

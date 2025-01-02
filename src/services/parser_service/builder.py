@@ -117,7 +117,7 @@ class Builder:
         self.default_schedules: List[Schedule] = []
 
     @with_session
-    async def initialize(self, session) -> None:
+    async def initialize(self, session=None) -> None:
         """Инициализация билдера - загрузка основного расписания"""
         self.default_schedules = await self._get_default_schedules(session)
 
