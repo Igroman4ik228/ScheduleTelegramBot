@@ -3,7 +3,7 @@ from logging import getLogger
 
 from aiogram import Bot
 
-from database.models.users import UserModel
+from database.models import UserModel
 from database.repository import Repository
 from utils.constants import SENDER_TIME_SLEEP
 

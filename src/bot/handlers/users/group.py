@@ -5,7 +5,7 @@ from bot.filters.group import GroupFilter
 from bot.keyboards.users.inline.department_kb import get_department_kb
 from bot.keyboards.users.inline.group_kb import get_group_kb
 from bot.keyboards.users.reply.main_kb import get_main_kb
-from database.models.users import UserModel
+from database.models import UserModel
 from database.repository import Repository
 from utils.constants import CallbackData
 

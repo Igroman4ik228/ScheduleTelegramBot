@@ -5,9 +5,7 @@ from bot.keyboards.users.inline.setting_kb import (get_notification_text,
                                                    get_setting_kb,
                                                    get_time_text)
 from bot.views.profile import ProfileView
-from database.models.groups import GroupModel
-from database.models.subscribe import SubscribeModel
-from database.models.users import UserModel
+from database.models import GroupModel, SubscribeModel, UserModel
 from database.repository import Repository
 from utils.constants import CallbackData
 

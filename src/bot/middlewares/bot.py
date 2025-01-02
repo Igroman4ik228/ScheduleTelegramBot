@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import Update
 
-from database.models.users import UserModel
+from database.models import UserModel
 
 
 class BotMiddleware(BaseMiddleware):

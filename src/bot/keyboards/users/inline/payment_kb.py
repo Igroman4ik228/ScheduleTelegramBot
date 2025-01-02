@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from database.models.subscribe import SubscribeModel
+from database.models import SubscribeModel
 
 
 def get_payment_kb(subscribe: SubscribeModel) -> InlineKeyboardMarkup:

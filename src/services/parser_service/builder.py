@@ -3,7 +3,7 @@ from logging import getLogger
 from typing import Dict, List
 
 from database.db import with_session
-from database.models.default_schedule import DefaultScheduleModel
+from database.models import DefaultScheduleModel
 from database.repository import Repository
 from helpers.default_schedule_parser import get_default_lessons
 from helpers.lesson import Lesson, Schedule

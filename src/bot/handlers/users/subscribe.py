@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from bot.filters.subscribe import SubscribeFilter
 from bot.keyboards.users.inline.payment_kb import get_payment_kb
 from bot.keyboards.users.inline.subscribe_kb import get_subscribe_kb
-from database.models.users import UserModel
+from database.models import UserModel
 from database.repository import Repository
 from utils.config import settings
 from utils.constants import CallbackData

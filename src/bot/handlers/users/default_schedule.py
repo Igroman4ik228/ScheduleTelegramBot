@@ -3,7 +3,7 @@ from aiogram.types import CallbackQuery
 
 from bot.keyboards.users.inline.default_schedule_kb import \
     get_default_schedule_kb
-from database.models.users import UserModel
+from database.models import UserModel
 from database.repository import Repository
 from helpers.algorithm import get_key
 from services.formatter_service.message import format_default_schedules

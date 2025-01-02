@@ -3,7 +3,7 @@ from enum import Enum
 
 from app.background_service_pack.models import BackgroundService
 from database.db import db_helper
-from database.models.subscribe import SubscribeModel
+from database.models import SubscribeModel
 from database.redis.service_cache import ServiceCache
 from database.repository import Repository
 from services.sender_service.sender import SenderService

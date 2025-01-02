@@ -1,7 +1,7 @@
 from aiogram.filters import Filter
 from aiogram.types import Message
 
-from database.models.users import UserModel
+from database.models import UserModel
 
 
 class GroupFilter(Filter):

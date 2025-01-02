@@ -1,4 +1,4 @@
-from database.models.default_schedule import DefaultScheduleModel
+from database.models import DefaultScheduleModel
 from helpers.default_schedule_parser import generate_default_schedule
 from services.formatter_service.schedule import format_header, format_lesson
 from utils.constants import DAY_NAMES

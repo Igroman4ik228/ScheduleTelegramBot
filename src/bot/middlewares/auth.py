@@ -6,10 +6,9 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from aiogram.types.user import User
 
-from database.models.subscribe import SubscribeModel
-from database.models.users import UserModel
+from database.models import SubscribeModel, UserModel
 from database.redis.repositories import clear_cache
-from database.repositories.users import UserRepository
+from database.repositories import UserRepository
 from database.repository import Repository
 from helpers.text import quote_html_range
 

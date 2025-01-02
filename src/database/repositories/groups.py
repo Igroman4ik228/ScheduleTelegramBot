@@ -2,9 +2,8 @@ from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models.groups import GroupModel
-from database.repositories.base import BaseRepositoryAlchemy
-from database.repositories.departments import DepartmentRepository
+from database.models import GroupModel
+from database.repositories import BaseRepositoryAlchemy, DepartmentRepository
 
 
 class GroupRepository(BaseRepositoryAlchemy[GroupModel]):

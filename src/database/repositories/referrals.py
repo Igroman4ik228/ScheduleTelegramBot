@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models.referrals import ReferralModel
-from database.repositories.base import BaseRepositoryAlchemy
+from database.models import ReferralModel
+from database.repositories import BaseRepositoryAlchemy
 
 
 class ReferralRepository(BaseRepositoryAlchemy):

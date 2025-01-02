@@ -2,10 +2,9 @@ from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models.users import UserModel
+from database.models import UserModel
 from database.redis.repositories import cached, clear_cache
-from database.repositories.base import BaseRepositoryAlchemy
-from database.repositories.groups import GroupRepository
+from database.repositories import BaseRepositoryAlchemy, GroupRepository
 from utils.constants import CacheTTL
 
 

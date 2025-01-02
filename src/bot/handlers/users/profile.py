@@ -6,9 +6,7 @@ from aiogram.types import Message
 
 from bot.keyboards.users.inline.profile_kb import get_profile_kb
 from bot.views.profile import ProfileView
-from database.models.groups import GroupModel
-from database.models.subscribe import SubscribeModel
-from database.models.users import UserModel
+from database.models import GroupModel, SubscribeModel, UserModel
 from database.redis.profile_cache import ProfileCache
 from database.repository import Repository
 

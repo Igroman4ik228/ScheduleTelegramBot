@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models.subscribe import SubscribeModel
-from database.repositories.base import BaseRepositoryAlchemy
+from database.models import SubscribeModel
+from database.repositories import BaseRepositoryAlchemy
 
 
 class SubscribeRepository(BaseRepositoryAlchemy[SubscribeModel]):

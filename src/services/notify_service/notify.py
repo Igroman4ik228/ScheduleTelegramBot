@@ -4,7 +4,7 @@ from logging import getLogger
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
 from database.db import with_session
-from database.models.users import UserModel
+from database.models import UserModel
 from database.repository import Repository
 from helpers.week import Week
 from services.sender_service.sender import SenderService

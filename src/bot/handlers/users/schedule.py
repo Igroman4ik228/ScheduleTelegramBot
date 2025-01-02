@@ -2,9 +2,8 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 from bot.keyboards.users.reply.main_kb import get_main_kb
-from database.models.default_schedule import DefaultScheduleModel
-from database.models.result_schedule import ResultScheduleModel
-from database.models.users import UserModel
+from database.models import (DefaultScheduleModel, ResultScheduleModel,
+                             UserModel)
 from database.repository import Repository
 from helpers.default_schedule_parser import generate_default_schedule
 from helpers.lesson import Lesson

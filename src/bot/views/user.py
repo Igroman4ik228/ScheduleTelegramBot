@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from aiogram import html
 
-from database.models.users import UserModel
+from database.models import UserModel
 
 MAX_FIRST_NAME_LENGTH = 13
 MAX_LAST_NAME_LENGTH = 13

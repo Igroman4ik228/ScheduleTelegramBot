@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from database.models.departments import DepartmentModel
+from database.models import DepartmentModel
 
 
 def get_department_kb(departments: list[DepartmentModel]) -> InlineKeyboardMarkup:

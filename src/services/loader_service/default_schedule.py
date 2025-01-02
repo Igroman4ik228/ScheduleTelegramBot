@@ -2,7 +2,7 @@ import asyncio
 from pathlib import Path
 
 from database.db import with_session
-from database.repositories.default_schedule import DefaultScheduleRepository
+from database.repositories import DefaultScheduleRepository
 from helpers.default_schedule_parser import default_schedule_parse
 from helpers.file import get_file_paths, load_from_json
 from utils.constants import FILE_EXTENSION
