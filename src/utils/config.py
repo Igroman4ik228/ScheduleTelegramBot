@@ -141,3 +141,4 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+settings.logger.configure()
