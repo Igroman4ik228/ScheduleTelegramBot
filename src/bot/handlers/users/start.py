@@ -2,8 +2,9 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from database.repositories.referrals import ReferralRepository
+from database.repositories import ReferralRepository
 from database.repository import Repository
+from helpers.command import find_command_argument
 from helpers.text import quote_html
 from utils.constants import MAX_REFERRAL
 
@@ -39,8 +40,9 @@ async def handle_start(message: Message, repository: Repository):
         user_name=user_full_name
     )
 
-    owner_id = parse_owner_id(message.text)
-    if owner_id != 0:
+    argument = find_command_argument(message.text)
+    owner_id = parse_owner_id(argument)
+    if owner_id is not None:
         user_id = message.from_user.id
         try:
             await register_referral(owner_id, user_id, repository.referrals)
@@ -48,20 +50,20 @@ async def handle_start(message: Message, repository: Repository):
             await message.answer(
                 str(e)
             )
+
     await message.answer(
         welcome_message.strip()
     )
 
 
-def parse_owner_id(text: str) -> int:
-    args = text.split(maxsplit=2)
+def parse_owner_id(argument: str) -> int | None:
+    if not argument:
+        return
 
-    owner_id = 0
-    if args and len(args) >= 2:
-        try:
-            owner_id = int(args[1])
-        except ValueError:
-            pass
+    try:
+        owner_id = int(argument[1])
+    except ValueError:
+        return None
 
     return owner_id
 
