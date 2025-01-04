@@ -1,4 +1,4 @@
-from json import load
+from json import JSONDecodeError, load
 from os import getcwd
 from os.path import exists, join
 
@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class BotSettings(BaseModel):
+    """Настройки бота Telegram."""
     token: str = ""
     payment_token: str = ""
     admin_ids: list[int] = Field(default_factory=list)
@@ -23,19 +24,26 @@ class BotSettings(BaseModel):
             return [int(x) for x in value.split(",")]
         return value
 
+    @field_validator("token")
+    @classmethod
+    def validate_token(cls, v: str) -> str:
+        if not v and not settings.debug:
+            raise ValueError("Token cannot be empty in production mode")
+        return v
+
 
 class DatabaseSettings(BaseModel):
     scheme: str = "mysql+aiomysql"
     host: str = "mysql"
-    port: int = 3306
+    port: int = Field(default=3306, ge=1, le=65535)
     user: str = "mysql"
     password: str | None = None
     name: str = "mysql"
 
     echo: bool = False
     pre_ping: bool = True
-    pool_size: int = 50
-    max_overflow: int = 10
+    pool_size: int = Field(default=50, ge=1)
+    max_overflow: int = Field(default=10, ge=1)
 
     @property
     def url(self) -> str:
@@ -77,39 +85,50 @@ class RedisSettings(BaseModel):
 
 class LoggerSettings(BaseModel):
     path: str = join(getcwd(), "logs")
-    config_file_name: str = "logger.conf.json"
+    config_file_name: str = Field(
+        default="logger.conf.json",
+        pattern=r".*\.json$"
+    )
 
     @property
-    def logger_conf(self) -> dict:
+    def logger_conf(self):
         file_path = join(self.path, self.config_file_name)
 
-        if not file_path.endswith(".json"):
-            raise ValueError("Logger config file must be a json file")
-
         if not exists(file_path):
-            return {
-                'version': 1,
-                "disable_existing_loggers": False,
-                'handlers': {
-                    'console': {
-                        'class': 'logging.StreamHandler',
-                        'formatter': 'default'
-                    },
-                },
-                'formatters': {
-                    'default': {
-                        'format': '(%(levelname)s) %(asctime)s - %(name)s: %(message)s',
-                        'datefmt': '%d-%m-%Y %H:%M:%S'
-                    },
-                },
-                'root': {
-                    'handlers': ['console'],
-                    'level': 'INFO'
-                },
-            }
+            return self._get_default_config()
+        try:
+            with open(file_path, encoding="utf-8") as file:
+                return load(file)
+        except JSONDecodeError:
+            return self._get_default_config()
 
-        with open(file_path, encoding="utf-8") as file:
-            return load(file)
+    def _get_default_config(self):
+        """Возвращает конфигурацию логгера по умолчанию."""
+        return {
+            'version': 1,
+            "disable_existing_loggers": False,
+            'handlers': {
+                'console': {
+                    'class': 'logging.StreamHandler',
+                    'formatter': 'default'
+                },
+                'file': {
+                    'class': 'logging.FileHandler',
+                    'filename': join(self.path, 'app.log'),
+                    'formatter': 'default'
+                }
+            },
+            'formatters': {
+                'default': {
+                    'format': '(%(levelname)s) %(asctime)s - %(name)s: %(message)s',
+                    'datefmt': '%Y-%m-%d %H:%M:%S'
+                },
+            },
+            'root': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO'
+            },
+        }
 
     def configure(self):
         from logging import NullHandler, getLogger
