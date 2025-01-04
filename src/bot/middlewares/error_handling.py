@@ -25,19 +25,19 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         try:
             return await handler(event, data)
         except TelegramBadRequest as e:
-            self.logger.error(f"Неверный запрос: {e}")
+            self.logger.error(f"Неверный запрос: {e}", exc_info=True)
             await self._send_bad_request_message(user.id, bot)
         except RestartingTelegram as e:
             self.logger.error(f"Telegram перезагружается: {e}")
             self._send_message_to_admins("Telegram перезагружается", bot)
         except TelegramNetworkError as e:
-            self.logger.error(f"TelegramNetworkError: {e}", exc_info=True)
+            self.logger.error(f"TelegramNetworkError: {e}")
             self._send_message_to_admins("TelegramNetworkError", bot)
         except TelegramAPIError as e:
-            self.logger.error(f"TelegramAPIError: {e}")
+            self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, bot)
         except Exception as e:
-            self.logger.error(f"Необработанное исключение: {e}")
+            self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
             self._send_message_to_admins("Необработанное исключение", bot)
 
     async def _send_bad_request_message(self, chat_id: int, bot: Bot):

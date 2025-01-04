@@ -10,9 +10,12 @@ from bot.keyboards.admins.inline.user.group_list_users_kb import (
     GroupCallbackFactory, get_group_kb)
 from bot.keyboards.admins.inline.user.pagination_user_kb import (
     PaginationUsersCallbackFactory, get_pagination_user_kb)
+from bot.keyboards.admins.inline.user.subscribe_list_users_kb import (
+    SubscribeCallbackFactory, get_subscribe_list_kb)
 from bot.keyboards.admins.inline.user.user_kb import get_user_kb
 from bot.views.user import UserView
 from database.repository import Repository
+from helpers.subscribe import calc_subscribe_end_time
 from helpers.text import split_text_with_wrap
 from utils.constants import CallbackDataAdmin
 
@@ -21,6 +24,11 @@ router = Router(name=__name__)
 
 class BanUnbanStates(StatesGroup):
     tg_user_id = State()
+
+
+class SubscribeStates(StatesGroup):
+    tg_user_id = State()
+    subscribe_id = State()
 
 
 TITLE = "Панель управления пользователями"
@@ -91,6 +99,11 @@ async def handle_users_page(
     group_id = callback_data.group_id
     data = await state.get_data()
     texts: list[str] = data.get(f"texts_{group_id}")
+    if texts is None:
+        await callback_query.message.edit_text(
+            "Контекст был очищен, попробуйте выполнить действие заново",
+        )
+        return
 
     total_pages = len(texts)
     current_page = callback_data.current_page
@@ -116,7 +129,7 @@ async def handle_request_ban_unban(
     state: FSMContext
 ):
     await callback_query.message.edit_text(
-        "Введите tg_id пользователя, которого хотите забанить/разбанить\n"
+        "Введите телеграм ID пользователя, которого хотите забанить/разбанить\n"
         "Для отмены введите 'отмена'",
         reply_markup=None
     )
@@ -132,7 +145,7 @@ async def handle_cancel_ban_unban(
     await state.clear()
 
 
-@router.message(BanUnbanStates.tg_user_id, F.text)
+@router.message(BanUnbanStates.tg_user_id, F.text.isdigit())
 async def handle_ban_unban(
     message: Message,
     repository: Repository,
@@ -142,14 +155,9 @@ async def handle_ban_unban(
     user_input = message.text
     await state.update_data(tg_user_id=user_input)
 
-    if not user_input.isdigit():
-        await message.answer(html.bold("ID пользователя должен быть числом"))
-        return
-
     user = await repository.users.get(int(user_input))
     if user is None:
         await message.answer(html.bold("Данный пользователь отсутствует"))
-        await state.clear()
         return
 
     user.is_ban = not user.is_ban
@@ -173,6 +181,13 @@ async def ban_unban_notify(is_ban: bool, tg_id: int, bot: Bot):
         pass
 
 
+@router.message(BanUnbanStates.tg_user_id, ~F.text.isdigit())
+async def handle_ban_unban_not_digit(
+    message: Message,
+):
+    await message.answer(html.bold("Телеграм ID пользователя должен быть числом"))
+
+
 class BanMessage(Enum):
     BAN = f"{html.bold("Вы были забанены администратором")}\n" + \
         f"{html.italic("Для разбана обратитесь к разработчикам\n")}" + \
@@ -182,3 +197,84 @@ class BanMessage(Enum):
 
 
 # *Give subscribe
+@router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.GIVE_SUBSCRIPTION.value)
+async def handle_request_give_subscribe(
+    callback_query: CallbackQuery,
+    state: FSMContext,
+    repository: Repository
+):
+    subscribes = await repository.subscribes.get_all()
+    await callback_query.message.edit_text(
+        "Доступные подписки: ",
+        reply_markup=get_subscribe_list_kb(subscribes)
+    )
+    await state.set_state(SubscribeStates.tg_user_id)
+
+
+@router.message(SubscribeStates.tg_user_id, F.text.lower().contains("отмена"))
+async def handle_cancel_give_subscribe(
+    message: Message,
+    state: FSMContext
+):
+    await message.answer(html.bold("Действие отменено!"))
+    await state.clear()
+
+
+@router.callback_query(SubscribeCallbackFactory.filter())
+async def handle_subscribe(
+    callback_query: CallbackQuery,
+    callback_data: SubscribeCallbackFactory,
+    state: FSMContext
+):
+    await state.update_data(subscribe_id=callback_data.subscribe_id)
+
+    await callback_query.message.edit_text(
+        "Введите tg_id пользователя, которому хотите выдать подписку\n"
+        "Для отмены введите 'отмена'",
+        reply_markup=None
+    )
+    await state.set_state(SubscribeStates.tg_user_id)
+
+
+@router.message(SubscribeStates.tg_user_id, F.text.isdigit())
+async def handle_give_subscribe(
+    message: Message,
+    repository: Repository,
+    bot: Bot,
+    state: FSMContext
+):
+    tg_user_id = message.text
+    data = await state.get_data()
+    subscribe_id = data.get("subscribe_id")
+
+    user = await repository.users.get(int(tg_user_id))
+    if user is None:
+        await message.answer(html.bold("Данный пользователь отсутствует"))
+        return
+
+    subscribe = await repository.subscribes.get(subscribe_id)
+
+    await repository.users.update_subscribe(
+        user,
+        subscribe.id,
+        calc_subscribe_end_time(subscribe.duration_days)
+    )
+    await message.answer(f"{subscribe.name} успешно выдана пользователю")
+
+    await give_subscribe_notify(user.telegram_id, subscribe.name, bot)
+    await state.clear()
+
+
+async def give_subscribe_notify(tg_id: int, subscribe_name: str, bot: Bot):
+    message = f"Вам была выдана {subscribe_name} администратором"
+    try:
+        await bot.send_message(tg_id, message)
+    except Exception:
+        pass
+
+
+@router.message(SubscribeStates.tg_user_id, ~F.text.isdigit())
+async def handle_give_subscribe_not_digit(
+    message: Message,
+):
+    await message.answer(html.bold("Телеграм ID пользователя должен быть числом"))

@@ -1,3 +1,4 @@
+from datetime import datetime
 from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +45,17 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
     @cached(ttl=CacheTTL.USER.value)
     async def get(self, telegram_id: int, *options) -> UserModel | None:
         return await super().get(telegram_id=telegram_id, *options)
+
+    async def update_subscribe(
+            self,
+            user: UserModel,
+            subscribe_id: int,
+            subscribe_end_time: datetime
+    ):
+        user.subscribe_id = subscribe_id
+        user.subscribe_end_time = subscribe_end_time
+
+        await self.update(user)
 
     async def update(self, instance: UserModel):
         await super().update(instance)
