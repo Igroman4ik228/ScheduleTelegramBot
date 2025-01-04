@@ -17,6 +17,7 @@ from bot.views.user import UserView
 from database.repository import Repository
 from helpers.subscribe import calc_subscribe_end_time
 from helpers.text import split_text_with_wrap
+from services.sender_service.sender import SenderService
 from utils.constants import CallbackDataAdmin
 
 router = Router(name=__name__)
@@ -172,13 +173,11 @@ async def handle_ban_unban(
 
 
 async def ban_unban_notify(is_ban: bool, tg_id: int, bot: Bot):
-    try:
-        if is_ban:
-            await bot.send_message(tg_id, BanMessage.BAN.value)
-            return
-        await bot.send_message(tg_id, BanMessage.UNBAN.value)
-    except Exception:
-        pass
+    sender = SenderService(bot)
+    if is_ban:
+        await sender.safe_send_message(tg_id, BanMessage.BAN.value)
+        return
+    await sender.safe_send_message(tg_id, BanMessage.UNBAN.value)
 
 
 @router.message(BanUnbanStates.tg_user_id, ~F.text.isdigit())
@@ -266,11 +265,10 @@ async def handle_give_subscribe(
 
 
 async def give_subscribe_notify(tg_id: int, subscribe_name: str, bot: Bot):
+    sender = SenderService(bot)
     message = f"Вам была выдана {subscribe_name} администратором"
-    try:
-        await bot.send_message(tg_id, message)
-    except Exception:
-        pass
+
+    await sender.safe_send_message(tg_id, message)
 
 
 @router.message(SubscribeStates.tg_user_id, ~F.text.isdigit())
