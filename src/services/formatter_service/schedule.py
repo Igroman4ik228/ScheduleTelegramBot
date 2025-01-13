@@ -28,7 +28,9 @@ def format_header(
 
     if not is_default_schedule:
         shift = Week.get_shift_name_by_shift(shift)
-        header = html.blockquote(f"Расписание на {weekday_name} ({shift})")
+        header = html.blockquote(
+            f"Расписание на {weekday_name} ({shift})"
+        ) + "\n"
     else:
         header = f"Расписание на {weekday_name}\n"
     return header

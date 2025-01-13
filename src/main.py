@@ -7,6 +7,7 @@ from bot.bot import BotManager
 from database.db import db_helper
 from database.redis.base import redis_client
 from di import AppModule
+from services.loader_service.default_schedule import DefaultScheduleLoader
 
 
 class App:
@@ -16,6 +17,7 @@ class App:
     async def start(self):
         bot_manager = self.injector.get(BotManager)
         service_manager = self.injector.get(BackgroundManager)
+
         await asyncio.gather(
             bot_manager.start(),
             service_manager.start_services()

@@ -1,12 +1,15 @@
 import asyncio
 from logging import getLogger
 
+from aiogram import html
+
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
 from database.db import with_session
 from database.models import UserModel
 from database.repository import Repository
 from helpers.week import Week
+from services.formatter_service.schedule import add_time_to_schedule
 from services.sender_service.sender import SenderService
 from utils.constants import SENDER_TIME_SLEEP
 
@@ -31,6 +34,12 @@ class NotifyService(Observer):
                 user.group_id, repo,
                 Week().weekday, Week().shift
             )
+
+            formatted_schedule = add_time_to_schedule(formatted_schedule)
+
+            header = html.blockquote(html.bold("Уведомление"))
+            formatted_schedule = f"{header}\n{formatted_schedule}"
+
             await self.sender.safe_send_message(
                 user.telegram_id,
                 formatted_schedule,
