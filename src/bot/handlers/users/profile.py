@@ -13,7 +13,7 @@ from database.repository import Repository
 user_locks = {}
 router = Router(name=__name__)
 
-TITLE = "Профиль {user_name}"
+TITLE = "Профиль @{user_name}"
 
 
 @router.message(F.text.lower().contains("профиль"))

@@ -19,8 +19,8 @@ SCHEDULE_URLS = [
 
 
 class TimeSpan(Enum):
-    SUB_CHECKER = timedelta(seconds=60).seconds
-    PARSER = timedelta(seconds=10).seconds
+    SUB_CHECKER = timedelta(minutes=10).seconds
+    PARSER = timedelta(minutes=1).seconds
 
 
 class AppModule(Module):
@@ -35,8 +35,8 @@ class AppModule(Module):
         return SenderService(bot_manager.bot)
 
     @provider
-    def provide_parser_factory(self, notify: NotifyService) -> ParserFactory:
-        return ParserFactory(TimeSpan.PARSER.value, notify, SCHEDULE_URLS)
+    def provide_parser_factory(self, notify: NotifyService, sender: SenderService) -> ParserFactory:
+        return ParserFactory(TimeSpan.PARSER.value, notify, SCHEDULE_URLS, sender)
 
     @provider
     def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:

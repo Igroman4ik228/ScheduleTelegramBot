@@ -3,6 +3,7 @@ from logging import getLogger
 
 from aiogram import Bot
 
+from database.db import with_session
 from database.models import UserModel
 from database.repository import Repository
 from utils.constants import SENDER_TIME_SLEEP
@@ -14,13 +15,14 @@ class SenderService:
         self.logger = getLogger(self.__class__.__name__)
         self.bot = bot
 
-    async def safe_send_range(self, message: str, tg_ids: list[int]):
+    async def safe_send_range(self, tg_ids: list[int], message: str):
         self.logger.info(f"Start range send with message: {message}")
         for tg_id in tg_ids:
             await self.safe_send_message(tg_id, message)
             await asyncio.sleep(SENDER_TIME_SLEEP)
             self.logger.debug(f"Send {tg_id} : {message}")
 
+    @with_session
     async def safe_send_message(self, tg_id: int, message: str, session=None):
         user = await Repository(session).users.get(tg_id)
 

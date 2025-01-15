@@ -2,6 +2,8 @@ from datetime import time as dt_time
 from datetime import timedelta
 from enum import Enum, StrEnum
 
+DEBUG: bool = False
+
 
 # CALLBACK_DATA
 class CallbackData(StrEnum):
@@ -94,6 +96,6 @@ END_LESSONS_TIME = [dt_time(9, 10),
                     dt_time(10, 50),
                     dt_time(12, 25),
                     dt_time(14, 50),
-                    dt_time(18, 35),
                     dt_time(16, 35),
+                    dt_time(18, 35),
                     dt_time(19, 55)]

@@ -6,10 +6,13 @@ from logging import getLogger
 from aiohttp import (ClientError, ClientResponseError, ClientSession,
                      ClientTimeout)
 
+from services.sender_service.sender import SenderService
+from utils.config import settings
+
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
-# DEFAULT_HEADERS = {
-#     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-# }
+DEFAULT_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+}
 DEFAULT_RETRY_DELAYS = [
     timedelta(seconds=10).seconds,
     timedelta(seconds=30).seconds,
@@ -24,12 +27,33 @@ def retry_request(func):
             try:
                 return await func(self, *args, **kwargs)
             except (ClientResponseError, ClientError) as e:
-                self.logger.error(
+                self.logger.warning(
                     f"Ошибка подключения к {self.url}: {e}. "
                     f"Повторная попытка через {seconds} секунд."
                 )
                 await asyncio.sleep(seconds)
-        return await func(self, *args, **kwargs)
+
+        await self.sender.safe_send_range(
+            settings.bot.admin_ids,
+            f"Ошибка подключения к {self.url}\n"
+            "будут продолжаться повторные попытки"
+        )
+
+        # Бесконечные попытки
+        while True:
+            try:
+                result = await func(self, *args, **kwargs)
+                await self.sender.safe_send_range(
+                    settings.bot.admin_ids,
+                    "Подключение восстановлено"
+                )
+                return result
+            except (ClientResponseError, ClientError) as e:
+                self.logger.warning(
+                    f"Ошибка подключения к {self.url}: {e}. "
+                    f"Повторная попытка через {self.retry_delays[-1]} секунд."
+                )
+                await asyncio.sleep(self.retry_delays[-1])
     return wrapper
 
 
@@ -37,20 +61,22 @@ class Request:
     def __init__(
         self,
         url: str,
+        sender: SenderService,
         timeout: int = DEFAULT_TIMEOUT,
         retry_delays: list[int] = None,
         headers: dict[str, str] = None
     ) -> None:
         self.logger = getLogger(self.__class__.__name__)
         self.url = url
+        self.sender = sender
         self.timeout = timeout
         self.retry_delays = retry_delays or DEFAULT_RETRY_DELAYS
-        self.headers = headers
+        self.headers = headers or DEFAULT_HEADERS
 
     @retry_request
     async def fetch(self) -> str:
         timeout = ClientTimeout(total=self.timeout)
         async with ClientSession() as session:
-            async with session.get(self.url, timeout=timeout) as response:
+            async with session.get(self.url, headers=self.headers, timeout=timeout) as response:
                 response.raise_for_status()
                 return await response.text()

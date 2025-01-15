@@ -39,8 +39,8 @@ def get_user_routers():
         default_schedule.router,
         setting.router,
         schedule.router,
-        tech_support.router,
-        referral.router
+        # tech_support.router,
+        # referral.router
     )
 
     return user_routers

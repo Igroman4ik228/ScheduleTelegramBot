@@ -27,8 +27,8 @@ class BotSettings(BaseModel):
     @field_validator("token")
     @classmethod
     def validate_token(cls, v: str) -> str:
-        if not v and not settings.debug:
-            raise ValueError("Token cannot be empty in production mode")
+        if not v:
+            raise ValueError("Token cannot be empty")
         return v
 
 
@@ -155,8 +155,6 @@ class Settings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
     redis: RedisSettings = RedisSettings()
     logger: LoggerSettings = LoggerSettings()
-
-    debug: bool = False
 
 
 settings = Settings()

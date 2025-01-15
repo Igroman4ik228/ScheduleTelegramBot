@@ -31,16 +31,16 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             await self._send_bad_request_message(user.id, sender)
         except RestartingTelegram as e:
             self.logger.error(f"Telegram перезагружается: {e}")
-            self._send_message_to_admins("Telegram перезагружается", sender)
+            await self._send_message_to_admins("Telegram перезагружается", sender)
         except TelegramNetworkError as e:
             self.logger.error(f"TelegramNetworkError: {e}")
-            self._send_message_to_admins("TelegramNetworkError", sender)
+            await self._send_message_to_admins("TelegramNetworkError", sender)
         except TelegramAPIError as e:
             self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, sender)
         except Exception as e:
             self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
-            self._send_message_to_admins("Необработанное исключение", sender)
+            await self._send_message_to_admins("Необработанное исключение", sender)
 
     async def _send_bad_request_message(self, chat_id: int, sender: SenderService):
         text = "Произошла ошибка запроса. " \

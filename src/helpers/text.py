@@ -1,7 +1,7 @@
 from aiogram import html
 
 
-def split_text_with_wrap(text: str, max_length: int = 250) -> list[str]:
+def split_text_with_wrap(text: str, max_length: int = 1500) -> list[str]:
     if not text:
         return []
 

@@ -9,16 +9,17 @@ from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
 from services.parser_service.request import Request
-from utils.config import settings
+from services.sender_service.sender import SenderService
+from utils.constants import DEBUG
 
 
 class ParserService(BackgroundService, Publisher):
     @inject
-    def __init__(self, url: str, time_span: int, notify: NotifyService):
+    def __init__(self, url: str, time_span: int, notify: NotifyService, sender: SenderService):
         BackgroundService.__init__(self, time_span)
         Publisher.__init__(self)
 
-        self.request = Request(url)
+        self.request = Request(url, sender)
 
         self.attach(notify)
 
@@ -57,7 +58,7 @@ class ParserService(BackgroundService, Publisher):
         await self.pause()
 
     async def _get_response_text(self):
-        if settings.debug:
+        if DEBUG:
             with open('test.html', 'r', encoding='utf-8') as file:
                 return file.read()
         return await self.request.fetch()

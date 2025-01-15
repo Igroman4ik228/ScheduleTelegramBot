@@ -255,7 +255,7 @@ async def handle_give_subscribe(
 
     await repository.users.update_subscribe(
         user,
-        subscribe.id,
+        subscribe_id,
         calc_subscribe_end_time(subscribe.duration_days)
     )
     await message.answer(f"{subscribe.name} успешно выдана пользователю")
@@ -266,7 +266,7 @@ async def handle_give_subscribe(
 
 async def give_subscribe_notify(tg_id: int, subscribe_name: str, bot: Bot):
     sender = SenderService(bot)
-    message = f"Вам была выдана {subscribe_name} администратором"
+    message = f"Вам была выдана '{subscribe_name}' администратором"
 
     await sender.safe_send_message(tg_id, message)
 

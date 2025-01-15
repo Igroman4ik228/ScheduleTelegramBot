@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from functools import wraps
 from typing import AsyncGenerator
@@ -5,6 +6,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
                                     create_async_engine)
 
+from database.models.base import Base
 from utils.config import settings
 
 
@@ -38,6 +40,11 @@ class DatabaseHelperAlchemy:
         async with self.sessionmaker() as session:
             yield session
 
+    async def create_tables(self) -> None:
+        async with self.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        await self.engine.dispose()
+
     async def dispose(self):
         await self.engine.dispose()
 
@@ -49,6 +56,8 @@ db_helper = DatabaseHelperAlchemy(
     pool_size=settings.db.pool_size,
     max_overflow=settings.db.max_overflow
 )
+
+asyncio.run(db_helper.create_tables())
 
 
 def with_session(func):
