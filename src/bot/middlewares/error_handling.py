@@ -2,8 +2,12 @@ from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict
 
 from aiogram import BaseMiddleware, Bot
-from aiogram.exceptions import (RestartingTelegram, TelegramAPIError,
-                                TelegramBadRequest, TelegramNetworkError)
+from aiogram.exceptions import (
+    RestartingTelegram,
+    TelegramAPIError,
+    TelegramBadRequest,
+    TelegramNetworkError,
+)
 from aiogram.types import Update
 
 from services.sender_service.sender import SenderService
@@ -18,7 +22,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         self,
         handler: Callable[[Update, Dict[str, Any]], Awaitable[Any]],
         event: Update,
-        data: Dict[str, Any]
+        data: Dict[str, Any],
     ) -> Any:
         user = data["event_from_user"]
         bot: Bot = data["bot"]
@@ -38,30 +42,30 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         except TelegramAPIError as e:
             self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, sender)
+        except AttributeError as e:
+            self.logger.warning(f"Сайт ЯГК с заменами не работает: {e}")
+            await self._send_ygk_error_message(user.id, sender)
         except Exception as e:
             self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
             await self._send_message_to_admins("Необработанное исключение", sender)
 
     async def _send_bad_request_message(self, chat_id: int, sender: SenderService):
-        text = "Произошла ошибка запроса. " \
+        text = (
+            "Произошла ошибка запроса. "
             "Пожалуйста, проверьте корректность введённых данных."
-        await sender.safe_send_message(
-            chat_id,
-            text
         )
-        self._send_message_to_admins(text, sender)
+        await sender.safe_send_message(chat_id, text)
+        await self._send_message_to_admins(text, sender)
 
     async def _send_api_error_message(self, chat_id: int, sender: SenderService):
         text = "Произошла ошибка. Попробуйте позже."
-        await sender.safe_send_message(
-            chat_id,
-            text
-        )
-        self._send_message_to_admins(text, sender)
+        await sender.safe_send_message(chat_id, text)
+        await self._send_message_to_admins(text, sender)
+
+    async def _send_ygk_error_message(self, chat_id: int, sender: SenderService):
+        text = "Сайт ЯГК с заменами не работает. Попробуйте, пожалуйста, позже."
+        await sender.safe_send_message(chat_id, text)
 
     async def _send_message_to_admins(self, text: str, sender: SenderService):
         for admin_id in settings.bot.admin_ids:
-            await sender.safe_send_message(
-                admin_id,
-                text
-            )
+            await sender.safe_send_message(admin_id, text)

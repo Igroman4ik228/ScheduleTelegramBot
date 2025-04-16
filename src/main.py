@@ -18,11 +18,11 @@ class App:
         bot_manager = self.injector.get(BotManager)
         service_manager = self.injector.get(BackgroundManager)
 
-        # await DefaultScheduleLoader().process_all_files()
+        await DefaultScheduleLoader().process_all_files()
 
         await asyncio.gather(
             bot_manager.start(),
-            service_manager.start_services()
+            service_manager.start_services(),
         )
 
     async def __aenter__(self):

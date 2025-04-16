@@ -3,20 +3,19 @@ from datetime import timedelta
 from functools import wraps
 from logging import getLogger
 
-from aiohttp import (ClientError, ClientResponseError, ClientSession,
-                     ClientTimeout)
+from aiohttp import ClientError, ClientResponseError, ClientSession
 
 from services.sender_service.sender import SenderService
 from utils.config import settings
 
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
 DEFAULT_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 }
 DEFAULT_RETRY_DELAYS = [
     timedelta(seconds=10).seconds,
     timedelta(seconds=30).seconds,
-    timedelta(seconds=60).seconds
+    timedelta(seconds=60).seconds,
 ]
 
 
@@ -28,15 +27,14 @@ def retry_request(func):
                 return await func(self, *args, **kwargs)
             except (ClientResponseError, ClientError) as e:
                 self.logger.warning(
-                    f"Ошибка подключения к {self.url}: {e}. "
+                    f"Ошибка подключения: {e}. "
                     f"Повторная попытка через {seconds} секунд."
                 )
                 await asyncio.sleep(seconds)
 
         await self.sender.safe_send_range(
             settings.bot.admin_ids,
-            f"Ошибка подключения к {self.url}\n"
-            "будут продолжаться повторные попытки"
+            f"Ошибка подключения к {self.url}\nбудут продолжаться повторные попытки",
         )
 
         # Бесконечные попытки
@@ -44,8 +42,7 @@ def retry_request(func):
             try:
                 result = await func(self, *args, **kwargs)
                 await self.sender.safe_send_range(
-                    settings.bot.admin_ids,
-                    "Подключение восстановлено"
+                    settings.bot.admin_ids, "Подключение восстановлено"
                 )
                 return result
             except (ClientResponseError, ClientError) as e:
@@ -54,6 +51,7 @@ def retry_request(func):
                     f"Повторная попытка через {self.retry_delays[-1]} секунд."
                 )
                 await asyncio.sleep(self.retry_delays[-1])
+
     return wrapper
 
 
@@ -64,7 +62,7 @@ class Request:
         sender: SenderService,
         timeout: int = DEFAULT_TIMEOUT,
         retry_delays: list[int] = None,
-        headers: dict[str, str] = None
+        headers: dict[str, str] = None,
     ) -> None:
         self.logger = getLogger(self.__class__.__name__)
         self.url = url
@@ -75,8 +73,7 @@ class Request:
 
     @retry_request
     async def fetch(self) -> str:
-        timeout = ClientTimeout(total=self.timeout)
         async with ClientSession() as session:
-            async with session.get(self.url, headers=self.headers, timeout=timeout) as response:
+            async with session.get(self.url, headers=self.headers) as response:
                 response.raise_for_status()
                 return await response.text()
