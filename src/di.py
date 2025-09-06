@@ -1,6 +1,8 @@
 from datetime import timedelta
 from enum import Enum
 
+from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
 from injector import Module, provider, singleton
 
 from app.background_service_pack.builder import BackgroundBuilder
@@ -12,9 +14,9 @@ from services.sender_service.sender import SenderService
 from services.sub_checker_service.sub_checker import SubCheckerService
 from utils.config import Settings
 
-# "https://menu.sttec.yar.ru/timetable/rasp_first.html",
 SCHEDULE_URLS = [
-    "https://menu.sttec.yar.ru/timetable/rasp_second.html"
+    "https://menu.sttec.yar.ru/timetable/rasp_first.html",
+    "https://menu.sttec.yar.ru/timetable/rasp_second.html",
 ]
 
 
@@ -24,26 +26,36 @@ class TimeSpan(Enum):
 
 
 class AppModule(Module):
-
     @singleton
     @provider
     def provide_setting(self) -> Settings:
         return Settings()
 
+    @singleton
     @provider
-    def provide_sender_service(self, bot_manager: BotManager) -> SenderService:
-        return SenderService(bot_manager.bot)
-
-    @provider
-    def provide_parser_factory(self, notify: NotifyService, sender: SenderService) -> ParserFactory:
-        return ParserFactory(TimeSpan.PARSER.value, notify, SCHEDULE_URLS, sender)
-
-    @provider
-    def provide_sub_checker_service(self, sender: SenderService) -> SubCheckerService:
-        return SubCheckerService(
-            TimeSpan.SUB_CHECKER.value,
-            sender
+    def provide_bot(self, setting: Settings) -> Bot:
+        return Bot(
+            setting.bot.token, default=DefaultBotProperties(parse_mode="HTML")
         )
+
+    @provider
+    def provide_sender_service(self, bot: Bot) -> SenderService:
+        return SenderService(bot)
+
+    @singleton
+    @provider
+    def provide_parser_factory(
+        self, notify: NotifyService, sender: SenderService
+    ) -> ParserFactory:
+        return ParserFactory(
+            TimeSpan.PARSER.value, notify, SCHEDULE_URLS, sender
+        )
+
+    @provider
+    def provide_sub_checker_service(
+        self, sender: SenderService
+    ) -> SubCheckerService:
+        return SubCheckerService(TimeSpan.SUB_CHECKER.value, sender)
 
     @singleton
     @provider
@@ -52,9 +64,7 @@ class AppModule(Module):
 
     @provider
     def provide_builder(
-        self,
-        parser_factory: ParserFactory,
-        sub_checker: SubCheckerService
+        self, parser_factory: ParserFactory, sub_checker: SubCheckerService
     ) -> BackgroundBuilder:
         return BackgroundBuilder(parser_factory, sub_checker)
 
@@ -64,5 +74,12 @@ class AppModule(Module):
 
     @singleton
     @provider
-    def provide_bot(self, setting: Settings) -> BotManager:
-        return BotManager(setting.bot.token)
+    def provide_bot_manager(
+        self,
+        bot: Bot,
+        parser_factory: ParserFactory,
+    ) -> BotManager:
+        return BotManager(
+            bot,
+            parser_factory,
+        )

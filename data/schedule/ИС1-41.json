@@ -1,0 +1,303 @@
+{
+  "1": {
+    "0": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б407",
+        "is_replacement": false
+      }
+    ],
+    "1": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр 2 Юров А.А.",
+        "classroom": "it-квант",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 03 Учебная практика Неделяева Н.А. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 09.03 Обеспечение безопасности веб-приложений Гудкова А.Л. Кувшинова В.А.",
+        "classroom": "Б301 Б407",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 09.03 Обеспечение безопасности веб-приложений Гудкова А.Л. Кувшинова В.А.",
+        "classroom": "Б301 Б407",
+        "is_replacement": false
+      }
+    ],
+    "2": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "Иностранный язык в профессиональной деятельности Зубковская А.Е. Загородних Е.С.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д. Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 03 Учебная практика Неделяева Н.А. Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      }
+    ],
+    "3": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "Эффективное поведение на рынке труда Малашкевич Д.А.",
+        "classroom": "Б502",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д.",
+        "classroom": "Б507",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Физическая культура Куликова А.А.",
+        "classroom": "Спорт.зал",
+        "is_replacement": false
+      }
+    ],
+    "4": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д.",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б305 Б302",
+        "is_replacement": false
+      }
+    ],
+    "5": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр 2 Юров А.А.",
+        "classroom": "Б403",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами Юров А.А.",
+        "classroom": "А304",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б407 Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр1 Байдина Ю.А.",
+        "classroom": "Б407",
+        "is_replacement": false
+      }
+    ]
+  },
+  "2": {
+    "0": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Физическая культура Куликова А.А.",
+        "classroom": "Спорт.зал",
+        "is_replacement": false
+      }
+    ],
+    "1": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр 1 Байдина Ю.А.",
+        "classroom": "it-квант",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 03 Учебная практика Неделяева Н.А. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 09.03 Обеспечение безопасности веб-приложений Гудкова А.Л.",
+        "classroom": "Б504",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 09.03 Обеспечение безопасности веб-приложений Гудкова А.Л. Кувшинова В.А.",
+        "classroom": "Б301 Б407",
+        "is_replacement": false
+      }
+    ],
+    "2": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "Иностранный язык в профессиональной деятельности Зубковская А.Е. Загородних Е.С.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д. Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 03 Учебная практика Неделяева Н.А. Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      }
+    ],
+    "3": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС КП Королева П.Д. Неделяева Н.А.",
+        "classroom": "Б406 Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д.",
+        "classroom": "А403",
+        "is_replacement": false
+      }
+    ],
+    "4": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б305 Б302",
+        "is_replacement": false
+      }
+    ],
+    "5": [
+      {
+        "number": "2",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр 2 Юров А.А.",
+        "classroom": "Б403",
+        "is_replacement": false
+      },
+      {
+        "number": "3",
+        "time": null,
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "А407",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б407 Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 03.02 Управление проектами п/гр1 Байдина Ю.А.",
+        "classroom": "Б407",
+        "is_replacement": false
+      }
+    ]
+  }
+}

@@ -21,7 +21,7 @@ class AuthMiddleware(BaseMiddleware):
         self,
         handler: Callable[[Update, dict[str, Any]], Awaitable[Any]],
         event: Update,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Any:
         repository: Repository = data["repository"]
         tg_user: User = data["event_from_user"]
@@ -33,37 +33,20 @@ class AuthMiddleware(BaseMiddleware):
 
         subscribes = await repository.subscribes.get_all(price=0)
         trail_subscribe = subscribes[0]
-        new_user = await self._create_user(
-            tg_user,
-            trail_subscribe,
-            repository.users
-        )
+        new_user = await self._create_user(tg_user, trail_subscribe, repository.users)
         data["user"] = new_user
         return await handler(event, data)
 
     async def _get_user(
-        self,
-        user_id: int,
-        user_repo: UserRepository
+        self, user_id: int, user_repo: UserRepository
     ) -> UserModel | None:
-        user = await user_repo.get(
-            user_id,
-            "group", "subscribe"
-        )
+        user = await user_repo.get(user_id, "group", "subscribe")
         if user is None:
-            await clear_cache(
-                user_repo.get,
-                user_repo,
-                user_id,
-                "group", "subscribe"
-            )
+            await clear_cache(user_repo.get, user_repo, user_id, "group", "subscribe")
         return user
 
     async def _create_user(
-        self,
-        tg_user: User,
-        trail_subscribe: SubscribeModel,
-        user_repo: UserRepository
+        self, tg_user: User, trail_subscribe: SubscribeModel, user_repo: UserRepository
     ) -> UserModel:
         subscribe_end_time = datetime.now() + timedelta(
             days=trail_subscribe.duration_days
@@ -81,13 +64,11 @@ class AuthMiddleware(BaseMiddleware):
             is_bot=tg_user.is_bot,
             is_premium=tg_user.is_premium,
             subscribe_id=trail_subscribe.id,
-            subscribe_end_time=subscribe_end_time
+            subscribe_end_time=subscribe_end_time,
         )
 
         if new_user is None:
             raise ValueError(f"Failed to create user: {tg_user}")
 
-        self.logger.info(
-            f"Successfully registered new user: {tg_user.username}"
-        )
+        self.logger.info(f"Successfully registered new user: {tg_user.username}")
         return new_user

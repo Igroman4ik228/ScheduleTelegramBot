@@ -10,12 +10,13 @@ from helpers.week import Week
 
 class HtmlParser:
     def __init__(self, html_content: str):
-        self.soup = BeautifulSoup(html_content, 'lxml')
+        self.soup = BeautifulSoup(html_content, "lxml")
+        self.week: Week | None = None
 
     @property
     def table(self) -> Tag:
         """Получение таблицы"""
-        table = self.soup.find('table')
+        table = self.soup.find("table")
         if table is None:
             raise ValueError("Таблица отсутствует.")
         return table
@@ -23,7 +24,7 @@ class HtmlParser:
     @property
     def table_rows(self) -> list[Tag]:
         """Получение строк таблицы (пропускаем заголовок)"""
-        rows = self.table.find_all('tr')[1:]
+        rows = self.table.find_all("tr")[1:]
         if not rows:
             raise ValueError("Строки в таблице отсутствуют.")
         return rows
@@ -31,32 +32,30 @@ class HtmlParser:
     @property
     def div_elements(self) -> list[Tag]:
         """Получение всех div элементов"""
-        return self.soup.find_all('div')
+        return self.soup.find_all("div")
 
     def initialize_week(self):
         """Инициализация значения Week (Singleton)"""
         weekday = self._get_weekday()
         shift = self._get_shift()
-        Week().initialize(weekday, shift)
+        self.week = Week(weekday, shift)
 
     def _get_weekday(self) -> int:
         """Извлекает день недели из HTML"""
         weekday_name = self.get_text_from_div(index=2).strip().lower()
         weekday = get_key(const.DAY_NAMES, weekday_name)
         if weekday is None:
-            raise ValueError(
-                f"Не удалось определить день недели: {weekday_name}")
+            raise ValueError(f"Не удалось определить день недели: {weekday_name}")
         return weekday
 
     def _get_shift(self) -> int:
         """Извлекает информацию о смене (числитель/знаменатель) из HTML"""
-        shift_name = self.get_text_from_div(
-            index=3, word_index=0
-        ).strip("()").lower()
+        shift_name = self.get_text_from_div(index=3, word_index=0).strip("()").lower()
         shift = const.WEEK_SCHEDULE_MAPPING.get(shift_name)
         if shift is None:
             raise ValueError(
-                f"Не удалось определить числитель/знаменатель. Значение: {shift_name}")
+                f"Не удалось определить числитель/знаменатель. Значение: {shift_name}"
+            )
         return shift
 
     def extract_replacement_schedules(self) -> list[Schedule]:
@@ -76,24 +75,25 @@ class HtmlParser:
                     break
             else:
                 replacement_schedules.append(
-                    Schedule(Week(), group, replacement_lessons)
+                    Schedule(self.week, group, replacement_lessons)
                 )
 
         return replacement_schedules
 
     def get_cells(self, row: Tag) -> list[Tag]:
         """Получение ячеек строки таблицы"""
-        cells = row.find_all('td')
+        cells = row.find_all("td")
         if not cells:
             raise ValueError("Ячейки не найдены в строке таблицы.")
 
         return cells
 
-    def get_text_from_div(self, index: int, split_by: str = ' ', word_index: int = -1) -> str:
+    def get_text_from_div(
+        self, index: int, split_by: str = " ", word_index: int = -1
+    ) -> str:
         """Получение текста из div элементов"""
         if index < 0 or index >= len(self.div_elements):
-            raise IndexError(
-                "Индекс выходит за пределы доступных div элементов.")
+            raise IndexError("Индекс выходит за пределы доступных div элементов.")
         div_element = self.div_elements[index]
         split_text = div_element.get_text(strip=True).split(split_by)
 
@@ -106,8 +106,7 @@ class HtmlParser:
         classrooms = cells[5].text.strip()
 
         return [
-            Lesson(lesson_number, time, subject,
-                   classrooms, is_replacement=True)
+            Lesson(lesson_number, time, subject, classrooms, is_replacement=True)
             for lesson_number in lesson_numbers
         ]
 
@@ -116,36 +115,38 @@ class HtmlParser:
         group = cells[1].text.strip().upper()
         return group if group else None
 
-    def _get_lesson_numbers(self, lesson_numbers: str) -> tuple[list[int], dt_time | None]:
+    def _get_lesson_numbers(
+        self, lesson_numbers: str
+    ) -> tuple[list[int], dt_time | None]:
         """Получение номеров уроков и времени"""
         if lesson_numbers == "":
             return self._parse_default_numbers(), None
 
-        if ',' in lesson_numbers:
+        if "," in lesson_numbers:
             return self._parse_comma_separated(lesson_numbers), None
-        if '-' in lesson_numbers:
+        if "-" in lesson_numbers:
             return self._parse_range(lesson_numbers), None
-        if lesson_numbers.count('.') == 1:
+        if lesson_numbers.count(".") == 1:
             return self._parse_time_format(lesson_numbers)
         if lesson_numbers.isdigit():
             return [int(lesson_numbers)], None
 
-        raise ValueError(
-            f"Неправильный формат номера замены: {lesson_numbers}"
-        )
+        raise ValueError(f"Неправильный формат номера замены: {lesson_numbers}")
 
     def _parse_range(self, lesson_numbers: str) -> list[int]:
         """Парсинг диапазона номеров уроков"""
-        start, end = map(int, lesson_numbers.split('-'))
+        start, end = map(int, lesson_numbers.split("-"))
         return list(range(start, end + 1))
 
     def _parse_comma_separated(self, lesson_numbers: str) -> list[int]:
         """Парсинг номеров уроков, разделённых запятыми"""
-        return [int(number.strip()) for number in lesson_numbers.split(',')]
+        return [int(number.strip()) for number in lesson_numbers.split(",")]
 
-    def _parse_time_format(self, lesson_numbers_string: str) -> tuple[list[int], dt_time]:
+    def _parse_time_format(
+        self, lesson_numbers_string: str
+    ) -> tuple[list[int], dt_time]:
         """Парсинг времени в формате HH.MM"""
-        hour_str, minute_str = lesson_numbers_string.split('.')
+        hour_str, minute_str = lesson_numbers_string.split(".")
         time = dt_time(int(hour_str), int(minute_str))
         lesson_number = Lesson.get_lesson_number(time)
         return [lesson_number], time

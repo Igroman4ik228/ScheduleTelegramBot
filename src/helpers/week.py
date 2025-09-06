@@ -1,12 +1,13 @@
+from dataclasses import dataclass
+
 from helpers.algorithm import get_key
-from helpers.singleton import SingletonMeta
 from utils.constants import DAY_NAMES, WEEK_SCHEDULE_MAPPING
 
 
-class Week(metaclass=SingletonMeta):
-    def initialize(self, weekday: int, shift: int):
-        self.weekday = weekday
-        self.shift = shift
+@dataclass
+class Week:
+    weekday: int
+    shift: int
 
     def get_previous_weekday(self) -> int:
         return self.weekday - 1 if self.weekday != 0 else 5

@@ -7,17 +7,17 @@ from database.models.base import Base, Str128
 class GroupModel(Base):
     name: Mapped[Str128] = mapped_column(unique=True)
     department_id: Mapped[int] = mapped_column(
-        ForeignKey("Departments.id",
-                   ondelete="CASCADE")
+        ForeignKey("Departments.id", ondelete="CASCADE")
     )
+    global_shift: Mapped[int] = mapped_column(
+        default=1
+    )  # Смена для всех групп (первая или вторая)
 
     department: Mapped["DepartmentModel"] = relationship(
         back_populates="groups"
     )
 
-    users: Mapped[list["UserModel"]] = relationship(
-        back_populates="group"
-    )
+    users: Mapped[list["UserModel"]] = relationship(back_populates="group")
     default_schedule: Mapped[list["DefaultScheduleModel"]] = relationship(
         back_populates="group"
     )

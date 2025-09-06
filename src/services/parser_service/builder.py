@@ -14,6 +14,7 @@ from services.formatter_service.schedule import format_schedule
 @dataclass
 class ScheduleBuilder:
     """Класс для построения расписания с учетом замен"""
+
     week: Week
     default_schedules: List[Schedule]
     replacement_schedules: List[Schedule]
@@ -26,16 +27,15 @@ class ScheduleBuilder:
     def _merge_schedules(self) -> List[Schedule]:
         """Объединить основное расписание с заменами"""
         schedule_merger = ScheduleMerger(
-            self.default_schedules, self.replacement_schedules)
+            self.week, self.default_schedules, self.replacement_schedules
+        )
         return schedule_merger.merge()
 
     def _format_schedules(self, schedules: List[Schedule]) -> Dict[str, str]:
         """Форматировать расписания для вывода"""
         return {
             schedule.group: format_schedule(
-                schedule.lessons,
-                self.week.weekday,
-                self.week.shift
+                schedule.lessons, self.week.weekday, self.week.shift
             )
             for schedule in schedules
         }
@@ -44,7 +44,13 @@ class ScheduleBuilder:
 class ScheduleMerger:
     """Класс для объединения основного расписания с заменами"""
 
-    def __init__(self, default_schedules: List[Schedule], replacement_schedules: List[Schedule]):
+    def __init__(
+        self,
+        week: Week,
+        default_schedules: List[Schedule],
+        replacement_schedules: List[Schedule],
+    ):
+        self.week = week
         self.default_schedules = default_schedules
         self.replacement_schedules = replacement_schedules
         self.schedules_by_group = {
@@ -59,8 +65,7 @@ class ScheduleMerger:
 
     def _process_replacement_schedule(self, replacement_schedule: Schedule) -> None:
         """Обработать расписание с заменами"""
-        group_schedule = self._get_or_create_group_schedule(
-            replacement_schedule.group)
+        group_schedule = self._get_or_create_group_schedule(replacement_schedule.group)
         lesson_merger = LessonMerger(group_schedule)
 
         for replacement_lesson in replacement_schedule.lessons:
@@ -69,11 +74,7 @@ class ScheduleMerger:
     def _get_or_create_group_schedule(self, group: str) -> Schedule:
         """Получить или создать расписание для группы"""
         if group not in self.schedules_by_group:
-            new_schedule = Schedule(
-                week=Week(),
-                group=group,
-                lessons=[]
-            )
+            new_schedule = Schedule(week=self.week, group=group, lessons=[])
             self.schedules_by_group[group] = new_schedule
         return self.schedules_by_group[group]
 
@@ -83,9 +84,7 @@ class LessonMerger:
 
     def __init__(self, schedule: Schedule):
         self.schedule = schedule
-        self.lessons_by_number = {
-            lesson.number: lesson for lesson in schedule.lessons
-        }
+        self.lessons_by_number = {lesson.number: lesson for lesson in schedule.lessons}
 
     def merge_lesson(self, replacement_lesson: Lesson) -> None:
         """Объединить урок с заменой"""
@@ -111,8 +110,9 @@ class LessonMerger:
 class Builder:
     """Основной класс для построения расписания"""
 
-    def __init__(self, replacement_schedules: List[Schedule]):
+    def __init__(self, week: Week, replacement_schedules: List[Schedule]):
         self.logger = getLogger(self.__class__.__name__)
+        self.week = week
         self.replacement_schedules = replacement_schedules
         self.default_schedules: List[Schedule] = []
 
@@ -129,20 +129,18 @@ class Builder:
             Dict[str, str]: Словарь с названиями групп и отформатированными расписаниями
         """
         builder = ScheduleBuilder(
-            week=Week(),
+            week=self.week,
             default_schedules=self.default_schedules,
-            replacement_schedules=self.replacement_schedules
+            replacement_schedules=self.replacement_schedules,
         )
         return builder.build()
 
     async def _get_default_schedules(self, session) -> List[Schedule]:
         """Получить основное расписание из БД"""
-        week = Week()
+        week = self.week
         default_schedule_rep = Repository(session).default_schedule
         default_schedule_data = await default_schedule_rep.get_all(
-            "group",
-            weekday=week.weekday,
-            shift=week.shift
+            "group", weekday=week.weekday, shift=week.shift
         )
 
         if default_schedule_data is None:
@@ -159,7 +157,9 @@ class DefaultScheduleCollector:
         self.week = week
         self.schedules_by_group: Dict[str, Schedule] = {}
 
-    def collect_schedules(self, schedule_data: list[DefaultScheduleModel]) -> List[Schedule]:
+    def collect_schedules(
+        self, schedule_data: list[DefaultScheduleModel]
+    ) -> List[Schedule]:
         """Собрать расписания из данных БД"""
         for lesson_data in schedule_data:
             self._process_lesson_data(lesson_data)
@@ -172,9 +172,7 @@ class DefaultScheduleCollector:
 
         if group_name not in self.schedules_by_group:
             self.schedules_by_group[group_name] = Schedule(
-                week=self.week,
-                group=group_name,
-                lessons=[]
+                week=self.week, group=group_name, lessons=[]
             )
 
         self.schedules_by_group[group_name].lessons.extend(lessons)

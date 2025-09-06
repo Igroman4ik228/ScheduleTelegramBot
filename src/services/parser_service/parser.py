@@ -1,10 +1,7 @@
-from injector import inject
-
 from app.background_service_pack.models import BackgroundService
 from app.observer_pack.models import Publisher
 from database.db import db_helper, with_session
 from database.repository import Repository
-from helpers.week import Week
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
@@ -14,24 +11,31 @@ from utils.constants import DEBUG
 
 
 class ParserService(BackgroundService, Publisher):
-    @inject
-    def __init__(self, url: str, time_span: int, notify: NotifyService, sender: SenderService):
+    def __init__(
+        self,
+        url: str,
+        global_shift: int,
+        time_span: int,
+        notify: NotifyService,
+        sender: SenderService,
+    ):
         BackgroundService.__init__(self, time_span)
         Publisher.__init__(self)
 
         self.request = Request(url, sender)
-
+        self.global_shift = global_shift
+        self.parser: HtmlParser | None = None
         self.attach(notify)
 
     async def do_work(self):
         response_text = await self._get_response_text()
 
-        parser = HtmlParser(response_text)
-        parser.initialize_week()
+        self.parser = HtmlParser(response_text)
+        self.parser.initialize_week()
 
-        replacement_schedules = parser.extract_replacement_schedules()
+        replacement_schedules = self.parser.extract_replacement_schedules()
 
-        builder = Builder(replacement_schedules)
+        builder = Builder(self.parser.week, replacement_schedules)
         await builder.initialize()
         result_schedule = await builder.build()
 
@@ -59,30 +63,45 @@ class ParserService(BackgroundService, Publisher):
 
     async def _get_response_text(self):
         if DEBUG:
-            with open('test.html', 'r', encoding='utf-8') as file:
+            with open("test.html", "r", encoding="utf-8") as file:
                 return file.read()
         return await self.request.fetch()
 
     @with_session
-    async def _save_schedule_to_db(self, result_schedule: dict[str, str], session=None):
+    async def _save_schedule_to_db(
+        self, result_schedule: dict[str, str], session=None
+    ):
         result_schedule_repo = Repository(session).result_schedule
 
         for group, schedule in result_schedule.items():
-            await result_schedule_repo.delete_by_group_name(Week().weekday, group)
+            await result_schedule_repo.delete_by_group_name(
+                self.parser.week.weekday, group
+            )
 
-            await result_schedule_repo.create_by_group_name(Week().weekday, schedule, group)
+            await result_schedule_repo.create_by_group_name(
+                self.parser.week.weekday, schedule, group
+            )
 
-    async def _check_changed_schedule(self, group_name: str, current_result_schedule: str) -> bool:
+    async def _check_changed_schedule(
+        self, group_name: str, current_result_schedule: str
+    ) -> bool:
         async with db_helper.get_session() as session:
             repo = Repository(session)
             group = await repo.groups.get_by_name(group_name)
             if group is None:
                 return False
 
-            result_schedule = await repo.result_schedule.get(Week().weekday,
-                                                             group.id)
+            if group.global_shift != self.global_shift:
+                return False
 
-        if result_schedule is None or result_schedule.data_lessons != current_result_schedule:
+            result_schedule = await repo.result_schedule.get(
+                self.parser.week.weekday, group.id
+            )
+
+        if (
+            result_schedule is None
+            or result_schedule.data_lessons != current_result_schedule
+        ):
             return True
 
         return False

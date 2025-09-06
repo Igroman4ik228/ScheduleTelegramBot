@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class BaseRepositoryAlchemy[T]:
@@ -41,17 +41,12 @@ class BaseRepositoryAlchemy[T]:
     async def update(self, instance: T):
         instance_id = getattr(instance, "id", None)
         if instance_id is None:
-            self.logger.warning(
-                "Instance must have an 'id' attribute for update."
-            )
+            self.logger.warning("Instance must have an 'id' attribute for update.")
             return
 
         exist_instance = await BaseRepositoryAlchemy.get(self, id=instance_id)
         if exist_instance is None:
-            self.logger.warning(
-                "Instance with id "
-                f"{instance_id} not exist for update"
-            )
+            self.logger.warning(f"Instance with id {instance_id} not exist for update")
             return
 
         await self.session.merge(instance)
@@ -60,9 +55,7 @@ class BaseRepositoryAlchemy[T]:
     async def delete(self, **kwargs):
         exist_instance = await BaseRepositoryAlchemy.get(self, **kwargs)
         if exist_instance is None:
-            self.logger.warning(
-                f"Instance with {kwargs} not exist for delete"
-            )
+            self.logger.warning(f"Instance with {kwargs} not exist for delete")
             return
 
         await self.session.delete(exist_instance)
@@ -87,13 +80,8 @@ class BaseRepositoryAlchemy[T]:
                 )
                 return
 
-        query = (
-            select(self.model)
-            .filter_by(**filters)
-        )
+        query = select(self.model).filter_by(**filters)
 
         for option in options:
-            query = query.options(
-                joinedload(getattr(self.model, option))
-            )
+            query = query.options(joinedload(getattr(self.model, option)))
         return query

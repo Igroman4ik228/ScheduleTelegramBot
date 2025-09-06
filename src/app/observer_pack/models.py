@@ -3,14 +3,12 @@ from abc import ABC, abstractmethod
 
 
 class Observer(ABC):
-
     @abstractmethod
     async def update(self) -> None:
         pass
 
 
 class Publisher(ABC):
-
     @abstractmethod
     def __init__(self) -> None:
         self.services: list[Observer] = []

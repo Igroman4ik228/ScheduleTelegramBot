@@ -33,12 +33,8 @@ MAX_FULLNAME_LENGTH = 100
 
 @router.message(CommandStart())
 async def handle_start(message: Message, repository: Repository):
-    user_full_name = quote_html(
-        message.from_user.full_name[:MAX_FULLNAME_LENGTH]
-    )
-    welcome_message = WELCOME_TEXT.format(
-        user_name=user_full_name
-    )
+    user_full_name = quote_html(message.from_user.full_name[:MAX_FULLNAME_LENGTH])
+    welcome_message = WELCOME_TEXT.format(user_name=user_full_name)
 
     argument = find_command_argument(message.text)
     owner_id = parse_owner_id(argument)
@@ -47,13 +43,9 @@ async def handle_start(message: Message, repository: Repository):
         try:
             await register_referral(owner_id, user_id, repository.referrals)
         except (MaxReferralExceededError, SelfReferralError) as e:
-            await message.answer(
-                str(e)
-            )
+            await message.answer(str(e))
 
-    await message.answer(
-        welcome_message.strip()
-    )
+    await message.answer(welcome_message.strip())
 
 
 def parse_owner_id(argument: str) -> int | None:
@@ -68,7 +60,9 @@ def parse_owner_id(argument: str) -> int | None:
     return owner_id
 
 
-async def register_referral(owner_id: int, user_id: int, referral_repo: ReferralRepository):
+async def register_referral(
+    owner_id: int, user_id: int, referral_repo: ReferralRepository
+):
     referrals = await referral_repo.get_all(owner_id=owner_id)
     if len(referrals) > MAX_REFERRAL:
         raise MaxReferralExceededError(

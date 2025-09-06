@@ -1,0 +1,306 @@
+{
+  // Смена числитель/знаменатель
+  "1": {
+    // Понедельник
+    "0": [
+      {
+        "number": "3",
+        // Можно убрать
+        "time": null,
+        "subject": "МДК 06.04 Интеллектуальные системы и технологии Байдина Ю.А.",
+        "classroom": "ДОТ",
+        // Можно убрать
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование информационных систем Байдина Ю.А. Юров А.А.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 08 Вакансия Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      }
+    ],
+    // Вторник
+    "1": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Менеджмент в профессиональной деятельности Попов В.А.",
+        "classroom": "А403",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС Неделяева Н.А.",
+        "classroom": "Б503",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС п/гр 1 Неделяева Н.А.",
+        "classroom": "Б302",
+        "is_replacement": false
+      }
+    ],
+    // Среда
+    "2": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 09.02 Оптимизация веб-приложений Неделяева Н.А. Гудкова А.Л.",
+        "classroom": "Б302 Б301",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 09.01 Проектирование и разработка веб-приложений Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б407",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б304",
+        "is_replacement": false
+      }
+    ],
+    // Четверг
+    "3": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 03.01 Моделирование и анализ программного обеспечения Вакансия Байдина Ю.А.",
+        "classroom": "Б301",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б304",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС п/гр 2 Королева П.Д.",
+        "classroom": "Б302",
+        "is_replacement": false
+      }
+    ],
+    // Пятница
+    "4": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "Физическая культура Куликова А.А.",
+        "classroom": "Сп.площ",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 06 Панасюк А.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 06 Панасюк А.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "Безопасность жизнедеятельности Корсаков С.В.",
+        "classroom": "Б101",
+        "is_replacement": false
+      }
+    ],
+    // Суббота
+    "5": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 08.02 Графический дизайн и мультимедиа Вершинина Н.А.",
+        "classroom": "Б309",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Основы философии Волкова С.А.",
+        "classroom": "А312",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 08 Вакансия Вакансия",
+        "classroom": "Б304",
+        "is_replacement": false
+      }
+    ]
+  },
+  // Смена числитель/знаменатель
+  "2": {
+    "0": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 06.04 Интеллектуальные системы и технологии Байдина Ю.А. Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 05.03 Тестирование информационных систем Байдина Ю.А.",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 08 Вакансия Вакансия",
+        "classroom": "ДОТ",
+        "is_replacement": false
+      }
+    ],
+    "1": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "Эффективное поведение на рынке труда Попов В.А.",
+        "classroom": "А403",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Менеджмент в профессиональной деятельности Попов В.А.",
+        "classroom": "А403",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС Неделяева Н.А.",
+        "classroom": "Б503",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС п/гр 1 Неделяева Н.А.",
+        "classroom": "Б302",
+        "is_replacement": false
+      }
+    ],
+    "2": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "МДК 09.02 Оптимизация веб-приложений Неделяева Н.А. Гудкова А.Л.",
+        "classroom": "Б302 Б301",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 09.01 Проектирование и разработка веб-приложений Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б407",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б304",
+        "is_replacement": false
+      }
+    ],
+    "3": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Иностранный язык в профессиональной деятельности Зубковская А.Е. Загородних Е.С.",
+        "classroom": "А413 А404-3",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС Неделяева Н.А. Королева П.Д.",
+        "classroom": "Б302 Б304",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.01 Проектирование и дизайн ИС п/гр 2 Королева П.Д.",
+        "classroom": "Б302",
+        "is_replacement": false
+      }
+    ],
+    "4": [
+      {
+        "number": "4",
+        "time": null,
+        "subject": "УП 06 Панасюк А.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "УП 06 Панасюк А.Д. Вакансия",
+        "classroom": "Б302",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "Безопасность жизнедеятельности Корсаков С.В.",
+        "classroom": "Б101",
+        "is_replacement": false
+      }
+    ],
+    "5": [
+      {
+        "number": "3",
+        "time": null,
+        "subject": "МДК 08.02 Графический дизайн и мультимедиа Вершинина Н.А.",
+        "classroom": "Б309",
+        "is_replacement": false
+      },
+      {
+        "number": "4",
+        "time": null,
+        "subject": "Основы философии Волкова С.А.",
+        "classroom": "А312",
+        "is_replacement": false
+      },
+      {
+        "number": "5",
+        "time": null,
+        "subject": "МДК 03.01 Моделирование и анализ программного обеспечения Вакансия",
+        "classroom": "Б304",
+        "is_replacement": false
+      }
+    ]
+  }
+}
