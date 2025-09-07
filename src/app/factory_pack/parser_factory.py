@@ -1,8 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from app.factory_pack.models import IBackgroundServiceFactory
 from helpers.week import Week
-from services.notify_service.notify import NotifyService
 from services.parser_service.parser import ParserService
 from services.sender_service.sender import SenderService
+
+if TYPE_CHECKING:
+    from services.notify_service.notify import NotifyService
 
 
 class ParserFactory(IBackgroundServiceFactory):
@@ -29,7 +35,7 @@ class ParserFactory(IBackgroundServiceFactory):
 
         raise ValueError(f"Парсер для смены {global_shift} не найден.")
 
-    def get_week(self, global_shift) -> Week:
+    def get_week(self, global_shift: int) -> Week:
         return self.get_parser(global_shift).parser.week
 
     def _create(self) -> list[ParserService]:

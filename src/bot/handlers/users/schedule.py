@@ -36,7 +36,7 @@ async def handle_schedule(
     repository: Repository,
 ):
     group: GroupModel = user.group
-    week = parser_factory.get_parser(group.global_shift).parser.week
+    week = parser_factory.get_week(group.global_shift)
 
     schedule = await get_schedule(
         user.group_id, repository, week.weekday, week.shift
@@ -57,7 +57,7 @@ async def handle_previous_schedule(
     repository: Repository,
 ):
     group: GroupModel = user.group
-    week = parser_factory.get_parser(group.global_shift).parser.week
+    week = parser_factory.get_week(group.global_shift)
 
     previous_weekday = week.get_previous_weekday()
     previous_shift = week.get_previous_shift()
@@ -81,7 +81,7 @@ async def handle_next_schedule(
     repository: Repository,
 ):
     group: GroupModel = user.group
-    week = parser_factory.get_parser(group.global_shift).parser.week
+    week = parser_factory.get_week(group.global_shift)
 
     next_weekday = week.get_next_weekday()
     next_shift = week.get_next_shift()

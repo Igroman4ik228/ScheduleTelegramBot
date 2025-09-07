@@ -49,7 +49,7 @@ class ParserService(BackgroundService, Publisher):
         if self.is_update:
             await self._save_schedule_to_db(result_schedule)
 
-        await self.notify()
+        await self.notify(self.global_shift)
 
     async def active(self):
         self.logger.info("ParserService active")

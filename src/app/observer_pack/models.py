@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class Observer(ABC):
     @abstractmethod
-    async def update(self) -> None:
+    async def update(self, *args) -> None:
         pass
 
 
@@ -20,7 +20,9 @@ class Publisher(ABC):
     def detach(self, observer: Observer) -> None:
         self.services.remove(observer)
 
-    async def notify(self) -> None:
+    async def notify(self, *args) -> None:
         if self.is_update:
-            await asyncio.gather(*(service.update() for service in self.services))
+            await asyncio.gather(
+                *(service.update(*args) for service in self.services)
+            )
             self.is_update = False
