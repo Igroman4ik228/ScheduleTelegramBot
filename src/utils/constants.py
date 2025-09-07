@@ -94,7 +94,7 @@ START_LESSONS_TIME = [
 END_LESSONS_TIME = [
     dt_time(9, 10),
     dt_time(10, 50),
-    dt_time(12, 25),
+    dt_time(12, 30),
     dt_time(14, 50),
     dt_time(16, 35),
     dt_time(18, 35),
