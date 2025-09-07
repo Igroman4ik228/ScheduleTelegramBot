@@ -35,7 +35,9 @@ class ParserService(BackgroundService, Publisher):
 
         replacement_schedules = self.parser.extract_replacement_schedules()
 
-        builder = Builder(self.parser.week, replacement_schedules)
+        builder = Builder(
+            self.parser.week, self.global_shift, replacement_schedules
+        )
         await builder.initialize()
         result_schedule = await builder.build()
 

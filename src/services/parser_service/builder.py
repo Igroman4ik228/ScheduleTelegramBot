@@ -63,9 +63,13 @@ class ScheduleMerger:
             self._process_replacement_schedule(replacement_schedule)
         return list(self.schedules_by_group.values())
 
-    def _process_replacement_schedule(self, replacement_schedule: Schedule) -> None:
+    def _process_replacement_schedule(
+        self, replacement_schedule: Schedule
+    ) -> None:
         """Обработать расписание с заменами"""
-        group_schedule = self._get_or_create_group_schedule(replacement_schedule.group)
+        group_schedule = self._get_or_create_group_schedule(
+            replacement_schedule.group
+        )
         lesson_merger = LessonMerger(group_schedule)
 
         for replacement_lesson in replacement_schedule.lessons:
@@ -84,7 +88,9 @@ class LessonMerger:
 
     def __init__(self, schedule: Schedule):
         self.schedule = schedule
-        self.lessons_by_number = {lesson.number: lesson for lesson in schedule.lessons}
+        self.lessons_by_number = {
+            lesson.number: lesson for lesson in schedule.lessons
+        }
 
     def merge_lesson(self, replacement_lesson: Lesson) -> None:
         """Объединить урок с заменой"""
@@ -110,9 +116,12 @@ class LessonMerger:
 class Builder:
     """Основной класс для построения расписания"""
 
-    def __init__(self, week: Week, replacement_schedules: List[Schedule]):
+    def __init__(
+        self, week: Week, global_shift, replacement_schedules: List[Schedule]
+    ):
         self.logger = getLogger(self.__class__.__name__)
         self.week = week
+        self.global_shift = global_shift
         self.replacement_schedules = replacement_schedules
         self.default_schedules: List[Schedule] = []
 
@@ -137,17 +146,28 @@ class Builder:
 
     async def _get_default_schedules(self, session) -> List[Schedule]:
         """Получить основное расписание из БД"""
-        week = self.week
         default_schedule_rep = Repository(session).default_schedule
+
+        groups = await Repository(session).groups.get_all(
+            global_shift=self.global_shift
+        )
+        group_ids = {group.id for group in groups}
+
         default_schedule_data = await default_schedule_rep.get_all(
-            "group", weekday=week.weekday, shift=week.shift
+            "group", weekday=self.week.weekday, shift=self.week.shift
         )
 
         if default_schedule_data is None:
             return []
 
-        schedule_collector = DefaultScheduleCollector(week)
-        return schedule_collector.collect_schedules(default_schedule_data)
+        filtered_schedule_data = [
+            schedule
+            for schedule in default_schedule_data
+            if schedule.group_id in group_ids
+        ]
+
+        schedule_collector = DefaultScheduleCollector(self.week)
+        return schedule_collector.collect_schedules(filtered_schedule_data)
 
 
 class DefaultScheduleCollector:
