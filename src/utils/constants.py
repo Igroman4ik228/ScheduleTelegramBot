@@ -60,16 +60,13 @@ class CacheTTL(Enum):
 
 # Integers
 MAX_REFERRAL = 5
-SENDER_TIME_SLEEP = timedelta(milliseconds=100).seconds
+SENDER_TIME_SLEEP = timedelta(milliseconds=1000).seconds
 
 # Strings
 FILE_EXTENSION = "json"
 
 # Dictionaries
-WEEK_SCHEDULE_MAPPING = {
-    "числитель": 1,
-    "знаменатель": 2
-}
+WEEK_SCHEDULE_MAPPING = {"числитель": 1, "знаменатель": 2}
 DAY_NAMES = {
     0: "понедельник",
     1: "вторник",
@@ -85,17 +82,21 @@ DAY_NAME_CASES = {
 }
 
 # Tuple
-START_LESSONS_TIME = [dt_time(8, 00),
-                      dt_time(9, 20),
-                      dt_time(11, 00),
-                      dt_time(13, 20),
-                      dt_time(15, 5),
-                      dt_time(17, 5),
-                      dt_time(18, 45)]
-END_LESSONS_TIME = [dt_time(9, 10),
-                    dt_time(10, 50),
-                    dt_time(12, 25),
-                    dt_time(14, 50),
-                    dt_time(16, 35),
-                    dt_time(18, 35),
-                    dt_time(19, 55)]
+START_LESSONS_TIME = [
+    dt_time(8, 00),
+    dt_time(9, 20),
+    dt_time(11, 00),
+    dt_time(13, 20),
+    dt_time(15, 5),
+    dt_time(17, 5),
+    dt_time(18, 45),
+]
+END_LESSONS_TIME = [
+    dt_time(9, 10),
+    dt_time(10, 50),
+    dt_time(12, 25),
+    dt_time(14, 50),
+    dt_time(16, 35),
+    dt_time(18, 35),
+    dt_time(19, 55),
+]
