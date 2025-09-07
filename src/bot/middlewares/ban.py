@@ -7,12 +7,11 @@ from database.models.users import UserModel
 
 
 class BanMiddleware(BaseMiddleware):
-
     async def __call__(
         self,
         handler: Callable[[Update, dict[str, Any]], Awaitable[Any]],
         event: Update,
-        data: dict[str, Any]
+        data: dict[str, Any],
     ) -> Any:
         user: UserModel = data["user"]
         if user.is_ban:

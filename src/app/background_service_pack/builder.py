@@ -5,7 +5,9 @@ from services.sub_checker_service.sub_checker import SubCheckerService
 
 
 class BackgroundBuilder:
-    def __init__(self, parser_factory: ParserFactory, sub_checker: SubCheckerService):
+    def __init__(
+        self, parser_factory: ParserFactory, sub_checker: SubCheckerService
+    ):
         self.installation_service = [parser_factory, sub_checker]
 
     def get_services(self) -> list[BackgroundService]:

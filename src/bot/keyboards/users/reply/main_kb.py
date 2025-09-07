@@ -6,8 +6,10 @@ from helpers.user_validate import is_admin
 def get_main_kb(user_telegram_id: int):
     main_kb = [
         [KeyboardButton(text="🗓 Расписание")],
-        [KeyboardButton(text="⬅️ Предыдущее"),
-         KeyboardButton(text="Следующее ➡️"),],
+        [
+            KeyboardButton(text="⬅️ Предыдущее"),
+            KeyboardButton(text="Следующее ➡️"),
+        ],
         [KeyboardButton(text="👤 Профиль")],
     ]
 
@@ -19,5 +21,5 @@ def get_main_kb(user_telegram_id: int):
     return ReplyKeyboardMarkup(
         keyboard=main_kb,
         resize_keyboard=True,
-        input_field_placeholder="Выберите пункт меню"
+        input_field_placeholder="Выберите пункт меню",
     )

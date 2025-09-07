@@ -1,4 +1,3 @@
-
 def is_command(message: str | None) -> bool:
     return bool(message and message.startswith("/"))
 

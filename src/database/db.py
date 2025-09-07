@@ -3,8 +3,11 @@ from contextlib import asynccontextmanager
 from functools import wraps
 from typing import AsyncGenerator
 
-from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
-                                    create_async_engine)
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from database.models.base import Base
 from utils.config import settings
@@ -54,7 +57,7 @@ db_helper = DatabaseHelperAlchemy(
     echo=settings.db.echo,
     pool_pre_ping=settings.db.pre_ping,
     pool_size=settings.db.pool_size,
-    max_overflow=settings.db.max_overflow
+    max_overflow=settings.db.max_overflow,
 )
 
 asyncio.run(db_helper.create_tables())
@@ -67,16 +70,17 @@ def with_session(func):
     Если сессия уже передана в аргументах - использует её.
     Иначе создает новую сессию и передает её в декорируемую функцию.
     """
+
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        if 'session' in kwargs:
+        if "session" in kwargs:
             return await func(*args, **kwargs)
 
         if any(isinstance(arg, AsyncSession) for arg in args):
             return await func(*args, **kwargs)
 
         async with db_helper.get_session() as session:
-            is_method = args and hasattr(args[0], '__class__')
+            is_method = args and hasattr(args[0], "__class__")
             if is_method:
                 return await func(args[0], *args[1:], session=session, **kwargs)
             return await func(*args, session=session, **kwargs)

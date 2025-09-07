@@ -10,7 +10,6 @@ from utils.constants import SENDER_TIME_SLEEP
 
 
 class SenderService:
-
     def __init__(self, bot: Bot):
         self.logger = getLogger(self.__class__.__name__)
         self.bot = bot
@@ -33,8 +32,7 @@ class SenderService:
                 self.logger.debug(f"Failed send message to user {tg_id}\n{e}")
         else:
             self.logger.debug(
-                f"Dont send message to {user}"
-                "because user is banned or bot"
+                f"Dont send message to {user}because user is banned or bot"
             )
 
     async def is_valid_user(self, user: UserModel | None) -> bool:

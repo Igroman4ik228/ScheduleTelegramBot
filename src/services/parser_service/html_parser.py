@@ -45,12 +45,16 @@ class HtmlParser:
         weekday_name = self.get_text_from_div(index=2).strip().lower()
         weekday = get_key(const.DAY_NAMES, weekday_name)
         if weekday is None:
-            raise ValueError(f"Не удалось определить день недели: {weekday_name}")
+            raise ValueError(
+                f"Не удалось определить день недели: {weekday_name}"
+            )
         return weekday
 
     def _get_shift(self) -> int:
         """Извлекает информацию о смене (числитель/знаменатель) из HTML"""
-        shift_name = self.get_text_from_div(index=3, word_index=0).strip("()").lower()
+        shift_name = (
+            self.get_text_from_div(index=3, word_index=0).strip("()").lower()
+        )
         shift = const.WEEK_SCHEDULE_MAPPING.get(shift_name)
         if shift is None:
             raise ValueError(
@@ -93,7 +97,9 @@ class HtmlParser:
     ) -> str:
         """Получение текста из div элементов"""
         if index < 0 or index >= len(self.div_elements):
-            raise IndexError("Индекс выходит за пределы доступных div элементов.")
+            raise IndexError(
+                "Индекс выходит за пределы доступных div элементов."
+            )
         div_element = self.div_elements[index]
         split_text = div_element.get_text(strip=True).split(split_by)
 
@@ -106,7 +112,9 @@ class HtmlParser:
         classrooms = cells[5].text.strip()
 
         return [
-            Lesson(lesson_number, time, subject, classrooms, is_replacement=True)
+            Lesson(
+                lesson_number, time, subject, classrooms, is_replacement=True
+            )
             for lesson_number in lesson_numbers
         ]
 

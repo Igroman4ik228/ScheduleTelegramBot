@@ -1,6 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy.orm import Mapped, relationship
 
 from database.models.base import Base, BoolTrue, Str128, Str512
+
+if TYPE_CHECKING:
+    from database.models import (
+        UserModel,
+    )
 
 
 class SubscribeModel(Base):
@@ -11,6 +20,4 @@ class SubscribeModel(Base):
     can_referral: Mapped[BoolTrue]
     discount: Mapped[int | None]  # in percent
 
-    users: Mapped[list["UserModel"]] = relationship(
-        back_populates="subscribe"
-    )
+    users: Mapped[list["UserModel"]] = relationship(back_populates="subscribe")

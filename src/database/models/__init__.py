@@ -13,5 +13,5 @@ __all__ = (
     "ReferralModel",
     "GroupModel",
     "DepartmentModel",
-    "DefaultScheduleModel"
+    "DefaultScheduleModel",
 )

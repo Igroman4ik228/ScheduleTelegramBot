@@ -15,7 +15,7 @@ def split_text_with_wrap(text: str, max_length: int = 1500) -> list[str]:
     for line in lines:
         if len(current_message) + len(line) + 1 <= max_length:
             # Если добавление строки не превышает лимит, добавляем её
-            current_message += (line + "\n")
+            current_message += line + "\n"
         else:
             # Если лимит превышается, сохраняем текущее сообщение и начинаем новое
             result.append(current_message.strip())

@@ -10,7 +10,9 @@ TITLE = "Приветствие"
 
 
 @router.callback_query(F.data == CallbackData.REFERRAL.value)
-async def handle_referral(callback_query: CallbackQuery, bot: Bot, repository: Repository):
+async def handle_referral(
+    callback_query: CallbackQuery, bot: Bot, repository: Repository
+):
     tg_id = callback_query.from_user.id
     bot_name = await bot.get_my_name()
 
@@ -19,7 +21,9 @@ async def handle_referral(callback_query: CallbackQuery, bot: Bot, repository: R
     result_text = f"{referral_url}\n"
 
     user = await repository.users.get(tg_id)
-    result_text += "Количество пользователей зарегистрированных по вашей ссылке: "
+    result_text += (
+        "Количество пользователей зарегистрированных по вашей ссылке: "
+    )
     result_text += f"{user.count_referral}/{MAX_REFERRAL}"
 
     await callback_query.answer()

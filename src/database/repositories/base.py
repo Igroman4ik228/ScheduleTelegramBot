@@ -41,12 +41,16 @@ class BaseRepositoryAlchemy[T]:
     async def update(self, instance: T):
         instance_id = getattr(instance, "id", None)
         if instance_id is None:
-            self.logger.warning("Instance must have an 'id' attribute for update.")
+            self.logger.warning(
+                "Instance must have an 'id' attribute for update."
+            )
             return
 
         exist_instance = await BaseRepositoryAlchemy.get(self, id=instance_id)
         if exist_instance is None:
-            self.logger.warning(f"Instance with id {instance_id} not exist for update")
+            self.logger.warning(
+                f"Instance with id {instance_id} not exist for update"
+            )
             return
 
         await self.session.merge(instance)

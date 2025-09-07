@@ -15,25 +15,25 @@ class Lesson:
 
     def to_dict(self):
         return {
-            'numbers': self.number,
-            'time': self.time.strftime("%H:%M") if self.time else None,
-            'subject': self.subject,
-            'classroom': self.classroom,
-            'is_replacement': self.is_replacement
+            "numbers": self.number,
+            "time": self.time.strftime("%H:%M") if self.time else None,
+            "subject": self.subject,
+            "classroom": self.classroom,
+            "is_replacement": self.is_replacement,
         }
 
     @staticmethod
     def from_dict(data: dict):
-        time_value = dt_time.fromisoformat(
-            data['time']
-        ) if data['time'] else None
+        time_value = (
+            dt_time.fromisoformat(data["time"]) if data["time"] else None
+        )
 
         return Lesson(
-            number=int(data['number']),
+            number=int(data["number"]),
             time=time_value,
-            subject=data['subject'],
-            classroom=data['classroom'],
-            is_replacement=data.get('is_replacement', False)
+            subject=data["subject"],
+            classroom=data["classroom"],
+            is_replacement=data.get("is_replacement", False),
         )
 
     @staticmethod

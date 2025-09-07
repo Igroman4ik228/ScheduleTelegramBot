@@ -6,10 +6,10 @@ from logging import getLogger
 class BackgroundService(ABC):
     @abstractmethod
     def __init__(self, time_span: int) -> None:
-        '''
+        """
         args:
             time_span - in second
-        '''
+        """
         self.logger = getLogger(self.__class__.__name__)
         self.is_active: bool = False
         self.time_span = time_span

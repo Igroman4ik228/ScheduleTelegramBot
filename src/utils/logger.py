@@ -14,12 +14,12 @@ def with_logger[T](cls: T) -> T:
     Returns:
         cls: Класс с добавленным логгером.
     """
-    original_init = getattr(cls, '__init__', None)
+    original_init = getattr(cls, "__init__", None)
 
     @wraps(original_init)
     def new_init(self, *args, **kwargs):
-        if hasattr(self, 'logger'):
-            self.logger.warning('Logger already set')
+        if hasattr(self, "logger"):
+            self.logger.warning("Logger already set")
             if original_init:
                 original_init(self, *args, **kwargs)
                 return cls
@@ -37,12 +37,13 @@ def log_methods(*methods: str):
     Декоратор, добавляющий логирование вызовов методов класса.
 
     Args:
-        methods: Список имен методов, которые должны быть залогированы. 
+        methods: Список имен методов, которые должны быть залогированы.
         Если не передан - логируются все.
 
     Returns:
         Декорированный класс с логированием указанных методов.
     """
+
     def decorator[T](cls: T) -> T:
         methods_to_log = set(methods) if methods else get_all_methods(cls)
 
@@ -62,7 +63,7 @@ def log_methods(*methods: str):
     def log_decorator(method):
         @wraps(method)
         def wrapper(self, *args, **kwargs):
-            if not hasattr(self, 'logger'):
+            if not hasattr(self, "logger"):
                 raise RuntimeError(
                     "Logger not set. "
                     "Use self.logger = getLogger(self.__class__.__name__) in __init__ method."
@@ -72,6 +73,7 @@ def log_methods(*methods: str):
             result = method(self, *args, **kwargs)
             self.logger.info(f"Method '{method.__name__}' end")
             return result
+
         return wrapper
 
     return decorator

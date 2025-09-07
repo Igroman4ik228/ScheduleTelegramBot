@@ -17,20 +17,18 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         self.group_repo = GroupRepository(session)
 
     async def create(
-            self,
-            first_name: str,
-            user_name: str,
-            telegram_id: int,
-            group_name: str = None,
-            **kwargs
+        self,
+        first_name: str,
+        user_name: str,
+        telegram_id: int,
+        group_name: str = None,
+        **kwargs,
     ) -> UserModel | None:
         group_id = None
         if group_name:
             group = await self.group_repo.get_by_name(group_name)
             if group is None:
-                self.logger.debug(
-                    f"Group {group_name} not found for create"
-                )
+                self.logger.debug(f"Group {group_name} not found for create")
                 return
             group_id = group.id
 
@@ -39,7 +37,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             user_name=user_name,
             telegram_id=telegram_id,
             group_id=group_id,
-            **kwargs
+            **kwargs,
         )
 
     @cached(ttl=CacheTTL.USER.value)
@@ -47,10 +45,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         return await super().get(telegram_id=telegram_id, *options)
 
     async def update_subscribe(
-            self,
-            user: UserModel,
-            subscribe_id: int,
-            subscribe_end_time: datetime
+        self, user: UserModel, subscribe_id: int, subscribe_end_time: datetime
     ):
         user.subscribe_id = subscribe_id
         user.subscribe_end_time = subscribe_end_time

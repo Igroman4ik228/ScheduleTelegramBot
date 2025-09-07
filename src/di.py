@@ -44,6 +44,11 @@ class AppModule(Module):
 
     @singleton
     @provider
+    def provide_notify_service(self, sender: SenderService) -> NotifyService:
+        return NotifyService(sender)
+
+    @singleton
+    @provider
     def provide_parser_factory(
         self, notify: NotifyService, sender: SenderService
     ) -> ParserFactory:
@@ -58,11 +63,6 @@ class AppModule(Module):
         self, sender: SenderService
     ) -> SubCheckerService:
         return SubCheckerService(TimeSpan.SUB_CHECKER.value, sender)
-
-    @singleton
-    @provider
-    def provide_notify_service(self, sender: SenderService) -> NotifyService:
-        return NotifyService(sender)
 
     @provider
     def provide_builder(

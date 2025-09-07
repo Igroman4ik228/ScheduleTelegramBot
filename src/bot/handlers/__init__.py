@@ -5,8 +5,15 @@ from bot.filters.admin import AdminFilter
 
 def get_admin_routers():
     # Admin routers
-    from bot.handlers.admins import (bot, group, message, panel, schedule,
-                                     subscribe, user)
+    from bot.handlers.admins import (
+        bot,
+        group,
+        message,
+        panel,
+        schedule,
+        subscribe,
+        user,
+    )
 
     admin_routers = (
         panel.router,
@@ -15,7 +22,7 @@ def get_admin_routers():
         group.router,
         message.router,
         schedule.router,
-        subscribe.router
+        subscribe.router,
     )
 
     for router in admin_routers:
@@ -27,9 +34,15 @@ def get_admin_routers():
 
 def get_user_routers():
     # User routers
-    from bot.handlers.users import (default_schedule, group, profile, referral,
-                                    schedule, setting, start, subscribe,
-                                    tech_support)
+    from bot.handlers.users import (
+        default_schedule,
+        group,
+        profile,
+        schedule,
+        setting,
+        start,
+        subscribe,
+    )
 
     user_routers = (
         start.router,

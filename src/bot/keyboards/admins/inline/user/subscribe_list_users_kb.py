@@ -6,11 +6,15 @@ from database.models import SubscribeModel
 from utils.constants import CallbackDataAdmin
 
 
-class SubscribeCallbackFactory(CallbackData, prefix=CallbackDataAdmin.SUBSCRIBE_LIST_USERS.value):
+class SubscribeCallbackFactory(
+    CallbackData, prefix=CallbackDataAdmin.SUBSCRIBE_LIST_USERS.value
+):
     subscribe_id: int
 
 
-def get_subscribe_list_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
+def get_subscribe_list_kb(
+    subscribes: list[SubscribeModel],
+) -> InlineKeyboardMarkup:
     subscribe_builder = InlineKeyboardBuilder()
 
     for subscribe in subscribes:
@@ -19,7 +23,7 @@ def get_subscribe_list_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMar
                 text=subscribe.name,
                 callback_data=SubscribeCallbackFactory(
                     subscribe_id=subscribe.id
-                ).pack()
+                ).pack(),
             )
         )
 

@@ -1,27 +1,28 @@
-[tool.poetry]
+[project]
 name = "scheduletelegrambot"
 version = "0.1.0"
 description = ""
-authors = ["igroman4ik"]
+authors = [{ name = "igroman4ik" }]
+requires-python = ">=3.12,<3.13"
 readme = "README.md"
+dependencies = [
+    "aiogram>=3.13.0,<4",
+    "pydantic-settings>=2.4.0,<3",
+    "sqlalchemy>=2.0.34,<3",
+    "requests>=2.32.3,<3",
+    "cachetools>=5.5.0,<6",
+    "alembic>=1.13.2,<2",
+    "injector>=0.22.0,<0.23",
+    "aiomysql>=0.2.0,<0.3",
+    "cryptography>=43.0.1,<44",
+    "bs4>=0.0.2,<0.0.3",
+    "lxml>=5.3.0,<6",
+    "redis>=5.1.0,<6",
+    "python-dateutil>=2.9.0.post0,<3",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-aiogram = "^3.13.0"
-pydantic-settings = "^2.4.0"
-sqlalchemy = "^2.0.34"
-requests = "^2.32.3"
-cachetools = "^5.5.0"
-alembic = "^1.13.2"
-injector = "^0.22.0"
-aiomysql = "^0.2.0"
-cryptography = "^43.0.1"
-bs4 = "^0.0.2"
-lxml = "^5.3.0"
-redis = "^5.1.0"
-python-dateutil = "^2.9.0.post0"
+[dependency-groups]
+dev = ["ruff>=0.12.12,<1"]
 
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff]
+line-length = 80

@@ -14,10 +14,10 @@ class DefaultScheduleLoader:
     """Загружает расписание из файлов в БД."""
 
     async def process_all_files(self):
-        file_paths = get_file_paths(
-            PATH_TEMPLATE_DATA, FILE_EXTENSION
+        file_paths = get_file_paths(PATH_TEMPLATE_DATA, FILE_EXTENSION)
+        await asyncio.gather(
+            *(self.process_file(file_path) for file_path in file_paths)
         )
-        await asyncio.gather(*(self.process_file(file_path) for file_path in file_paths))
 
     async def process_file(self, file_path: str):
         group_names = Path(file_path).stem.split("_")
@@ -28,7 +28,9 @@ class DefaultScheduleLoader:
         for group_name in group_names:
             await self._save_group_schedule_to_db(schedule_data, group_name)
 
-    async def _save_group_schedule_to_db(self, schedule_data: dict, group_name: str):
+    async def _save_group_schedule_to_db(
+        self, schedule_data: dict, group_name: str
+    ):
         for shift, weekdays in schedule_data.items():
             for weekday, lessons in weekdays.items():
                 lessons_data = str(lessons)
@@ -49,10 +51,7 @@ class DefaultScheduleLoader:
         )
         if exist_default_schedule is None:
             await default_schedule_repo.create_by_group_name(
-                weekday,
-                shift,
-                data_lessons,
-                group_name
+                weekday, shift, data_lessons, group_name
             )
         else:
             if exist_default_schedule.data_lessons == data_lessons:

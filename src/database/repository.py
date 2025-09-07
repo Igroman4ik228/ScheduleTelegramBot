@@ -2,11 +2,15 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.repositories import (DefaultScheduleRepository,
-                                   DepartmentRepository, GroupRepository,
-                                   ReferralRepository,
-                                   ResultScheduleRepository,
-                                   SubscribeRepository, UserRepository)
+from database.repositories import (
+    DefaultScheduleRepository,
+    DepartmentRepository,
+    GroupRepository,
+    ReferralRepository,
+    ResultScheduleRepository,
+    SubscribeRepository,
+    UserRepository,
+)
 
 
 @dataclass

@@ -2,12 +2,8 @@ from database.redis.base import BaseCache
 
 
 class ProfileCache(BaseCache):
-
     async def create(
-        self,
-        user_id: int,
-        bot_message_id: int,
-        user_message_id: int
+        self, user_id: int, bot_message_id: int, user_message_id: int
     ):
         """
         Create a profile for a given user id with bot message id and user message id
@@ -27,8 +23,8 @@ class ProfileCache(BaseCache):
 
         # convert to number
         try:
-            profile_string = profile_string.decode('utf-8')
-            bot_mes_id, user_mes_id = profile_string.split('|', 1)
+            profile_string = profile_string.decode("utf-8")
+            bot_mes_id, user_mes_id = profile_string.split("|", 1)
 
             bot_mes_id = int(bot_mes_id)
             user_mes_id = int(user_mes_id)

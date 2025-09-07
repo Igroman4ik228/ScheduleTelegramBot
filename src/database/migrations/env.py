@@ -29,8 +29,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 config.set_main_option(
-    "sqlalchemy.url",
-    settings.db.url + "?async_fallback=True"
+    "sqlalchemy.url", settings.db.url + "?async_fallback=True"
 )
 
 
@@ -59,9 +58,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection,
-                      target_metadata=target_metadata,
-                      compare_server_default=True)
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_server_default=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()

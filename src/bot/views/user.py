@@ -50,16 +50,23 @@ class UserView:
     @staticmethod
     def format_user(user: UserModel) -> str:
         first_name = user.first_name[:MAX_FIRST_NAME_LENGTH]
-        last_name = user.last_name[:MAX_LAST_NAME_LENGTH] if user.last_name is not None else None
-        user_name = user.user_name[:MAX_USERNAME_LENGTH] if user.user_name is not None else None
-
-        user_view = UserView(
-            first_name,
-            last_name,
-            user_name,
-            user.telegram_id,
-            user.is_ban,
-            user.is_bot
+        last_name = (
+            user.last_name[:MAX_LAST_NAME_LENGTH]
+            if user.last_name is not None
+            else None
         )
-
-        return str(user_view)
+        user_name = (
+            user.user_name[:MAX_USERNAME_LENGTH]
+            if user.user_name is not None
+            else None
+        )
+        return str(
+            UserView(
+                first_name,
+                last_name,
+                user_name,
+                user.telegram_id,
+                user.is_ban,
+                user.is_bot,
+            )
+        )

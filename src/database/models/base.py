@@ -2,8 +2,7 @@ from datetime import datetime
 from typing import Annotated
 
 from sqlalchemy import String
-from sqlalchemy.orm import (DeclarativeBase, Mapped, declared_attr,
-                            mapped_column)
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
 Pk = Annotated[int, mapped_column(primary_key=True)]
 

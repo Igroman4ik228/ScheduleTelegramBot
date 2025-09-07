@@ -8,13 +8,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class BotSettings(BaseModel):
     """Настройки бота Telegram."""
+
     token: str = ""
     payment_token: str = ""
     admin_ids: list[int] = Field(default_factory=list)
     rate_limit: float = Field(
-        default=0.2,
-        ge=0,
-        description="Rate limit for throttling control"
+        default=0.2, ge=0, description="Rate limit for throttling control"
     )
 
     @field_validator("admin_ids", mode="before")
@@ -54,7 +53,7 @@ class DatabaseSettings(BaseModel):
                 password=self.password,
                 host=self.host,
                 port=self.port,
-                path=self.name
+                path=self.name,
             )
         )
 
@@ -78,7 +77,7 @@ class RedisSettings(BaseModel):
                 password=self.password,
                 host=self.host,
                 port=self.port,
-                path=str(db)
+                path=str(db),
             )
         )
 
@@ -86,8 +85,7 @@ class RedisSettings(BaseModel):
 class LoggerSettings(BaseModel):
     path: str = join(getcwd(), "logs")
     config_file_name: str = Field(
-        default="logger.conf.json",
-        pattern=r".*\.json$"
+        default="logger.conf.json", pattern=r".*\.json$"
     )
 
     @property
@@ -105,29 +103,26 @@ class LoggerSettings(BaseModel):
     def _get_default_config(self):
         """Возвращает конфигурацию логгера по умолчанию."""
         return {
-            'version': 1,
+            "version": 1,
             "disable_existing_loggers": False,
-            'handlers': {
-                'console': {
-                    'class': 'logging.StreamHandler',
-                    'formatter': 'default'
+            "handlers": {
+                "console": {
+                    "class": "logging.StreamHandler",
+                    "formatter": "default",
                 },
-                'file': {
-                    'class': 'logging.FileHandler',
-                    'filename': join(self.path, 'app.log'),
-                    'formatter': 'default'
-                }
-            },
-            'formatters': {
-                'default': {
-                    'format': '(%(levelname)s) %(asctime)s - %(name)s: %(message)s',
-                    'datefmt': '%Y-%m-%d %H:%M:%S'
+                "file": {
+                    "class": "logging.FileHandler",
+                    "filename": join(self.path, "app.log"),
+                    "formatter": "default",
                 },
             },
-            'root': {
-                'handlers': ['console', 'file'],
-                'level': 'INFO'
+            "formatters": {
+                "default": {
+                    "format": "(%(levelname)s) %(asctime)s - %(name)s: %(message)s",
+                    "datefmt": "%Y-%m-%d %H:%M:%S",
+                },
             },
+            "root": {"handlers": ["console", "file"], "level": "INFO"},
         }
 
     def configure(self):
@@ -137,9 +132,7 @@ class LoggerSettings(BaseModel):
         dictConfig(self.logger_conf)
 
         # Disable sqlalchemy engine logs
-        getLogger("sqlalchemy.engine.Engine").handlers = [
-            NullHandler()
-        ]
+        getLogger("sqlalchemy.engine.Engine").handlers = [NullHandler()]
 
 
 class Settings(BaseSettings):

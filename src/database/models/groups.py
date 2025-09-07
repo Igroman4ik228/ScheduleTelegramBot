@@ -1,7 +1,19 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import Base, Str128
+
+if TYPE_CHECKING:
+    from database.models import (
+        DefaultScheduleModel,
+        DepartmentModel,
+        ResultScheduleModel,
+        UserModel,
+    )
 
 
 class GroupModel(Base):
@@ -13,14 +25,12 @@ class GroupModel(Base):
         default=1
     )  # Смена для всех групп (первая или вторая)
 
-    department: Mapped["DepartmentModel"] = relationship(
-        back_populates="groups"
-    )
+    department: Mapped[DepartmentModel] = relationship(back_populates="groups")
 
-    users: Mapped[list["UserModel"]] = relationship(back_populates="group")
-    default_schedule: Mapped[list["DefaultScheduleModel"]] = relationship(
+    users: Mapped[list[UserModel]] = relationship(back_populates="group")
+    default_schedule: Mapped[list[DefaultScheduleModel]] = relationship(
         back_populates="group"
     )
-    result_schedule: Mapped[list["ResultScheduleModel"]] = relationship(
+    result_schedule: Mapped[list[ResultScheduleModel]] = relationship(
         back_populates="group"
     )

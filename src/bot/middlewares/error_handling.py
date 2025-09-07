@@ -35,7 +35,9 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             await self._send_bad_request_message(user.id, sender)
         except RestartingTelegram as e:
             self.logger.error(f"Telegram перезагружается: {e}")
-            await self._send_message_to_admins("Telegram перезагружается", sender)
+            await self._send_message_to_admins(
+                "Telegram перезагружается", sender
+            )
         except TelegramNetworkError as e:
             self.logger.error(f"TelegramNetworkError: {e}")
             await self._send_message_to_admins("TelegramNetworkError", sender)
@@ -47,9 +49,13 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             await self._send_ygk_error_message(user.id, sender)
         except Exception as e:
             self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
-            await self._send_message_to_admins("Необработанное исключение", sender)
+            await self._send_message_to_admins(
+                "Необработанное исключение", sender
+            )
 
-    async def _send_bad_request_message(self, chat_id: int, sender: SenderService):
+    async def _send_bad_request_message(
+        self, chat_id: int, sender: SenderService
+    ):
         text = (
             "Произошла ошибка запроса. "
             "Пожалуйста, проверьте корректность введённых данных."
@@ -57,12 +63,16 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         await sender.safe_send_message(chat_id, text)
         await self._send_message_to_admins(text, sender)
 
-    async def _send_api_error_message(self, chat_id: int, sender: SenderService):
+    async def _send_api_error_message(
+        self, chat_id: int, sender: SenderService
+    ):
         text = "Произошла ошибка. Попробуйте позже."
         await sender.safe_send_message(chat_id, text)
         await self._send_message_to_admins(text, sender)
 
-    async def _send_ygk_error_message(self, chat_id: int, sender: SenderService):
+    async def _send_ygk_error_message(
+        self, chat_id: int, sender: SenderService
+    ):
         text = "Сайт ЯГК с заменами не работает. Попробуйте, пожалуйста, позже."
         await sender.safe_send_message(chat_id, text)
 

@@ -9,18 +9,12 @@ from utils.constants import DAY_NAME_CASES
 REPLACEMENT_TEXT = "(❗️ замена)"
 
 
-def format_schedule(
-    lessons: list[Lesson],
-    weekday: int,
-    shift: int
-) -> str:
+def format_schedule(lessons: list[Lesson], weekday: int, shift: int) -> str:
     return format_header(weekday, shift) + format_lessons(lessons)
 
 
 def format_header(
-    weekday: int,
-    shift: int,
-    is_default_schedule: bool = False
+    weekday: int, shift: int, is_default_schedule: bool = False
 ) -> str:
     weekday_name = Week.get_weekday_name_by_weekday(weekday)
     weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
@@ -28,9 +22,9 @@ def format_header(
 
     if not is_default_schedule:
         shift = Week.get_shift_name_by_shift(shift)
-        header = html.blockquote(
-            f"Расписание на {weekday_name} ({shift})"
-        ) + "\n"
+        header = (
+            html.blockquote(f"Расписание на {weekday_name} ({shift})") + "\n"
+        )
     else:
         header = f"Расписание на {weekday_name}\n"
     return header
@@ -50,17 +44,14 @@ def sort_lessons(lessons: list[Lesson]) -> list[Lesson]:
 
 
 def format_lesson(lesson: Lesson) -> str:
-    formatted_lesson = html.link(
-        f"{lesson.number}. ",
-        "https://ygk.edu.yar.ru"
-    )
+    formatted_lesson = html.link(f"{lesson.number}. ", "https://ygk.edu.yar.ru")
 
     if lesson.time is not None:
         formatted_lesson += html.italic(lesson.time)
 
     formatted_lesson += f"{lesson.subject}"
 
-    if lesson.classroom != '':
+    if lesson.classroom != "":
         classroom = html.bold(lesson.classroom)
         formatted_lesson += f" [{classroom}]"
 
@@ -74,7 +65,7 @@ def format_lesson(lesson: Lesson) -> str:
 def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
     result_lessons: list[str] = []
 
-    lines = schedule.split('\n')
+    lines = schedule.split("\n")
     lessons = lines[skip_lines:]
     for lesson in lessons:
         if not lesson:
@@ -92,7 +83,7 @@ def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
         result_lessons.append(result_lesson)
 
     header_schedule = lines[0]
-    result_lessons_str = '\n'.join(result_lessons)
+    result_lessons_str = "\n".join(result_lessons)
 
     return f"{header_schedule}\n{result_lessons_str}"
 

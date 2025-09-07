@@ -14,9 +14,7 @@ def get_default_lessons(data_lessons: str) -> list[Lesson]:
 
     default_schedule = []
     for default_lesson in default_lessons:
-        default_schedule.append(
-            Lesson.from_dict(default_lesson)
-        )
+        default_schedule.append(Lesson.from_dict(default_lesson))
 
     return default_schedule
 

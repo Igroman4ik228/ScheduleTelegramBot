@@ -1,9 +1,11 @@
 from database.redis.base import BaseCache
 
+
 class ServiceCache(BaseCache):
     """
     Cache System for any service
     """
+
     def __init__(self, current_service: object):
         """
         args:
@@ -18,7 +20,9 @@ class ServiceCache(BaseCache):
         in redis cache under the key "{service.__class__.__name__}".
         """
         await super().hcreate(self.cache_name, target, data)
-        self.logger.info(f"Create record for {self.cache_name} with data: {target} - {data}")
+        self.logger.info(
+            f"Create record for {self.cache_name} with data: {target} - {data}"
+        )
 
     async def get(self, target: int):
         """
@@ -31,7 +35,7 @@ class ServiceCache(BaseCache):
 
         # convert
         try:
-            data = data.decode('utf-8')
+            data = data.decode("utf-8")
         except (ValueError, IndexError):
             return None
 

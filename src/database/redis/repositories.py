@@ -10,8 +10,9 @@ def build_key_from_repo(instance: Any, *args: tuple, **kwargs: dict) -> str:
     """Генерация ключа на основе модели и аргументов репозитория."""
     repo_name = instance.__class__.__name__
     args_str = ":".join(map(str, args))
-    kwargs_str = ":".join(f"{key}={value}" for key,
-                          value in sorted(kwargs.items()))
+    kwargs_str = ":".join(
+        f"{key}={value}" for key, value in sorted(kwargs.items())
+    )
     return f"{repo_name}:{args_str}:{kwargs_str}"
 
 
@@ -19,7 +20,7 @@ async def set_redis_value(
     key: bytes | str,
     value: bytes | str,
     ttl: int | timedelta | None = None,
-    is_transaction: bool = False
+    is_transaction: bool = False,
 ):
     """Сохранение значения в Redis с возможностью задания TTL."""
     async with redis_client.pipeline(transaction=is_transaction) as pipeline:
@@ -34,7 +35,7 @@ def cached(
     namespace: str = "repo_cache",
     key_builder: Callable[..., str] = build_key_from_repo,
     serializer: AbstractSerializer | None = None,
-    cache=redis_client
+    cache=redis_client,
 ) -> Callable:
     """Декоратор для кэширования результатов методов репозиториев."""
     if serializer is None:

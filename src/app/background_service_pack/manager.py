@@ -21,8 +21,11 @@ class BackgroundManager:
 
         :param service_class: Class of service for pause.
         """
-        tasks = (service.pause()
-                 for service in self.services if isinstance(service, service_class))
+        tasks = (
+            service.pause()
+            for service in self.services
+            if isinstance(service, service_class)
+        )
         await asyncio.gather(*tasks)
 
     async def active_service_by_class(self, service_class: type):
@@ -31,6 +34,9 @@ class BackgroundManager:
 
         :param service_class: Class of service for actice.
         """
-        tasks = (service.active()
-                 for service in self.services if isinstance(service, service_class))
+        tasks = (
+            service.active()
+            for service in self.services
+            if isinstance(service, service_class)
+        )
         await asyncio.gather(*tasks)

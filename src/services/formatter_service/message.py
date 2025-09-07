@@ -4,7 +4,9 @@ from services.formatter_service.schedule import format_header, format_lesson
 from utils.constants import DAY_NAMES
 
 
-def format_default_schedules(default_schedules: list[DefaultScheduleModel], shift: int) -> str:
+def format_default_schedules(
+    default_schedules: list[DefaultScheduleModel], shift: int
+) -> str:
     formatted_default_schedules = ""
     for weekday, schedule in enumerate(default_schedules):
         if weekday > len(DAY_NAMES) - 1:
@@ -23,7 +25,9 @@ def format_default_schedules(default_schedules: list[DefaultScheduleModel], shif
 
 def format_default_schedule(default_schedule: DefaultScheduleModel) -> str:
     formatted_default_schedule = ""
-    for default_lesson in generate_default_schedule(default_schedule.data_lessons):
+    for default_lesson in generate_default_schedule(
+        default_schedule.data_lessons
+    ):
         formatted_default_schedule += format_lesson(default_lesson)
 
     return formatted_default_schedule

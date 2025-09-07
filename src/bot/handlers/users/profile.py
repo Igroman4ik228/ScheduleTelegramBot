@@ -17,30 +17,31 @@ TITLE = "Профиль @{user_name}"
 
 
 @router.message(F.text.lower().contains("профиль"))
-async def handle_profile(message: Message, bot: Bot,
-                         user: UserModel, repository: Repository):
+async def handle_profile(
+    message: Message, bot: Bot, user: UserModel, repository: Repository
+):
     title = html.blockquote(TITLE.format(user_name=user.user_name))
 
     group: GroupModel = user.group
     department = await repository.departments.get(group.department_id)
     subscribe: SubscribeModel = user.subscribe
     info_text = ProfileView.format_info(
-        department.name,
-        group.name,
-        subscribe.name,
-        user.subscribe_end_time
+        department.name, group.name, subscribe.name, user.subscribe_end_time
     )
 
     user_locks.setdefault(message.from_user.id, asyncio.Lock())
     async with user_locks[message.from_user.id]:
-        await delete_profile_messages(bot, message.from_user.id, message.chat.id)
+        await delete_profile_messages(
+            bot, message.from_user.id, message.chat.id
+        )
 
-        sent_message = await message.answer(title + info_text,
-                                            reply_markup=get_profile_kb())
+        sent_message = await message.answer(
+            title + info_text, reply_markup=get_profile_kb()
+        )
 
-        await ProfileCache().create(message.from_user.id,
-                                    sent_message.message_id,
-                                    message.message_id)
+        await ProfileCache().create(
+            message.from_user.id, sent_message.message_id, message.message_id
+        )
 
 
 async def delete_profile_messages(bot: Bot, user_id: int, chat_id: int):
@@ -48,7 +49,9 @@ async def delete_profile_messages(bot: Bot, user_id: int, chat_id: int):
     if profile_ids is not None:
         setting_message_id, user_settings_message_id = profile_ids
         try:
-            await asyncio.gather(bot.delete_message(chat_id, user_settings_message_id),
-                                 bot.delete_message(chat_id, setting_message_id))
+            await asyncio.gather(
+                bot.delete_message(chat_id, user_settings_message_id),
+                bot.delete_message(chat_id, setting_message_id),
+            )
         except TelegramBadRequest:
             pass

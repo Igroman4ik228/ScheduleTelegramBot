@@ -8,8 +8,9 @@ def get_group_kb(groups: list[GroupModel]) -> InlineKeyboardMarkup:
     group_builder = InlineKeyboardBuilder()
     for group in groups:
         group_builder.add(
-            InlineKeyboardButton(text=group.name,
-                                 callback_data=f"Group:{group.name}")
+            InlineKeyboardButton(
+                text=group.name, callback_data=f"Group:{group.name}"
+            )
         )
 
     return group_builder.as_markup()

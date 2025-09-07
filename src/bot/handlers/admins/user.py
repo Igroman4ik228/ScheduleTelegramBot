@@ -7,11 +7,17 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 from bot.keyboards.admins.inline.user.group_list_users_kb import (
-    GroupCallbackFactory, get_group_kb)
+    GroupCallbackFactory,
+    get_group_kb,
+)
 from bot.keyboards.admins.inline.user.pagination_user_kb import (
-    PaginationUsersCallbackFactory, get_pagination_user_kb)
+    PaginationUsersCallbackFactory,
+    get_pagination_user_kb,
+)
 from bot.keyboards.admins.inline.user.subscribe_list_users_kb import (
-    SubscribeCallbackFactory, get_subscribe_list_kb)
+    SubscribeCallbackFactory,
+    get_subscribe_list_kb,
+)
 from bot.keyboards.admins.inline.user.user_kb import get_user_kb
 from bot.views.user import UserView
 from database.repository import Repository
@@ -37,13 +43,16 @@ TITLE = "Панель управления пользователями"
 
 @router.callback_query(F.data == CallbackDataAdmin.USER.value)
 async def handle_user(callback_query: CallbackQuery):
-    await callback_query.message.edit_text(html.blockquote(TITLE),
-                                           reply_markup=get_user_kb())
+    await callback_query.message.edit_text(
+        html.blockquote(TITLE), reply_markup=get_user_kb()
+    )
 
 
 # *List users
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
-async def handle_list_users(callback_query: CallbackQuery, repository: Repository):
+async def handle_list_users(
+    callback_query: CallbackQuery, repository: Repository
+):
     groups = await repository.groups.get_all()
     users = await repository.users.get_all()
 
@@ -55,10 +64,9 @@ async def handle_list_users(callback_query: CallbackQuery, repository: Repositor
         if user.group_id is None:
             show_no_group = True
             break
-    await callback_query.message.answer(title + text,
-                                        reply_markup=get_group_kb(
-                                            groups, show_no_group
-                                        ))
+    await callback_query.message.answer(
+        title + text, reply_markup=get_group_kb(groups, show_no_group)
+    )
 
 
 @router.callback_query(GroupCallbackFactory.filter())
@@ -66,13 +74,15 @@ async def handle_group_list_users(
     callback_query: CallbackQuery,
     callback_data: GroupCallbackFactory,
     repository: Repository,
-    state: FSMContext
+    state: FSMContext,
 ):
     group_id = callback_data.group_id
     users = await repository.users.get_all(group_id=group_id)
 
     if users == []:
-        await callback_query.message.edit_text("Пользователей в данной группе нет")
+        await callback_query.message.edit_text(
+            "Пользователей в данной группе нет"
+        )
         return
 
     title = get_title_list_users(len(users))
@@ -83,19 +93,19 @@ async def handle_group_list_users(
     await state.update_data({f"texts_{group_id}": texts})
     total_pages = len(texts)
 
-    await callback_query.message.edit_text(texts[0],
-                                           reply_markup=get_pagination_user_kb(
-                                               total_pages=total_pages,
-                                               current_page=1,
-                                               group_id=group_id)
-                                           )
+    await callback_query.message.edit_text(
+        texts[0],
+        reply_markup=get_pagination_user_kb(
+            total_pages=total_pages, current_page=1, group_id=group_id
+        ),
+    )
 
 
 @router.callback_query(PaginationUsersCallbackFactory.filter())
 async def handle_users_page(
     callback_query: CallbackQuery,
     callback_data: PaginationUsersCallbackFactory,
-    state: FSMContext
+    state: FSMContext,
 ):
     group_id = callback_data.group_id
     data = await state.get_data()
@@ -111,12 +121,14 @@ async def handle_users_page(
 
     await state.update_data(current_page=current_page)
 
-    await callback_query.message.edit_text(texts[current_page - 1],
-                                           reply_markup=get_pagination_user_kb(
-                                               total_pages=total_pages,
-                                               current_page=current_page,
-                                               group_id=group_id)
-                                           )
+    await callback_query.message.edit_text(
+        texts[current_page - 1],
+        reply_markup=get_pagination_user_kb(
+            total_pages=total_pages,
+            current_page=current_page,
+            group_id=group_id,
+        ),
+    )
 
 
 def get_title_list_users(users_count: int) -> str:
@@ -124,34 +136,29 @@ def get_title_list_users(users_count: int) -> str:
 
 
 # *Ban/Unban user
-@router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.BAN_UNBAN.value)
+@router.callback_query(
+    StateFilter(None), F.data == CallbackDataAdmin.BAN_UNBAN.value
+)
 async def handle_request_ban_unban(
-    callback_query: CallbackQuery,
-    state: FSMContext
+    callback_query: CallbackQuery, state: FSMContext
 ):
     await callback_query.message.edit_text(
         "Введите телеграм ID пользователя, которого хотите забанить/разбанить\n"
         "Для отмены введите 'отмена'",
-        reply_markup=None
+        reply_markup=None,
     )
     await state.set_state(BanUnbanStates.tg_user_id)
 
 
 @router.message(BanUnbanStates.tg_user_id, F.text.lower().contains("отмена"))
-async def handle_cancel_ban_unban(
-    message: Message,
-    state: FSMContext
-):
+async def handle_cancel_ban_unban(message: Message, state: FSMContext):
     await message.answer(html.bold("Действие отменено!"))
     await state.clear()
 
 
 @router.message(BanUnbanStates.tg_user_id, F.text.isdigit())
 async def handle_ban_unban(
-    message: Message,
-    repository: Repository,
-    bot: Bot,
-    state: FSMContext
+    message: Message, repository: Repository, bot: Bot, state: FSMContext
 ):
     user_input = message.text
     await state.update_data(tg_user_id=user_input)
@@ -167,7 +174,9 @@ async def handle_ban_unban(
     await ban_unban_notify(user.is_ban, user.telegram_id, bot)
 
     ban_text = "забанен" if user.is_ban else "разбанен"
-    await message.answer(html.bold(f"Пользователь успешно {ban_text} и уведомлен об этом"))
+    await message.answer(
+        html.bold(f"Пользователь успешно {ban_text} и уведомлен об этом")
+    )
 
     await state.clear()
 
@@ -184,37 +193,39 @@ async def ban_unban_notify(is_ban: bool, tg_id: int, bot: Bot):
 async def handle_ban_unban_not_digit(
     message: Message,
 ):
-    await message.answer(html.bold("Телеграм ID пользователя должен быть числом"))
+    await message.answer(
+        html.bold("Телеграм ID пользователя должен быть числом")
+    )
 
 
 class BanMessage(Enum):
-    BAN = f"{html.bold("Вы были забанены администратором")}\n" + \
-        f"{html.italic("Для разбана обратитесь к разработчикам\n")}" + \
-        f"{html.italic("Контакты указаны в описании бота")}"
-    UNBAN = f"{html.bold("Вы были разбанены администратором")}\n" + \
-        f"{html.italic("Поздравляем")}"
+    BAN = (
+        f"{html.bold('Вы были забанены администратором')}\n"
+        + f"{html.italic('Для разбана обратитесь к разработчикам\n')}"
+        + f"{html.italic('Контакты указаны в описании бота')}"
+    )
+    UNBAN = (
+        f"{html.bold('Вы были разбанены администратором')}\n"
+        + f"{html.italic('Поздравляем')}"
+    )
 
 
 # *Give subscribe
-@router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.GIVE_SUBSCRIPTION.value)
+@router.callback_query(
+    StateFilter(None), F.data == CallbackDataAdmin.GIVE_SUBSCRIPTION.value
+)
 async def handle_request_give_subscribe(
-    callback_query: CallbackQuery,
-    state: FSMContext,
-    repository: Repository
+    callback_query: CallbackQuery, state: FSMContext, repository: Repository
 ):
     subscribes = await repository.subscribes.get_all()
     await callback_query.message.edit_text(
-        "Доступные подписки: ",
-        reply_markup=get_subscribe_list_kb(subscribes)
+        "Доступные подписки: ", reply_markup=get_subscribe_list_kb(subscribes)
     )
     await state.set_state(SubscribeStates.tg_user_id)
 
 
 @router.message(SubscribeStates.tg_user_id, F.text.lower().contains("отмена"))
-async def handle_cancel_give_subscribe(
-    message: Message,
-    state: FSMContext
-):
+async def handle_cancel_give_subscribe(message: Message, state: FSMContext):
     await message.answer(html.bold("Действие отменено!"))
     await state.clear()
 
@@ -223,24 +234,21 @@ async def handle_cancel_give_subscribe(
 async def handle_subscribe(
     callback_query: CallbackQuery,
     callback_data: SubscribeCallbackFactory,
-    state: FSMContext
+    state: FSMContext,
 ):
     await state.update_data(subscribe_id=callback_data.subscribe_id)
 
     await callback_query.message.edit_text(
         "Введите tg_id пользователя, которому хотите выдать подписку\n"
         "Для отмены введите 'отмена'",
-        reply_markup=None
+        reply_markup=None,
     )
     await state.set_state(SubscribeStates.tg_user_id)
 
 
 @router.message(SubscribeStates.tg_user_id, F.text.isdigit())
 async def handle_give_subscribe(
-    message: Message,
-    repository: Repository,
-    bot: Bot,
-    state: FSMContext
+    message: Message, repository: Repository, bot: Bot, state: FSMContext
 ):
     tg_user_id = message.text
     data = await state.get_data()
@@ -254,9 +262,7 @@ async def handle_give_subscribe(
     subscribe = await repository.subscribes.get(subscribe_id)
 
     await repository.users.update_subscribe(
-        user,
-        subscribe_id,
-        calc_subscribe_end_time(subscribe.duration_days)
+        user, subscribe_id, calc_subscribe_end_time(subscribe.duration_days)
     )
     await message.answer(f"{subscribe.name} успешно выдана пользователю")
 
@@ -275,4 +281,6 @@ async def give_subscribe_notify(tg_id: int, subscribe_name: str, bot: Bot):
 async def handle_give_subscribe_not_digit(
     message: Message,
 ):
-    await message.answer(html.bold("Телеграм ID пользователя должен быть числом"))
+    await message.answer(
+        html.bold("Телеграм ID пользователя должен быть числом")
+    )

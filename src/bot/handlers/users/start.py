@@ -33,7 +33,9 @@ MAX_FULLNAME_LENGTH = 100
 
 @router.message(CommandStart())
 async def handle_start(message: Message, repository: Repository):
-    user_full_name = quote_html(message.from_user.full_name[:MAX_FULLNAME_LENGTH])
+    user_full_name = quote_html(
+        message.from_user.full_name[:MAX_FULLNAME_LENGTH]
+    )
     welcome_message = WELCOME_TEXT.format(user_name=user_full_name)
 
     argument = find_command_argument(message.text)

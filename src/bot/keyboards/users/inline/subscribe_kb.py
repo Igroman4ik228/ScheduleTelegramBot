@@ -9,8 +9,10 @@ def get_subscribe_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
     subscribe_builder = InlineKeyboardBuilder()
 
     subscribe_builder.row(
-        InlineKeyboardButton(text="Реферальная система",
-                             callback_data=CallbackData.REFERRAL.value)
+        InlineKeyboardButton(
+            text="Реферальная система",
+            callback_data=CallbackData.REFERRAL.value,
+        )
     )
 
     for subscribe in subscribes:
@@ -18,9 +20,11 @@ def get_subscribe_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
             continue
 
         subscribe_builder.row(
-            InlineKeyboardButton(text=f"Подписаться на {subscribe.duration_days} "
-                                 f"дней за {subscribe.price}₽",
-                                 callback_data=f"Subscribe:{subscribe.id}")
+            InlineKeyboardButton(
+                text=f"Подписаться на {subscribe.duration_days} "
+                f"дней за {subscribe.price}₽",
+                callback_data=f"Subscribe:{subscribe.id}",
+            )
         )
 
     return subscribe_builder.as_markup()
