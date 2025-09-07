@@ -101,23 +101,23 @@
     ],
     "4": [
       {
-        "number": "3",
-        "time": null,
-        "subject": "МДК 05.03 Тестирование ИС Королева П.Д.",
-        "classroom": "Б305",
-        "is_replacement": false
-      },
-      {
         "number": "4",
         "time": null,
-        "subject": "УП 05 Учебная практика Вакансия",
+        "subject": "МДК 05.03 Тестирование ИС Королева П.Д. Вакансия",
         "classroom": "Б305",
         "is_replacement": false
       },
       {
         "number": "5",
         "time": null,
-        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС КП Неделяева Н.А. Королева П.Д.",
         "classroom": "Б305 Б302",
         "is_replacement": false
       }
@@ -133,14 +133,14 @@
       {
         "number": "3",
         "time": null,
-        "subject": "МДК 03.02 Управление проектами Юров А.А.",
+        "subject": "МДК 03.02 Управление проектами Байдина Ю.А.",
         "classroom": "А304",
         "is_replacement": false
       },
       {
         "number": "4",
         "time": null,
-        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "subject": "МДК 05.02 Разработка кода ИС Королева П.Д. Неделяева Н.А.",
         "classroom": "Б407 Б302",
         "is_replacement": false
       },
@@ -248,13 +248,6 @@
     ],
     "4": [
       {
-        "number": "3",
-        "time": null,
-        "subject": "УП 05 Учебная практика Вакансия",
-        "classroom": "Б305",
-        "is_replacement": false
-      },
-      {
         "number": "4",
         "time": null,
         "subject": "УП 05 Учебная практика Вакансия",
@@ -264,7 +257,14 @@
       {
         "number": "5",
         "time": null,
-        "subject": "МДК 05.02 Разработка кода ИС Неделяева Н.А. Королева П.Д.",
+        "subject": "УП 05 Учебная практика Вакансия",
+        "classroom": "Б305",
+        "is_replacement": false
+      },
+      {
+        "number": "6",
+        "time": null,
+        "subject": "МДК 05.02 Разработка кода ИС КП Неделяева Н.А. Королева П.Д.",
         "classroom": "Б305 Б302",
         "is_replacement": false
       }
