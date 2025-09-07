@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import suppress
 
 from aiogram import Bot, F, Router, html
 from aiogram.exceptions import TelegramBadRequest
@@ -48,10 +49,8 @@ async def delete_profile_messages(bot: Bot, user_id: int, chat_id: int):
     profile_ids = await ProfileCache().get(user_id)
     if profile_ids is not None:
         setting_message_id, user_settings_message_id = profile_ids
-        try:
+        with suppress(TelegramBadRequest):
             await asyncio.gather(
                 bot.delete_message(chat_id, user_settings_message_id),
                 bot.delete_message(chat_id, setting_message_id),
             )
-        except TelegramBadRequest:
-            pass

@@ -1,5 +1,6 @@
 import asyncio
 import signal
+from contextlib import suppress
 
 from injector import Injector
 
@@ -38,21 +39,17 @@ async def main():
     injector = Injector(AppModule())
     stop_event = asyncio.Event()
     loop = asyncio.get_running_loop()
-    # For linux
-    try:
+    # For Linux
+    with suppress(NotImplementedError):
         for s in (signal.SIGINT, signal.SIGTERM):
             loop.add_signal_handler(s, stop_event.set)
-    except NotImplementedError:
-        pass
 
     async with App(injector) as app:
         start_task = asyncio.create_task(app.start())
         await stop_event.wait()
         start_task.cancel()
-        try:
+        with suppress(asyncio.CancelledError):
             await start_task
-        except asyncio.CancelledError:
-            pass
 
 
 if __name__ == "__main__":
