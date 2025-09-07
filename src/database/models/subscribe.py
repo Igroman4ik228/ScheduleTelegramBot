@@ -20,4 +20,4 @@ class SubscribeModel(Base):
     can_referral: Mapped[BoolTrue]
     discount: Mapped[int | None]  # in percent
 
-    users: Mapped[list["UserModel"]] = relationship(back_populates="subscribe")
+    users: Mapped[list[UserModel]] = relationship(back_populates="subscribe")
