@@ -8,10 +8,11 @@ from aiogram import html
 
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
-from database.db import with_session
+from database.cache.repositories import CacheRepositoryService
+from database.db import IDatabase, with_session
 from database.models import UserModel
 from database.models.groups import GroupModel
-from database.repository import Repository
+from database.repository import CachedRepository
 from services.formatter_service.schedule import add_time_to_schedule
 from services.sender_service.sender import SenderService
 from utils.constants import SENDER_TIME_SLEEP
@@ -21,9 +22,16 @@ if TYPE_CHECKING:
 
 
 class NotifyService(Observer):
-    def __init__(self, sender: SenderService):
+    def __init__(
+        self,
+        db: IDatabase,
+        sender: SenderService,
+        cache_service: CacheRepositoryService,
+    ):
         self.logger = getLogger(self.__class__.__name__)
+        self.db = db
         self.sender = sender
+        self.cache_service = cache_service
         self.parser_factory: ParserFactory | None = None
 
     def set_parser_factory(self, parser_factory: ParserFactory):
@@ -37,8 +45,8 @@ class NotifyService(Observer):
 
         number_parser = args[0]
 
-        repo = Repository(session)
-        users = await repo.users.get_all("group")
+        repository = CachedRepository(session, self.cache_service)
+        users = await repository.users.get_all("group")
         for user in users:
             if not self.need_notify(user):
                 continue
@@ -51,7 +59,7 @@ class NotifyService(Observer):
             week = self.parser_factory.get_week(group.global_shift)
 
             formatted_schedule = await get_schedule(
-                user.group_id, repo, week.weekday, week.shift
+                user.group_id, repository, week.weekday, week.shift
             )
 
             formatted_schedule = add_time_to_schedule(formatted_schedule)

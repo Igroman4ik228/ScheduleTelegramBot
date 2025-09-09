@@ -1,18 +1,34 @@
 from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.redis import RedisStorage
 
 from app.factory_pack.parser_factory import ParserFactory
 from bot.handlers import register_routers
 from bot.middlewares import register_middlewares
-from utils.config import settings
+from database.cache.profile_cache import ProfileCache
+from database.cache.repositories import CacheRepositoryService
+from database.db import IDatabase
+from services.sender_service.sender import SenderService
+from utils.config import Settings
 
 
 class BotManager:
-    def __init__(self, bot: Bot, parser_factory: ParserFactory):
+    def __init__(
+        self,
+        bot: Bot,
+        dp: Dispatcher,
+        settings: Settings,
+        db: IDatabase,
+        sender_service: SenderService,
+        profile_cache: ProfileCache,
+        cache_service: CacheRepositoryService,
+        parser_factory: ParserFactory,
+    ):
         self.bot = bot
-        self.dp = Dispatcher(
-            storage=RedisStorage.from_url(url=settings.redis.url(db=1))
-        )
+        self.dp = dp
+        self.settings = settings
+        self.db = db
+        self.sender_service = sender_service
+        self.profile_cache = profile_cache
+        self.cache_service = cache_service
         self.parser_factory = parser_factory
 
     async def start(self):
@@ -26,6 +42,11 @@ class BotManager:
         )
 
     def _on_startup(self):
+        self.dp["settings"] = self.settings
+        self.dp["db"] = self.db
+        self.dp["sender_service"] = self.sender_service
+        self.dp["profile_cache"] = self.profile_cache
+        self.dp["cache_service"] = self.cache_service
         self.dp["parser_factory"] = self.parser_factory
 
         register_middlewares(self.dp)

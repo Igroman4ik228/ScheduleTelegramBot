@@ -8,7 +8,7 @@ from bot.keyboards.users.inline.setting_kb import (
 )
 from bot.views.profile import ProfileView
 from database.models import GroupModel, SubscribeModel, UserModel
-from database.repository import Repository
+from database.repository import CachedRepository
 from utils.constants import CallbackData
 
 router = Router(name=__name__)
@@ -18,7 +18,7 @@ TITLE = "Настройки профиля"
 
 @router.callback_query(F.data == CallbackData.SETTING.value)
 async def handle_setting(
-    callback_query: CallbackQuery, user: UserModel, repository: Repository
+    callback_query: CallbackQuery, user: UserModel, repository: CachedRepository
 ):
     title = html.blockquote(TITLE)
 
@@ -36,7 +36,7 @@ async def handle_setting(
 
 @router.callback_query(F.data == CallbackData.TOGGLE_NOTIFICATION.value)
 async def handle_notification(
-    callback_query: CallbackQuery, user: UserModel, repository: Repository
+    callback_query: CallbackQuery, user: UserModel, repository: CachedRepository
 ):
     user.is_notify = not user.is_notify
     await repository.users.update(user)
@@ -49,7 +49,7 @@ async def handle_notification(
 
 @router.callback_query(F.data == CallbackData.TOGGLE_TIME_DISPLAY.value)
 async def handle_time_display(
-    callback_query: CallbackQuery, user: UserModel, repository: Repository
+    callback_query: CallbackQuery, user: UserModel, repository: CachedRepository
 ):
     user.is_time_shown = not user.is_time_shown
     await repository.users.update(user)

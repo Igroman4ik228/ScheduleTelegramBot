@@ -1,8 +1,6 @@
 from enum import Enum
 
 from app.background_service_pack.models import BackgroundService
-from database.db import db_helper
-from database.repository import Repository
 from services.sender_service.sender import SenderService
 
 
@@ -67,14 +65,15 @@ class SubCheckerService(BackgroundService):
         #     await self._service_cache.create(user.telegram_id, "true")
 
     async def _del_sub(self, user_tg_id):
-        async with db_helper.get_session() as session:
-            repo = Repository(session)
-            user = await repo.users.get(user_tg_id)
+        pass
+        # async with db_helper.get_session() as session:
+        #     repo = Repository(session)
+        #     user = await repo.users.get(user_tg_id)
 
-            user.subscribe_end_time = None
-            user.subscribe_id = None
+        #     user.subscribe_end_time = None
+        #     user.subscribe_id = None
 
-            await repo.users.update(user)
+        #     await repo.users.update(user)
 
     async def active(self):
         self.logger.info("SubCheckerService active")

@@ -6,10 +6,10 @@ from aiogram import BaseMiddleware
 from aiogram.types import Update
 from aiogram.types.user import User
 
+from database.cache.repositories import clear_cache
 from database.models import SubscribeModel, UserModel
-from database.redis.repositories import clear_cache
 from database.repositories import UserRepository
-from database.repository import Repository
+from database.repository import CachedRepository
 from helpers.text import quote_html_range
 
 
@@ -23,7 +23,7 @@ class AuthMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
-        repository: Repository = data["repository"]
+        repository: CachedRepository = data["repository"]
         tg_user: User = data["event_from_user"]
 
         existing_user = await self._get_user(tg_user.id, repository.users)

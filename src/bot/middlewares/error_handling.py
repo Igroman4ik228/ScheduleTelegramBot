@@ -1,7 +1,7 @@
 from logging import getLogger
 from typing import Any, Awaitable, Callable, Dict
 
-from aiogram import BaseMiddleware, Bot
+from aiogram import BaseMiddleware
 from aiogram.exceptions import (
     RestartingTelegram,
     TelegramAPIError,
@@ -11,12 +11,12 @@ from aiogram.exceptions import (
 from aiogram.types import Update
 
 from services.sender_service.sender import SenderService
-from utils.config import settings
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
-    def __init__(self):
+    def __init__(self, admin_ids: int):
         self.logger = getLogger(self.__class__.__name__)
+        self.admin_ids = admin_ids
 
     async def __call__(
         self,
@@ -25,8 +25,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         user = data["event_from_user"]
-        bot: Bot = data["bot"]
-        sender = SenderService(bot)
+        sender: SenderService = data["sender_service"]
 
         try:
             return await handler(event, data)
@@ -34,7 +33,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             self.logger.error(f"Неверный запрос: {e}", exc_info=True)
             await self._send_bad_request_message(user.id, sender)
         except RestartingTelegram as e:
-            self.logger.error(f"Telegram перезагружается: {e}")
+            self.logger.error(f"Telegram перезагружается: {e}", exc_info=True)
             await self._send_message_to_admins(
                 "Telegram перезагружается", sender
             )
@@ -45,7 +44,9 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, sender)
         except AttributeError as e:
-            self.logger.warning(f"Сайт ЯГК с заменами не работает: {e}")
+            self.logger.warning(
+                f"Сайт ЯГК с заменами не работает: {e}", exc_info=True
+            )
             await self._send_ygk_error_message(user.id, sender)
         except Exception as e:
             self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
@@ -77,5 +78,5 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         await sender.safe_send_message(chat_id, text)
 
     async def _send_message_to_admins(self, text: str, sender: SenderService):
-        for admin_id in settings.bot.admin_ids:
+        for admin_id in self.admin_ids:
             await sender.safe_send_message(admin_id, text)

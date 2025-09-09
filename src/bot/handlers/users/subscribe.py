@@ -15,7 +15,7 @@ from bot.keyboards.users.inline.payment_kb import get_payment_kb
 from bot.keyboards.users.inline.subscribe_kb import get_subscribe_kb
 from database.models import UserModel
 from database.repository import Repository
-from utils.config import settings
+from utils.config import Settings
 from utils.constants import CallbackData
 
 router = Router(name=__name__)
@@ -55,7 +55,10 @@ async def handle_choose_subscribe(
 
 @router.callback_query(F.data.startswith("Payment:telegram:"))
 async def handle_payment_telegram(
-    callback_query: CallbackQuery, bot: Bot, repository: Repository
+    callback_query: CallbackQuery,
+    bot: Bot,
+    repository: Repository,
+    settings: Settings,
 ):
     subscribe_id = callback_query.data.split(":")[2]
     subscribe = await repository.subscribes.get(subscribe_id)

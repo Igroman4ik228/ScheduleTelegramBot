@@ -3,16 +3,21 @@ from logging import getLogger
 
 from aiogram import Bot
 
-from database.db import with_session
+from database.cache.repositories import CacheRepositoryService
+from database.db import IDatabase, with_session
 from database.models import UserModel
-from database.repository import Repository
+from database.repository import CachedRepository
 from utils.constants import SENDER_TIME_SLEEP
 
 
 class SenderService:
-    def __init__(self, bot: Bot):
+    def __init__(
+        self, db: IDatabase, bot: Bot, cache_service: CacheRepositoryService
+    ):
         self.logger = getLogger(self.__class__.__name__)
+        self.db = db
         self.bot = bot
+        self.cache_service = cache_service
 
     async def safe_send_range(self, tg_ids: list[int], message: str):
         self.logger.info(f"Start range send with message: {message}")
@@ -23,9 +28,11 @@ class SenderService:
 
     @with_session
     async def safe_send_message(self, tg_id: int, message: str, session=None):
-        user = await Repository(session).users.get(tg_id)
+        user = await CachedRepository(session, self.cache_service).users.get(
+            tg_id
+        )
 
-        if await self.is_valid_user(user):
+        if self.is_valid_user(user):
             try:
                 await self.bot.send_message(tg_id, message)
             except Exception as e:
@@ -35,7 +42,7 @@ class SenderService:
                 f"Dont send message to {user}because user is banned or bot"
             )
 
-    async def is_valid_user(self, user: UserModel | None) -> bool:
+    def is_valid_user(self, user: UserModel | None) -> bool:
         if user is None:
             return False
 

@@ -1,7 +1,7 @@
-from database.redis.base import BaseCache
+from database.cache.base import BaseRedis
 
 
-class ServiceCache(BaseCache):
+class ServiceCache(BaseRedis):
     """
     Cache System for any service
     """

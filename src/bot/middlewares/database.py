@@ -3,8 +3,9 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import Update
 
-from database.db import db_helper
-from database.repository import Repository
+from database.cache.repositories import CacheRepositoryService
+from database.db import IDatabase
+from database.repository import CachedRepository
 
 
 class DatabaseMiddleware(BaseMiddleware):
@@ -14,6 +15,8 @@ class DatabaseMiddleware(BaseMiddleware):
         event: Update,
         data: dict[str, Any],
     ) -> Any:
-        async with db_helper.get_session() as session:
-            data["repository"] = Repository(session)
+        db: IDatabase = data["db"]
+        cache_service: CacheRepositoryService = data["cache_service"]
+        async with db.get_session() as session:
+            data["repository"] = CachedRepository(session, cache_service)
             return await handler(event, data)

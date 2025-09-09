@@ -73,7 +73,7 @@ class BaseRepositoryAlchemy[T]:
             return False
         except Exception as e:
             await self.session.rollback()
-            raise f"Ошибка в репозиториях: {e}"
+            raise f"Неизвестная ошибка в репозиториях: {e}"
         return True
 
     def _build_get_query(self, *options: str, **filters):

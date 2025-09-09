@@ -1,7 +1,12 @@
-from database.redis.base import BaseCache
+from redis.asyncio import Redis
+
+from database.cache.base import BaseRedis
 
 
-class ProfileCache(BaseCache):
+class ProfileCache(BaseRedis):
+    def __init__(self, redis: Redis):
+        super().__init__(redis)
+
     async def create(
         self, user_id: int, bot_message_id: int, user_message_id: int
     ):

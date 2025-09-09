@@ -3,18 +3,25 @@ from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.cache.repositories import (
+    CacheRepositoryService,
+    cached,
+    clear_cache,
+)
 from database.models import UserModel
-from database.redis.repositories import cached, clear_cache
 from database.repositories import GroupRepository
 from database.repositories.base import BaseRepositoryAlchemy
 from utils.constants import CacheTTL
 
 
 class UserRepository(BaseRepositoryAlchemy[UserModel]):
-    def __init__(self, session: AsyncSession):
+    def __init__(
+        self, session: AsyncSession, cache_service: CacheRepositoryService
+    ):
         self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, UserModel)
         self.group_repo = GroupRepository(session)
+        self.cache_service = cache_service
 
     async def create(
         self,
@@ -40,7 +47,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             **kwargs,
         )
 
-    @cached(ttl=CacheTTL.USER.value)
+    @cached(ttl_seconds=CacheTTL.USER.value)
     async def get(self, telegram_id: int, *options) -> UserModel | None:
         return await super().get(telegram_id=telegram_id, *options)
 

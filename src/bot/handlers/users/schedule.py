@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 from bot.keyboards.users.reply.main_kb import get_main_kb
 from database.models import DefaultScheduleModel, ResultScheduleModel, UserModel
-from database.repository import Repository
+from database.repository import CachedRepository, Repository
 from helpers.default_schedule_parser import generate_default_schedule
 from helpers.lesson import Lesson
 from services.formatter_service.schedule import (
@@ -98,7 +98,7 @@ async def handle_next_schedule(
 
 
 async def get_schedule(
-    group_id: int, repository: Repository, weekday: int, shift: int
+    group_id: int, repository: CachedRepository, weekday: int, shift: int
 ) -> str:
     result_schedule_data = await repository.result_schedule.get(
         weekday, group_id

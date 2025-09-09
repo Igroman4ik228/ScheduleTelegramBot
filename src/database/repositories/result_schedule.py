@@ -2,18 +2,25 @@ from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.cache.repositories import (
+    CacheRepositoryService,
+    cached,
+    clear_cache,
+)
 from database.models import ResultScheduleModel
-from database.redis.repositories import cached, clear_cache
 from database.repositories import GroupRepository
 from database.repositories.base import BaseRepositoryAlchemy
 from utils.constants import CacheTTL
 
 
 class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
-    def __init__(self, session: AsyncSession):
+    def __init__(
+        self, session: AsyncSession, cache_service: CacheRepositoryService
+    ):
         self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, ResultScheduleModel)
         self.group_repo = GroupRepository(session)
+        self.cache_service = cache_service
 
     async def create(
         self, weekday: int, data_lessons: str, group_id: str
@@ -34,13 +41,13 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
             weekday=weekday, data_lessons=data_lessons, group_id=group.id
         )
 
-    @cached(ttl=CacheTTL.RESULT_SCHEDULE.value)
+    @cached(ttl_seconds=CacheTTL.RESULT_SCHEDULE.value)
     async def get(
         self, weekday: int, group_id: int, *options
     ) -> ResultScheduleModel | None:
         return await super().get(weekday=weekday, group_id=group_id, *options)
 
-    @cached(ttl=CacheTTL.RESULT_SCHEDULE.value)
+    # No cache
     async def get_by_group_name(
         self, weekday: int, group_name: str, *options
     ) -> ResultScheduleModel | None:
@@ -70,5 +77,3 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
     async def _clear_result_schedule_cache(self, weekday: int, group_id: int):
         await clear_cache(self.get, self, weekday, group_id, "group")
         await clear_cache(self.get, self, weekday, group_id)
-        await clear_cache(self.get_by_group_name, self, "group")
-        await clear_cache(self.get_by_group_name, self)

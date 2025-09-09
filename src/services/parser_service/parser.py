@@ -1,12 +1,12 @@
 from app.background_service_pack.models import BackgroundService
 from app.observer_pack.models import Publisher
-from database.db import db_helper, with_session
-from database.repository import Repository
+from database.cache.repositories import CacheRepositoryService
+from database.db import IDatabase, with_session
+from database.repository import CachedRepository
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
 from services.parser_service.request import Request
-from services.sender_service.sender import SenderService
 from utils.constants import DEBUG
 
 
@@ -16,15 +16,21 @@ class ParserService(BackgroundService, Publisher):
         url: str,
         global_shift: int,
         time_span: int,
+        request: Request,
+        db: IDatabase,
+        cache_service: CacheRepositoryService,
         notify: NotifyService,
-        sender: SenderService,
     ):
         BackgroundService.__init__(self, time_span)
         Publisher.__init__(self)
 
-        self.request = Request(url, sender)
+        self.url = url
         self.global_shift = global_shift
+        self.request = request
+        self.db = db
+        self.cache_service = cache_service
         self.parser: HtmlParser | None = None
+
         self.attach(notify)
 
     async def do_work(self):
@@ -36,7 +42,7 @@ class ParserService(BackgroundService, Publisher):
         replacement_schedules = self.parser.extract_replacement_schedules()
 
         builder = Builder(
-            self.parser.week, self.global_shift, replacement_schedules
+            self.db, self.parser.week, self.global_shift, replacement_schedules
         )
         await builder.initialize()
         result_schedule = await builder.build()
@@ -67,13 +73,15 @@ class ParserService(BackgroundService, Publisher):
         if DEBUG:
             with open("test.html", "r", encoding="utf-8") as file:
                 return file.read()
-        return await self.request.fetch()
+        return await self.request.fetch(self.url)
 
     @with_session
     async def _save_schedule_to_db(
         self, result_schedule: dict[str, str], session=None
     ):
-        result_schedule_repo = Repository(session).result_schedule
+        result_schedule_repo = CachedRepository(
+            session, self.cache_service
+        ).result_schedule
 
         for group, schedule in result_schedule.items():
             await result_schedule_repo.delete_by_group_name(
@@ -87,16 +95,16 @@ class ParserService(BackgroundService, Publisher):
     async def _check_changed_schedule(
         self, group_name: str, current_result_schedule: str
     ) -> bool:
-        async with db_helper.get_session() as session:
-            repo = Repository(session)
-            group = await repo.groups.get_by_name(group_name)
+        async with self.db.get_session() as session:
+            repository = CachedRepository(session, self.cache_service)
+            group = await repository.groups.get_by_name(group_name)
             if group is None:
                 return False
 
             if group.global_shift != self.global_shift:
                 return False
 
-            result_schedule = await repo.result_schedule.get(
+            result_schedule = await repository.result_schedule.get(
                 self.parser.week.weekday, group.id
             )
 

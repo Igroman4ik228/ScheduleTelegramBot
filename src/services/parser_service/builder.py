@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import Dict, List
 
-from database.db import with_session
+from database.db import IDatabase, with_session
 from database.models import DefaultScheduleModel
 from database.repository import Repository
 from helpers.default_schedule_parser import get_default_lessons
@@ -117,9 +117,14 @@ class Builder:
     """Основной класс для построения расписания"""
 
     def __init__(
-        self, week: Week, global_shift, replacement_schedules: List[Schedule]
+        self,
+        db: IDatabase,
+        week: Week,
+        global_shift,
+        replacement_schedules: List[Schedule],
     ):
         self.logger = getLogger(self.__class__.__name__)
+        self.db = db
         self.week = week
         self.global_shift = global_shift
         self.replacement_schedules = replacement_schedules

@@ -150,5 +150,5 @@ class Settings(BaseSettings):
     logger: LoggerSettings = LoggerSettings()
 
 
+# Global object only for utils, helpers and libs(for example alembic)
 settings = Settings()
-settings.logger.configure()

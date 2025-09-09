@@ -1,4 +1,4 @@
-import asyncio
+from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from functools import wraps
 from typing import AsyncGenerator
@@ -10,10 +10,20 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from database.models.base import Base
-from utils.config import settings
 
 
-class DatabaseHelperAlchemy:
+class IDatabase(ABC):
+    @abstractmethod
+    async def get_session(self): ...
+
+    @abstractmethod
+    async def create_tables(self): ...
+
+    @abstractmethod
+    async def dispose(self): ...
+
+
+class DatabaseAlchemy(IDatabase):
     def __init__(
         self,
         url: str,
@@ -43,7 +53,7 @@ class DatabaseHelperAlchemy:
         async with self.sessionmaker() as session:
             yield session
 
-    async def create_tables(self) -> None:
+    async def create_tables(self):
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         await self.engine.dispose()
@@ -52,23 +62,11 @@ class DatabaseHelperAlchemy:
         await self.engine.dispose()
 
 
-db_helper = DatabaseHelperAlchemy(
-    url=settings.db.url,
-    echo=settings.db.echo,
-    pool_pre_ping=settings.db.pre_ping,
-    pool_size=settings.db.pool_size,
-    max_overflow=settings.db.max_overflow,
-)
-
-asyncio.run(db_helper.create_tables())
-
-
 def with_session(func):
     """
-    Декоратор для автоматического управления сессией базы данных.
-
-    Если сессия уже передана в аргументах - использует её.
-    Иначе создает новую сессию и передает её в декорируемую функцию.
+    Декоратор для автоматического управления сессией.
+    Если сессия уже передана — использует её.
+    Если это метод класса — ищет self.db.
     """
 
     @wraps(func)
@@ -79,8 +77,17 @@ def with_session(func):
         if any(isinstance(arg, AsyncSession) for arg in args):
             return await func(*args, **kwargs)
 
-        async with db_helper.get_session() as session:
-            is_method = args and hasattr(args[0], "__class__")
+        is_method = args and hasattr(args[0], "__class__")
+
+        if is_method:
+            db: IDatabase = getattr(args[0], "db", None)
+
+        if db is None:
+            raise RuntimeError(
+                "DB не найден. Передайте session или self.db должен быть определен."
+            )
+
+        async with db.get_session() as session:
             if is_method:
                 return await func(args[0], *args[1:], session=session, **kwargs)
             return await func(*args, session=session, **kwargs)

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from database.cache.repositories import CacheRepositoryService
 from database.repositories import (
     DefaultScheduleRepository,
     DepartmentRepository,
@@ -15,11 +16,9 @@ from database.repositories import (
 
 @dataclass
 class Repository:
-    session: AsyncSession
+    """Фабрика для репозиториев"""
 
-    @property
-    def users(self) -> UserRepository:
-        return UserRepository(self.session)
+    session: AsyncSession
 
     @property
     def groups(self) -> GroupRepository:
@@ -28,10 +27,6 @@ class Repository:
     @property
     def departments(self) -> DepartmentRepository:
         return DepartmentRepository(self.session)
-
-    @property
-    def result_schedule(self) -> ResultScheduleRepository:
-        return ResultScheduleRepository(self.session)
 
     @property
     def default_schedule(self) -> DefaultScheduleRepository:
@@ -44,3 +39,18 @@ class Repository:
     @property
     def referrals(self) -> ReferralRepository:
         return ReferralRepository(self.session)
+
+
+@dataclass
+class CachedRepository(Repository):
+    """Фабрика для репозиториев, включающая репозитории с кэшом"""
+
+    cache_service: CacheRepositoryService
+
+    @property
+    def users(self) -> UserRepository:
+        return UserRepository(self.session, self.cache_service)
+
+    @property
+    def result_schedule(self) -> ResultScheduleRepository:
+        return ResultScheduleRepository(self.session, self.cache_service)

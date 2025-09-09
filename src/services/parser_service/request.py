@@ -6,7 +6,6 @@ from logging import getLogger
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
 from services.sender_service.sender import SenderService
-from utils.config import settings
 
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
 DEFAULT_HEADERS = {
@@ -33,7 +32,7 @@ def retry_request(func):
                 await asyncio.sleep(seconds)
 
         await self.sender.safe_send_range(
-            settings.bot.admin_ids,
+            self.admin_ids,
             f"Ошибка подключения к {self.url}\nбудут продолжаться повторные попытки",
         )
 
@@ -42,7 +41,7 @@ def retry_request(func):
             try:
                 result = await func(self, *args, **kwargs)
                 await self.sender.safe_send_range(
-                    settings.bot.admin_ids, "Подключение восстановлено"
+                    self.admin_ids, "Подключение восстановлено"
                 )
                 return result
             except (ClientResponseError, ClientError) as e:
@@ -58,22 +57,22 @@ def retry_request(func):
 class Request:
     def __init__(
         self,
-        url: str,
+        admin_ids: list[int],
         sender: SenderService,
         timeout: int = DEFAULT_TIMEOUT,
         retry_delays: list[int] = None,
         headers: dict[str, str] = None,
-    ) -> None:
+    ):
         self.logger = getLogger(self.__class__.__name__)
-        self.url = url
+        self.admin_ids = admin_ids
         self.sender = sender
         self.timeout = timeout
         self.retry_delays = retry_delays or DEFAULT_RETRY_DELAYS
         self.headers = headers or DEFAULT_HEADERS
 
     @retry_request
-    async def fetch(self) -> str:
+    async def fetch(self, url) -> str:
         async with ClientSession() as session:
-            async with session.get(self.url, headers=self.headers) as response:
+            async with session.get(url, headers=self.headers) as response:
                 response.raise_for_status()
                 return await response.text()
