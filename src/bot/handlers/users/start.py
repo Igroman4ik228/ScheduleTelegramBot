@@ -2,8 +2,9 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 
-from database.repositories import ReferralRepository
-from database.repository import Repository
+from bot.keyboards.users.inline.department_kb import get_department_kb
+from database.repositories.referrals import ReferralRepository
+from database.repository import CachedRepository
 from helpers.command import find_command_argument
 from helpers.text import quote_html
 from utils.constants import MAX_REFERRAL
@@ -32,7 +33,7 @@ MAX_FULLNAME_LENGTH = 100
 
 
 @router.message(CommandStart())
-async def handle_start(message: Message, repository: Repository):
+async def handle_start(message: Message, repository: CachedRepository):
     user_full_name = quote_html(
         message.from_user.full_name[:MAX_FULLNAME_LENGTH]
     )
@@ -48,6 +49,12 @@ async def handle_start(message: Message, repository: Repository):
             await message.answer(str(e))
 
     await message.answer(welcome_message.strip())
+
+    departments = await repository.departments.get_all()
+    await message.answer(
+        "Выберите отделение пожалуйста",
+        reply_markup=get_department_kb(departments),
+    )
 
 
 def parse_owner_id(argument: str) -> int | None:

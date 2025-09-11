@@ -6,7 +6,8 @@ from bot.keyboards.users.inline.department_kb import get_department_kb
 from bot.keyboards.users.inline.group_kb import get_group_kb
 from bot.keyboards.users.reply.main_kb import get_main_kb
 from database.models import UserModel
-from database.repository import Repository
+from database.repository import CachedRepository, Repository
+from utils.config import Settings
 from utils.constants import CallbackData
 
 router = Router(name=__name__)
@@ -46,7 +47,10 @@ async def handle_department(
 
 @router.callback_query(F.data.contains("Group:"))
 async def handle_group(
-    callback_query: CallbackQuery, user: UserModel, repository: Repository
+    callback_query: CallbackQuery,
+    user: UserModel,
+    repository: CachedRepository,
+    settings: Settings,
 ):
     group_name = callback_query.data.split(":")[1]
     await callback_query.message.edit_text(f"Вы выбрали группу {group_name}")
@@ -57,5 +61,7 @@ async def handle_group(
 
     await callback_query.message.answer(
         "Спасибо за выбор группы 🥳",
-        reply_markup=get_main_kb(callback_query.from_user.id),
+        reply_markup=get_main_kb(
+            callback_query.from_user.id, settings.bot.admin_ids
+        ),
     )

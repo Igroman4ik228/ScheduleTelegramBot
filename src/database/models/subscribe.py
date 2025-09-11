@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, relationship
 
-from database.models.base import Base, BoolTrue, Str128, Str512
+from database.models.base import BaseModel, BoolTrue, Str128, Str512
 
 if TYPE_CHECKING:
     from database.models import (
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     )
 
 
-class SubscribeModel(Base):
+class SubscribeModel(BaseModel):
     name: Mapped[Str128]
     description: Mapped[Str512 | None]
     duration_days: Mapped[int]

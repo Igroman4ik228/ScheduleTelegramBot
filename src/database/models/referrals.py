@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base
+from database.models.base import BaseModel
 
 if TYPE_CHECKING:
     from database.models import (
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     )
 
 
-class ReferralModel(Base):
+class ReferralModel(BaseModel):
     owner_id: Mapped[int] = mapped_column(
         ForeignKey("Users.telegram_id", ondelete="CASCADE")
     )

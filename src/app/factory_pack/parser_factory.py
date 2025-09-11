@@ -2,60 +2,59 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from app.factory_pack.models import IBackgroundServiceFactory
+from app.factory_pack.models import BackgroundServiceFactory
 from database.cache.repositories import CacheRepositoryService
-from database.db import IDatabase
+from database.db import DatabaseAlchemy
 from helpers.week import Week
 from services.parser_service.parser import ParserService
-from services.parser_service.request import Request
+from services.request_service.request import RequestService
 
 if TYPE_CHECKING:
     from services.notify_service.notify import NotifyService
 
 
-class ParserFactory(IBackgroundServiceFactory):
+class ParserFactory(BackgroundServiceFactory):
     def __init__(
         self,
-        time_span: int,
+        interval: int,
         urls: list[str],
-        request: Request,
-        db: IDatabase,
+        request: RequestService,
+        db: DatabaseAlchemy,
         notify: NotifyService,
         cache_service: CacheRepositoryService,
     ):
-        super().__init__(time_span)
+        self._parsers: list[ParserService] | None = None
+        self.interval = interval
         self.urls = urls
         self.request = request
         self.db = db
         self.notify = notify
         self.cache_service = cache_service
-        self.parsers: list[ParserService] = self._create()
 
     def get(self):
-        return self.parsers
+        if self._parsers is None:
+            self._parsers = self._create()
+        return self._parsers
 
     def get_parser(self, global_shift: int) -> ParserService:
-        for parser in self.parsers:
-            if getattr(parser, "global_shift", None) == global_shift:
+        for parser in self.get():
+            if parser.global_shift == global_shift:
                 return parser
-
-        raise ValueError(f"Парсер для смены {global_shift} не найден.")
+        raise ValueError(f"Parser for global_shift {global_shift} not found")
 
     def get_week(self, global_shift: int) -> Week:
         return self.get_parser(global_shift).parser.week
 
     def _create(self) -> list[ParserService]:
-        parsers = []
-        for global_shift, url in enumerate(self.urls, 1):
-            parser = ParserService(
+        return [
+            ParserService(
                 url,
                 global_shift,
-                self.time_span,
+                self.interval,
                 self.request,
                 self.db,
                 self.cache_service,
                 self.notify,
             )
-            parsers.append(parser)
-
-        return parsers
+            for global_shift, url in enumerate(self.urls, 1)
+        ]

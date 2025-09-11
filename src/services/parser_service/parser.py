@@ -1,35 +1,38 @@
-from app.background_service_pack.models import BackgroundService
+from app.background_service_pack.models import (
+    IntervalService,
+)
 from app.observer_pack.models import Publisher
 from database.cache.repositories import CacheRepositoryService
-from database.db import IDatabase, with_session
+from database.db import DatabaseAlchemy, with_session
 from database.repository import CachedRepository
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
-from services.parser_service.request import Request
+from services.request_service.request import RequestService
 from utils.constants import DEBUG
 
 
-class ParserService(BackgroundService, Publisher):
+class ParserService(IntervalService, Publisher):
     def __init__(
         self,
         url: str,
         global_shift: int,
-        time_span: int,
-        request: Request,
-        db: IDatabase,
+        interval: int,
+        request: RequestService,
+        db: DatabaseAlchemy,
         cache_service: CacheRepositoryService,
         notify: NotifyService,
     ):
-        BackgroundService.__init__(self, time_span)
+        IntervalService.__init__(self, interval)
         Publisher.__init__(self)
+
+        self.parser: HtmlParser | None = None
 
         self.url = url
         self.global_shift = global_shift
         self.request = request
         self.db = db
         self.cache_service = cache_service
-        self.parser: HtmlParser | None = None
 
         self.attach(notify)
 
@@ -47,19 +50,26 @@ class ParserService(BackgroundService, Publisher):
         await builder.initialize()
         result_schedule = await builder.build()
 
-        for group, schedule in result_schedule.items():
-            if await self._check_changed_schedule(group, schedule):
-                self.is_update = True
-                break
+        is_update = False
+        async with self.db.get_session() as session:
+            repository = CachedRepository(session, self.cache_service)
 
-        if self.is_update:
+            for group, schedule in result_schedule.items():
+                if await self._check_changed_schedule(
+                    group, schedule, repository
+                ):
+                    is_update = True
+                    break
+
+        if is_update:
             await self._save_schedule_to_db(result_schedule)
+            await self.notify(
+                global_shift=self.global_shift, week=self.parser.week
+            )
 
-        await self.notify(self.global_shift)
-
-    async def active(self):
+    async def start(self):
         self.logger.info("ParserService active")
-        await super().active()
+        await super().start()
 
     async def pause(self):
         self.logger.info("ParserService paused")
@@ -67,7 +77,7 @@ class ParserService(BackgroundService, Publisher):
 
     async def stop(self):
         self.logger.info("ParserService stopped")
-        await self.pause()
+        super().stop()
 
     async def _get_response_text(self):
         if DEBUG:
@@ -93,20 +103,21 @@ class ParserService(BackgroundService, Publisher):
             )
 
     async def _check_changed_schedule(
-        self, group_name: str, current_result_schedule: str
+        self,
+        group_name: str,
+        current_result_schedule: str,
+        repository: CachedRepository,
     ) -> bool:
-        async with self.db.get_session() as session:
-            repository = CachedRepository(session, self.cache_service)
-            group = await repository.groups.get_by_name(group_name)
-            if group is None:
-                return False
+        group = await repository.groups.get_by_name(group_name)
+        if group is None:
+            return False
 
-            if group.global_shift != self.global_shift:
-                return False
+        if group.global_shift != self.global_shift:
+            return False
 
-            result_schedule = await repository.result_schedule.get(
-                self.parser.week.weekday, group.id
-            )
+        result_schedule = await repository.result_schedule.get(
+            self.parser.week.weekday, group.id
+        )
 
         if (
             result_schedule is None

@@ -1,5 +1,2 @@
-from utils.config import settings
-
-
-def is_admin(user_id: int) -> bool:
-    return user_id in settings.bot.admin_ids
+def is_admin(user_id: int, admin_ids: list[int]) -> bool:
+    return user_id in admin_ids

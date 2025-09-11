@@ -6,6 +6,7 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 from database.models.groups import GroupModel
+from utils.config import Settings
 
 if TYPE_CHECKING:
     from app.factory_pack.parser_factory import ParserFactory
@@ -34,6 +35,7 @@ async def handle_schedule(
     parser_factory: ParserFactory,
     user: UserModel,
     repository: Repository,
+    settings: Settings,
 ):
     group: GroupModel = user.group
     week = parser_factory.get_week(group.global_shift)
@@ -45,7 +47,8 @@ async def handle_schedule(
         schedule = add_time_to_schedule(schedule)
 
     await message.answer(
-        schedule, reply_markup=get_main_kb(message.from_user.id)
+        schedule,
+        reply_markup=get_main_kb(message.from_user.id, settings.bot.admin_ids),
     )
 
 
@@ -55,6 +58,7 @@ async def handle_previous_schedule(
     parser_factory: ParserFactory,
     user: UserModel,
     repository: Repository,
+    settings: Settings,
 ):
     group: GroupModel = user.group
     week = parser_factory.get_week(group.global_shift)
@@ -69,7 +73,8 @@ async def handle_previous_schedule(
         schedule = add_time_to_schedule(schedule)
 
     await message.answer(
-        schedule, reply_markup=get_main_kb(message.from_user.id)
+        schedule,
+        reply_markup=get_main_kb(message.from_user.id, settings.bot.admin_ids),
     )
 
 
@@ -79,6 +84,7 @@ async def handle_next_schedule(
     parser_factory: ParserFactory,
     user: UserModel,
     repository: Repository,
+    settings: Settings,
 ):
     group: GroupModel = user.group
     week = parser_factory.get_week(group.global_shift)
@@ -93,7 +99,8 @@ async def handle_next_schedule(
         schedule = add_time_to_schedule(schedule)
 
     await message.answer(
-        schedule, reply_markup=get_main_kb(message.from_user.id)
+        schedule,
+        reply_markup=get_main_kb(message.from_user.id, settings.bot.admin_ids),
     )
 
 

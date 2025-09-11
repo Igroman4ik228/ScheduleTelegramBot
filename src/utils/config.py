@@ -148,7 +148,3 @@ class Settings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
     redis: RedisSettings = RedisSettings()
     logger: LoggerSettings = LoggerSettings()
-
-
-# Global object only for utils, helpers and libs(for example alembic)
-settings = Settings()

@@ -1,23 +1,16 @@
 from app.background_service_pack.models import BackgroundService
-from app.factory_pack.models import IBackgroundServiceFactory
-from app.factory_pack.parser_factory import ParserFactory
-from services.sub_checker_service.sub_checker import SubCheckerService
+from app.factory_pack.models import BackgroundServiceFactory
 
 
 class BackgroundBuilder:
-    def __init__(
-        self, parser_factory: ParserFactory, sub_checker: SubCheckerService
-    ):
-        self.installation_service = [parser_factory, sub_checker]
+    def __init__(self, *services: BackgroundService | BackgroundServiceFactory):
+        self._services = services
 
     def get_services(self) -> list[BackgroundService]:
         services: list[BackgroundService] = []
-        for app in self.installation_service:
-            if isinstance(app, IBackgroundServiceFactory):
-                getter_services = app.get()
-                for getter_service in getter_services:
-                    services.append(getter_service)
+        for service in self._services:
+            if isinstance(service, BackgroundServiceFactory):
+                services.extend(service.get())
             else:
-                services.append(app)
-
+                services.append(service)
         return services

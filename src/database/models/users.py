@@ -6,13 +6,19 @@ from typing import TYPE_CHECKING
 from sqlalchemy import BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, BoolFalse, BoolTrue, CreatedAt, Str128
+from database.models.base import (
+    BaseModel,
+    BoolFalse,
+    BoolTrue,
+    Str128,
+)
+from database.models.mixins.timestamp import TimestampMixin
 
 if TYPE_CHECKING:
     from database.models import GroupModel, SubscribeModel
 
 
-class UserModel(Base):
+class UserModel(BaseModel, TimestampMixin):
     first_name: Mapped[Str128]
     last_name: Mapped[Str128 | None]
     user_name: Mapped[Str128 | None]
@@ -35,8 +41,6 @@ class UserModel(Base):
 
     group: Mapped[GroupModel] = relationship(back_populates="users")
     subscribe: Mapped[SubscribeModel] = relationship(back_populates="users")
-
-    created_at: Mapped[CreatedAt]
 
     def get_full_name(self):
         if self.last_name is None:

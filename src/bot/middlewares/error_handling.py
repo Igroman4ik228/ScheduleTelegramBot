@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from logging import getLogger
-from typing import Any, Awaitable, Callable, Dict
+from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
 from aiogram.exceptions import (
@@ -8,9 +10,13 @@ from aiogram.exceptions import (
     TelegramBadRequest,
     TelegramNetworkError,
 )
-from aiogram.types import Update
 
-from services.sender_service.sender import SenderService
+if TYPE_CHECKING:
+    from typing import Any, Awaitable, Callable, Dict
+
+    from aiogram.types import TelegramObject, User
+
+    from services.sender_service.sender import SenderService
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
@@ -20,22 +26,22 @@ class ErrorHandlingMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler: Callable[[Update, Dict[str, Any]], Awaitable[Any]],
-        event: Update,
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
-        user = data["event_from_user"]
+        user: User = data["event_from_user"]
         sender: SenderService = data["sender_service"]
 
         try:
             return await handler(event, data)
         except TelegramBadRequest as e:
-            self.logger.error(f"Неверный запрос: {e}", exc_info=True)
+            self.logger.error(f"Telegram bad request: {e}", exc_info=True)
             await self._send_bad_request_message(user.id, sender)
         except RestartingTelegram as e:
-            self.logger.error(f"Telegram перезагружается: {e}", exc_info=True)
+            self.logger.error(f"Telegram restarting: {e}", exc_info=True)
             await self._send_message_to_admins(
-                "Telegram перезагружается", sender
+                "Телеграм перезагружается. Попробуйте снова позже", sender
             )
         except TelegramNetworkError as e:
             self.logger.error(f"TelegramNetworkError: {e}")
@@ -43,15 +49,10 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         except TelegramAPIError as e:
             self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, sender)
-        except AttributeError as e:
-            self.logger.warning(
-                f"Сайт ЯГК с заменами не работает: {e}", exc_info=True
-            )
-            await self._send_ygk_error_message(user.id, sender)
         except Exception as e:
-            self.logger.error(f"Необработанное исключение: {e}", exc_info=True)
+            self.logger.error(f"Unhandled exception: {e}", exc_info=True)
             await self._send_message_to_admins(
-                "Необработанное исключение", sender
+                f"Unhandled exception: {e}", sender
             )
 
     async def _send_bad_request_message(
@@ -67,15 +68,9 @@ class ErrorHandlingMiddleware(BaseMiddleware):
     async def _send_api_error_message(
         self, chat_id: int, sender: SenderService
     ):
-        text = "Произошла ошибка. Попробуйте позже."
+        text = "Произошла ошибка из-за телеграмма. Попробуйте позже."
         await sender.safe_send_message(chat_id, text)
         await self._send_message_to_admins(text, sender)
-
-    async def _send_ygk_error_message(
-        self, chat_id: int, sender: SenderService
-    ):
-        text = "Сайт ЯГК с заменами не работает. Попробуйте, пожалуйста, позже."
-        await sender.safe_send_message(chat_id, text)
 
     async def _send_message_to_admins(self, text: str, sender: SenderService):
         for admin_id in self.admin_ids:

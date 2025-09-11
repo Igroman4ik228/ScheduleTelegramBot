@@ -11,9 +11,9 @@ class AdService(BackgroundService):
     async def do_work(self):
         print(f"Ad Sending every {self.time_span} seconds")
 
-    async def active(self):
+    async def start(self):
         self.logger.info("AdService active")
-        await super().active()
+        await super().start()
 
     async def pause(self):
         self.logger.info("AdService paused")

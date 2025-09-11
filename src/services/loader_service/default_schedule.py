@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 
-from database.db import IDatabase, with_session
+from database.db import DatabaseAlchemy, with_session
 from database.repositories import DefaultScheduleRepository
 from helpers.default_schedule_parser import default_schedule_parse
 from helpers.file import get_file_paths, load_from_json
@@ -13,7 +13,7 @@ PATH_TEMPLATE_DATA = Path("data/schedule/")
 class DefaultScheduleLoader:
     """Загружает расписание из файлов в БД."""
 
-    def __init__(self, db: IDatabase):
+    def __init__(self, db: DatabaseAlchemy):
         self.db = db
 
     async def process_all_files(self):

@@ -6,5 +6,5 @@ from database.models import UserModel
 
 class GroupFilter(Filter):
     async def __call__(self, message: Message, **data) -> bool:
-        user: UserModel = data.get("user")
+        user: UserModel = data["user"]
         return user.group_id is not None

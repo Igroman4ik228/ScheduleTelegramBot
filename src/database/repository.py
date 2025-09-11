@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import cached_property
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,23 +21,23 @@ class Repository:
 
     session: AsyncSession
 
-    @property
+    @cached_property
     def groups(self) -> GroupRepository:
         return GroupRepository(self.session)
 
-    @property
+    @cached_property
     def departments(self) -> DepartmentRepository:
         return DepartmentRepository(self.session)
 
-    @property
+    @cached_property
     def default_schedule(self) -> DefaultScheduleRepository:
         return DefaultScheduleRepository(self.session)
 
-    @property
+    @cached_property
     def subscribes(self) -> SubscribeRepository:
         return SubscribeRepository(self.session)
 
-    @property
+    @cached_property
     def referrals(self) -> ReferralRepository:
         return ReferralRepository(self.session)
 
@@ -47,10 +48,10 @@ class CachedRepository(Repository):
 
     cache_service: CacheRepositoryService
 
-    @property
+    @cached_property
     def users(self) -> UserRepository:
         return UserRepository(self.session, self.cache_service)
 
-    @property
+    @cached_property
     def result_schedule(self) -> ResultScheduleRepository:
         return ResultScheduleRepository(self.session, self.cache_service)

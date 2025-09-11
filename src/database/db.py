@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from contextlib import asynccontextmanager
 from functools import wraps
 from typing import AsyncGenerator
@@ -9,21 +8,10 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from database.models.base import Base
+from database.models.base import BaseModel
 
 
-class IDatabase(ABC):
-    @abstractmethod
-    async def get_session(self): ...
-
-    @abstractmethod
-    async def create_tables(self): ...
-
-    @abstractmethod
-    async def dispose(self): ...
-
-
-class DatabaseAlchemy(IDatabase):
+class DatabaseAlchemy:
     def __init__(
         self,
         url: str,
@@ -44,7 +32,6 @@ class DatabaseAlchemy(IDatabase):
         self.sessionmaker = async_sessionmaker(
             bind=self.engine,
             autoflush=False,
-            autocommit=False,
             expire_on_commit=False,
         )
 
@@ -55,7 +42,7 @@ class DatabaseAlchemy(IDatabase):
 
     async def create_tables(self):
         async with self.engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(BaseModel.metadata.create_all)
         await self.engine.dispose()
 
     async def dispose(self):
@@ -80,7 +67,7 @@ def with_session(func):
         is_method = args and hasattr(args[0], "__class__")
 
         if is_method:
-            db: IDatabase = getattr(args[0], "db", None)
+            db: DatabaseAlchemy = getattr(args[0], "db", None)
 
         if db is None:
             raise RuntimeError(

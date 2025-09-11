@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, Str128
+from database.models.base import BaseModel, Str128
 
 if TYPE_CHECKING:
     from database.models import (
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     )
 
 
-class GroupModel(Base):
+class GroupModel(BaseModel):
     name: Mapped[Str128] = mapped_column(unique=True)
     department_id: Mapped[int] = mapped_column(
         ForeignKey("Departments.id", ondelete="CASCADE")

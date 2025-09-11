@@ -25,6 +25,7 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
     async def create(
         self, weekday: int, data_lessons: str, group_id: str
     ) -> ResultScheduleModel | None:
+        await self._clear_result_schedule_cache(weekday, group_id)
         return await super().create(
             weekday=weekday, data_lessons=data_lessons, group_id=group_id
         )

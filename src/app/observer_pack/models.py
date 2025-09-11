@@ -4,25 +4,27 @@ from abc import ABC, abstractmethod
 
 class Observer(ABC):
     @abstractmethod
-    async def update(self, *args) -> None:
-        pass
+    async def update(self, *args, **kwargs): ...
 
 
 class Publisher(ABC):
     @abstractmethod
-    def __init__(self) -> None:
-        self.services: list[Observer] = []
-        self.is_update: bool = False
+    def __init__(self):
+        self._observers: list[Observer] = []
 
-    def attach(self, observer: Observer) -> None:
-        self.services.append(observer)
+    def attach(self, observer: Observer):
+        if observer not in self._observers:
+            self._observers.append(observer)
 
-    def detach(self, observer: Observer) -> None:
-        self.services.remove(observer)
+    def detach(self, observer: Observer):
+        if observer in self._observers:
+            self._observers.remove(observer)
 
-    async def notify(self, *args) -> None:
-        if self.is_update:
+    async def notify(self, *args, **kwargs):
+        if self._observers:
             await asyncio.gather(
-                *(service.update(*args) for service in self.services)
+                *(
+                    observer.update(*args, **kwargs)
+                    for observer in self._observers
+                )
             )
-            self.is_update = False

@@ -3,13 +3,9 @@ from abc import ABC, abstractmethod
 from app.background_service_pack.models import BackgroundService
 
 
-class IBackgroundServiceFactory(ABC):
-    def __init__(self, time_span: int):
-        self.time_span = time_span
-
-    def get(self) -> list[BackgroundService] | None:
+class BackgroundServiceFactory(ABC):
+    def get(self) -> list[BackgroundService]:
         return self._create()
 
     @abstractmethod
-    def _create(self) -> list[BackgroundService]:
-        pass
+    def _create(self) -> list[BackgroundService]: ...

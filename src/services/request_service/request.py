@@ -54,7 +54,7 @@ def retry_request(func):
     return wrapper
 
 
-class Request:
+class RequestService:
     def __init__(
         self,
         admin_ids: list[int],

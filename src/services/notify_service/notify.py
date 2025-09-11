@@ -9,22 +9,22 @@ from aiogram import html
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
 from database.cache.repositories import CacheRepositoryService
-from database.db import IDatabase, with_session
+from database.db import DatabaseAlchemy, with_session
 from database.models import UserModel
-from database.models.groups import GroupModel
 from database.repository import CachedRepository
+from helpers.week import Week
 from services.formatter_service.schedule import add_time_to_schedule
 from services.sender_service.sender import SenderService
 from utils.constants import SENDER_TIME_SLEEP
 
 if TYPE_CHECKING:
-    from app.factory_pack.parser_factory import ParserFactory
+    pass
 
 
 class NotifyService(Observer):
     def __init__(
         self,
-        db: IDatabase,
+        db: DatabaseAlchemy,
         sender: SenderService,
         cache_service: CacheRepositoryService,
     ):
@@ -32,48 +32,42 @@ class NotifyService(Observer):
         self.db = db
         self.sender = sender
         self.cache_service = cache_service
-        self.parser_factory: ParserFactory | None = None
-
-    def set_parser_factory(self, parser_factory: ParserFactory):
-        self.parser_factory = parser_factory
 
     @with_session
-    async def update(self, *args, session=None):
-        self.logger.info("Start NotifyService")
-        if self.parser_factory is None:
-            return
-
-        number_parser = args[0]
+    async def update(self, *, global_shift: int, week: Week, session=None):
+        self.logger.info(
+            f"Start NotifyService: global_shift={global_shift}, week={week}"
+        )
 
         repository = CachedRepository(session, self.cache_service)
-        users = await repository.users.get_all("group")
+        users = await repository.users.get_all(
+            "group", is_notify=True, is_ban=False, is_bot=False
+        )
+
         for user in users:
-            if not self.need_notify(user):
+            if not self._should_notify(user, global_shift):
                 continue
 
-            group: GroupModel = user.group
-            if group.global_shift != number_parser:
-                # этот пользователь другой смены → пропускаем
-                continue
-
-            week = self.parser_factory.get_week(group.global_shift)
-
-            formatted_schedule = await get_schedule(
+            schedule = await get_schedule(
                 user.group_id, repository, week.weekday, week.shift
             )
 
-            formatted_schedule = add_time_to_schedule(formatted_schedule)
-
-            header = html.blockquote(html.bold("Уведомление"))
-            formatted_schedule = f"{header}\n{formatted_schedule}"
-
+            formatted_schedule = self._format_message(schedule)
             await self.sender.safe_send_message(
                 user.telegram_id, formatted_schedule, session=session
             )
+            self.logger.info(f"Notify sent to {user}")
 
         await asyncio.sleep(SENDER_TIME_SLEEP)
 
-    def need_notify(self, user: UserModel) -> bool:
-        return (
-            user.is_notify and not user.is_ban and user.subscribe_id is not None
-        )
+    def _should_notify(self, user: UserModel, global_shift: int) -> bool:
+        if user.subscribe_id is None:
+            return False
+        if user.group.global_shift != global_shift:
+            return False
+        return True
+
+    def _format_message(self, schedule: str) -> str:
+        header = html.blockquote(html.bold("Уведомление"))
+        schedule_with_time = add_time_to_schedule(schedule)
+        return f"{header}\n{schedule_with_time}"

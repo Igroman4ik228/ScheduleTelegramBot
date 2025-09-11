@@ -1,10 +1,7 @@
-from datetime import timedelta
-from enum import Enum
-
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.redis import RedisStorage
-from injector import Module, provider, singleton
+from injector import Injector, Module, provider, singleton
 from redis.asyncio import Redis
 
 from app.background_service_pack.builder import BackgroundBuilder
@@ -14,57 +11,51 @@ from bot.bot import BotManager
 from database.cache.base import BaseRedis, ICache
 from database.cache.profile_cache import ProfileCache
 from database.cache.repositories import CacheRepositoryService
-from database.db import DatabaseAlchemy, IDatabase
+from database.db import DatabaseAlchemy
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from services.notify_service.notify import NotifyService
-from services.parser_service.request import Request
+from services.request_service.request import RequestService
 from services.sender_service.sender import SenderService
 from services.sub_checker_service.sub_checker import SubCheckerService
 from utils.config import Settings
-from utils.config import settings as global_settings
-
-SCHEDULE_URLS = [
-    "https://menu.sttec.yar.ru/timetable/rasp_first.html",
-    "https://menu.sttec.yar.ru/timetable/rasp_second.html",
-]
+from utils.constants import SCHEDULE_URLS, IntervalBgServices
 
 
-class TimeSpan(Enum):
-    SUB_CHECKER = timedelta(minutes=10).seconds
-    PARSER = timedelta(minutes=1).seconds
+def create_injector() -> Injector:
+    return Injector(
+        [
+            ConfigModule(),
+            DatabaseModule(),
+            CacheModule(),
+            BotModule(),
+            ServiceModule(),
+            BackgroundModule(),
+        ]
+    )
 
 
-class AppModule(Module):
+class ConfigModule(Module):
     @singleton
     @provider
-    def provide_setting(self) -> Settings:
-        return global_settings
+    def provide_settings(self) -> Settings:
+        return Settings()
 
+
+class DatabaseModule(Module):
     @singleton
     @provider
-    def provide_db(self, settings: Settings) -> IDatabase:
+    def provide_db(self, settings: Settings) -> DatabaseAlchemy:
         return DatabaseAlchemy(
             url=settings.db.url,
             echo=settings.db.echo,
+            echo_pool=settings.db.echo,
             pool_pre_ping=settings.db.pre_ping,
             pool_size=settings.db.pool_size,
             max_overflow=settings.db.max_overflow,
         )
 
-    @singleton
-    @provider
-    def provide_bot(self, settings: Settings) -> Bot:
-        return Bot(
-            settings.bot.token, default=DefaultBotProperties(parse_mode="HTML")
-        )
 
-    @singleton
-    @provider
-    def provide_dispatcher(self, settings: Settings) -> Dispatcher:
-        return Dispatcher(
-            storage=RedisStorage.from_url(url=settings.redis.url(db=1))
-        )
-
+class CacheModule(Module):
     @singleton
     @provider
     def provide_redis(self, settings: Settings) -> Redis:
@@ -85,10 +76,29 @@ class AppModule(Module):
     def provide_cache_service(self, cache: ICache) -> CacheRepositoryService:
         return CacheRepositoryService(cache)
 
+
+class BotModule(Module):
+    @singleton
+    @provider
+    def provide_bot(self, settings: Settings) -> Bot:
+        return Bot(
+            settings.bot.token, default=DefaultBotProperties(parse_mode="HTML")
+        )
+
+    @singleton
+    @provider
+    def provide_dispatcher(self, settings: Settings) -> Dispatcher:
+        return Dispatcher(
+            storage=RedisStorage.from_url(url=settings.redis.url(db=1))
+        )
+
     @singleton
     @provider
     def provide_sender_service(
-        self, db: IDatabase, bot: Bot, cache_service: CacheRepositoryService
+        self,
+        db: DatabaseAlchemy,
+        bot: Bot,
+        cache_service: CacheRepositoryService,
     ) -> SenderService:
         return SenderService(db, bot, cache_service)
 
@@ -99,7 +109,7 @@ class AppModule(Module):
         bot: Bot,
         dp: Dispatcher,
         settings: Settings,
-        db: IDatabase,
+        db: DatabaseAlchemy,
         sender_service: SenderService,
         profile_cache: ProfileCache,
         cache_service: CacheRepositoryService,
@@ -116,11 +126,13 @@ class AppModule(Module):
             parser_factory,
         )
 
+
+class ServiceModule(Module):
     @singleton
     @provider
     def provide_notify_service(
         self,
-        db: IDatabase,
+        db: DatabaseAlchemy,
         sender: SenderService,
         cache_service: CacheRepositoryService,
     ) -> NotifyService:
@@ -130,7 +142,7 @@ class AppModule(Module):
     @provider
     def provide_default_schedule_loader(
         self,
-        db: IDatabase,
+        db: DatabaseAlchemy,
     ) -> DefaultScheduleLoader:
         return DefaultScheduleLoader(db)
 
@@ -140,41 +152,44 @@ class AppModule(Module):
         self,
         settings: Settings,
         sender: SenderService,
-    ) -> Request:
-        return Request(settings.bot.admin_ids, sender)
+    ) -> RequestService:
+        return RequestService(settings.bot.admin_ids, sender)
 
     @singleton
     @provider
     def provide_parser_factory(
         self,
-        request: Request,
-        db: IDatabase,
+        request: RequestService,
+        db: DatabaseAlchemy,
         notify: NotifyService,
         cache_service: CacheRepositoryService,
     ) -> ParserFactory:
-        factory = ParserFactory(
-            TimeSpan.PARSER.value,
+        return ParserFactory(
+            IntervalBgServices.PARSER.value,
             SCHEDULE_URLS,
             request,
             db,
             notify,
             cache_service,
         )
-        notify.set_parser_factory(factory)
-        return factory
 
+    @singleton
     @provider
     def provide_sub_checker_service(
         self, sender: SenderService
     ) -> SubCheckerService:
-        return SubCheckerService(TimeSpan.SUB_CHECKER.value, sender)
+        return SubCheckerService(IntervalBgServices.SUB_CHECKER.value, sender)
 
+
+class BackgroundModule(Module):
+    @singleton
     @provider
     def provide_builder(
         self, parser_factory: ParserFactory, sub_checker: SubCheckerService
     ) -> BackgroundBuilder:
         return BackgroundBuilder(parser_factory, sub_checker)
 
+    @singleton
     @provider
     def provide_manager(self, builder: BackgroundBuilder) -> BackgroundManager:
         return BackgroundManager(builder)

@@ -3,7 +3,9 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from helpers.user_validate import is_admin
 
 
-def get_main_kb(user_telegram_id: int):
+def get_main_kb(
+    user_telegram_id: int, admin_ids: list[int]
+) -> ReplyKeyboardMarkup:
     main_kb = [
         [KeyboardButton(text="🗓 Расписание")],
         [
@@ -15,7 +17,7 @@ def get_main_kb(user_telegram_id: int):
 
     # KeyboardButton(text="Техподдержка 🛠")
 
-    if is_admin(user_telegram_id):
+    if is_admin(user_telegram_id, admin_ids):
         main_kb.append([KeyboardButton(text="🔐 Админ панель")])
 
     return ReplyKeyboardMarkup(

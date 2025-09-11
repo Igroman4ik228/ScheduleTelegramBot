@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from database.models.base import Base, Str2048
+from database.models.base import BaseModel, Str2048
 
 if TYPE_CHECKING:
     from database.models import GroupModel
 
 
-class DefaultScheduleModel(Base):
+class DefaultScheduleModel(BaseModel):
     weekday: Mapped[int]
     shift: Mapped[int]
     data_lessons: Mapped[Str2048]

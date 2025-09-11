@@ -1,15 +1,18 @@
 import asyncio
-import signal
 import sys
 from contextlib import suppress
+from logging import getLogger
 
 from injector import Injector
+from sqlalchemy import select
 
 from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from database.cache.base import ICache
-from database.db import IDatabase
-from di import AppModule
+from database.cache.repositories import CacheRepositoryService
+from database.db import DatabaseAlchemy
+from database.models.users import UserModel
+from di import create_injector
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from utils.config import Settings
 
@@ -18,8 +21,9 @@ class App:
     def __init__(self, injector: Injector):
         self.injector = injector
         self.settings = self.injector.get(Settings)
-        self.db = self.injector.get(IDatabase)
+        self.db = self.injector.get(DatabaseAlchemy)
         self.cache = self.injector.get(ICache)
+        self.cache_repository = self.injector.get(CacheRepositoryService)
         self.bot_manager = self.injector.get(BotManager)
         self.service_manager = self.injector.get(BackgroundManager)
         self.default_schedule_loader = self.injector.get(DefaultScheduleLoader)
@@ -27,14 +31,18 @@ class App:
     async def start(self):
         self.settings.logger.configure()
 
-        await self.db.create_tables()
+        logger = getLogger(__name__)
 
-        await self.default_schedule_loader.process_all_files()
+        async with self.db.get_session() as session:
+            res = await session.scalar(
+                select(UserModel).where(UserModel.telegram_id == 953457546)
+            )
+        logger.info(res)
 
-        await asyncio.gather(
-            self.bot_manager.start(),
-            self.service_manager.start_services(),
-        )
+        # await asyncio.gather(
+        #     self.bot_manager.start(),
+        #     self.service_manager.start_services(),
+        # )
 
     async def __aenter__(self):
         return self
@@ -45,21 +53,26 @@ class App:
 
 
 async def main():
-    injector = Injector(AppModule())
+    # For Unix-based systems
+    unix_signal_handler()
+
+    injector = create_injector()
     stop_event = asyncio.Event()
-    loop = asyncio.get_running_loop()
-
-    # For Linux
-    if sys.platform != "win32":
-        for s in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(s, stop_event.set)
-
     async with App(injector) as app:
         start_task = asyncio.create_task(app.start())
         await stop_event.wait()
         start_task.cancel()
         with suppress(asyncio.CancelledError):
             await start_task
+
+
+def unix_signal_handler():
+    if sys.platform != "win32":
+        import signal
+
+        loop = asyncio.get_event_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, loop.stop)
 
 
 if __name__ == "__main__":

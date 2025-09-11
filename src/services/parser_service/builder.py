@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from logging import getLogger
 from typing import Dict, List
 
-from database.db import IDatabase, with_session
+from database.db import DatabaseAlchemy, with_session
 from database.models import DefaultScheduleModel
 from database.repository import Repository
 from helpers.default_schedule_parser import get_default_lessons
@@ -118,7 +118,7 @@ class Builder:
 
     def __init__(
         self,
-        db: IDatabase,
+        db: DatabaseAlchemy,
         week: Week,
         global_shift,
         replacement_schedules: List[Schedule],

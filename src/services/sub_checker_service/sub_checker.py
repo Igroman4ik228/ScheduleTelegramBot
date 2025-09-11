@@ -1,13 +1,12 @@
 from enum import Enum
 
-from app.background_service_pack.models import BackgroundService
+from app.background_service_pack.models import IntervalService
 from services.sender_service.sender import SenderService
 
 
-class SubCheckerService(BackgroundService):
-    def __init__(self, time_span: int, sender: SenderService):
-        super().__init__(time_span)
-
+class SubCheckerService(IntervalService):
+    def __init__(self, interval: int, sender: SenderService):
+        super().__init__(interval)
         self.sender = sender
         # self._service_cache = ServiceCache(self)
 
@@ -75,9 +74,9 @@ class SubCheckerService(BackgroundService):
 
         #     await repo.users.update(user)
 
-    async def active(self):
+    async def start(self):
         self.logger.info("SubCheckerService active")
-        await super().active()
+        await super().start()
 
     async def pause(self):
         self.logger.info("SubCheckerService paused")

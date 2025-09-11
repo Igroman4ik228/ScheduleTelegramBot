@@ -1,15 +1,23 @@
 from datetime import datetime
 from typing import Annotated
 
-from sqlalchemy import String
+from sqlalchemy import String, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
 
-Pk = Annotated[int, mapped_column(primary_key=True)]
+Pk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 
-BoolFalse = Annotated[bool, mapped_column(default=False)]
-BoolTrue = Annotated[bool, mapped_column(default=True)]
+BoolTrue = Annotated[bool, mapped_column(server_default=text("true"))]
+BoolFalse = Annotated[bool, mapped_column(server_default=text("false"))]
 
-CreatedAt = Annotated[datetime, mapped_column(default=datetime.now())]
+CreatedAt = Annotated[
+    datetime, mapped_column(server_default=func.now(), info={"readonly": True})
+]
+UpdatedAt = Annotated[
+    datetime,
+    mapped_column(
+        server_default=func.now(), onupdate=func.now(), info={"readonly": True}
+    ),
+]
 
 Str128 = Annotated[str, 128]
 Str512 = Annotated[str, 512]
@@ -18,7 +26,7 @@ Str2048 = Annotated[str, 2048]
 Str8192 = Annotated[str, 8192]
 
 
-class Base(DeclarativeBase):
+class BaseModel(DeclarativeBase):
     id: Mapped[Pk]
 
     type_annotation_map = {
@@ -29,18 +37,28 @@ class Base(DeclarativeBase):
         Str8192: String(8192),
     }
 
+    # Readonly fields protection
+    def __setattr__(self, key, value):
+        mapper = self.__class__.__mapper__
+        if key in mapper.c and mapper.c[key].info.get("readonly"):
+            raise AttributeError(
+                f"{key} is read-only and cannot be changed manually"
+            )
+        super().__setattr__(key, value)
+
     # Tables name
     @declared_attr.directive
     def __tablename__(self) -> str:
         return f"{self.__name__[:-5]}s"
 
-    repr_cols_num: int = 4  # print first columns
-    repr_cols: tuple = ()  # extra printed columns
+    repr_cols_num: int = 4  # print first columns (don't count id)
+    repr_cols: tuple[str,] = ()  # extra printed columns
 
     def __repr__(self) -> str:
-        cols = [
-            f"{col}={getattr(self, col)}"
-            for idx, col in enumerate(self.__table__.columns.keys())
-            if col in self.repr_cols or idx < self.repr_cols_num
-        ]
+        cols = [f"id={self.id}"]
+        for idx, col in enumerate(self.__table__.columns.keys()):
+            if col == "id":
+                continue
+            if col in self.repr_cols or idx < self.repr_cols_num:
+                cols.append(f"{col}={getattr(self, col)}")
         return f"<{self.__class__.__name__} {', '.join(cols)}>"

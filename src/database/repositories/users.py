@@ -39,17 +39,26 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
                 return
             group_id = group.id
 
-        return await super().create(
+        res = await super().create(
             first_name=first_name,
             user_name=user_name,
             telegram_id=telegram_id,
             group_id=group_id,
             **kwargs,
         )
+        await self._clear_user_cache(telegram_id)
+        return res
 
     @cached(ttl_seconds=CacheTTL.USER.value)
-    async def get(self, telegram_id: int, *options) -> UserModel | None:
-        return await super().get(telegram_id=telegram_id, *options)
+    async def get(
+        self,
+        telegram_id: int,
+        *options,
+    ) -> UserModel | None:
+        return await super().get(
+            *options,
+            telegram_id=telegram_id,
+        )
 
     async def update_subscribe(
         self, user: UserModel, subscribe_id: int, subscribe_end_time: datetime
@@ -67,7 +76,7 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
         await super().delete(telegram_id=telegram_id)
         await self._clear_user_cache(telegram_id)
 
-    async def _clear_user_cache(self, telegram_id):
+    async def _clear_user_cache(self, telegram_id: int):
         await clear_cache(self.get, self, telegram_id, "group", "subscribe")
         await clear_cache(self.get, self, telegram_id, "group")
         await clear_cache(self.get, self, telegram_id)

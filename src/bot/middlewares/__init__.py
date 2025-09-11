@@ -1,7 +1,13 @@
-from aiogram import Dispatcher
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 
-from utils.config import Settings
+if TYPE_CHECKING:
+    from aiogram import Dispatcher
+
+    from utils.config import Settings
 
 
 def register_middlewares(dp: Dispatcher):
@@ -10,6 +16,7 @@ def register_middlewares(dp: Dispatcher):
     from .bot import BotMiddleware
     from .database import DatabaseMiddleware
     from .error_handling import ErrorHandlingMiddleware
+    from .logging import LoggingMiddleware
     from .throttling import ThrottlingMiddleware
 
     settings: Settings = dp["settings"]
@@ -17,6 +24,8 @@ def register_middlewares(dp: Dispatcher):
     dp.update.outer_middleware(ErrorHandlingMiddleware(settings.bot.admin_ids))
 
     dp.update.outer_middleware(ThrottlingMiddleware(settings.bot.rate_limit))
+
+    dp.update.outer_middleware(LoggingMiddleware())
 
     dp.update.outer_middleware(DatabaseMiddleware())
 

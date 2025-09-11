@@ -2,12 +2,14 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
+from injector import Injector
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from database.models.base import Base
-from utils.config import settings
+from database.models.base import BaseModel
+from di import ConfigModule
+from utils.config import Settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,14 +24,17 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Base.metadata
+target_metadata = BaseModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+# It is ok, because env.py run only from alembic
+injector = Injector(ConfigModule())
 config.set_main_option(
-    "sqlalchemy.url", settings.db.url + "?async_fallback=True"
+    "sqlalchemy.url", injector.get(Settings).db.url + "?async_fallback=True"
 )
 
 

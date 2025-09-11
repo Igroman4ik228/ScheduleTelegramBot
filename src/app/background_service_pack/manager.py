@@ -8,35 +8,25 @@ class BackgroundManager:
         self.services = builder.get_services()
 
     async def start_services(self):
-        tasks = (service.active() for service in self.services)
-        await asyncio.gather(*tasks)
+        await asyncio.gather(*(s.start() for s in self.services))
 
     async def pause_services(self):
-        tasks = (service.pause() for service in self.services)
-        await asyncio.gather(*tasks)
+        await asyncio.gather(*(s.pause() for s in self.services))
+
+    async def stop_services(self):
+        await asyncio.gather(*(s.stop() for s in self.services))
+
+    async def start_service_by_class(self, service_class: type):
+        await asyncio.gather(
+            *(s.start() for s in self.services if isinstance(s, service_class))
+        )
 
     async def pause_service_by_class(self, service_class: type):
-        """
-        Pause all services where type = service_class
-
-        :param service_class: Class of service for pause.
-        """
-        tasks = (
-            service.pause()
-            for service in self.services
-            if isinstance(service, service_class)
+        await asyncio.gather(
+            *(s.pause() for s in self.services if isinstance(s, service_class))
         )
-        await asyncio.gather(*tasks)
 
-    async def active_service_by_class(self, service_class: type):
-        """
-        Active all services where type = service_class
-
-        :param service_class: Class of service for actice.
-        """
-        tasks = (
-            service.active()
-            for service in self.services
-            if isinstance(service, service_class)
+    async def stop_service_by_class(self, service_class: type):
+        await asyncio.gather(
+            *(s.stop() for s in self.services if isinstance(s, service_class))
         )
-        await asyncio.gather(*tasks)

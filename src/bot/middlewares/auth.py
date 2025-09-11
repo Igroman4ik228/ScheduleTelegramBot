@@ -1,16 +1,22 @@
+from __future__ import annotations
+
 from datetime import datetime, timedelta
 from logging import getLogger
-from typing import Any, Awaitable, Callable
+from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
-from aiogram.types import Update
-from aiogram.types.user import User
 
-from database.cache.repositories import clear_cache
-from database.models import SubscribeModel, UserModel
-from database.repositories import UserRepository
-from database.repository import CachedRepository
 from helpers.text import quote_html_range
+
+if TYPE_CHECKING:
+    from typing import Any, Awaitable, Callable, Dict
+
+    from aiogram.types import TelegramObject
+    from aiogram.types.user import User
+
+    from database.models import SubscribeModel, UserModel
+    from database.repositories import UserRepository
+    from database.repository import CachedRepository
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -19,35 +25,28 @@ class AuthMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler: Callable[[Update, dict[str, Any]], Awaitable[Any]],
-        event: Update,
-        data: dict[str, Any],
+        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: Dict[str, Any],
     ) -> Any:
         repository: CachedRepository = data["repository"]
         tg_user: User = data["event_from_user"]
 
-        existing_user = await self._get_user(tg_user.id, repository.users)
+        user_repo = repository.users
+        existing_user = await user_repo.get(tg_user.id, "group", "subscribe")
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
 
         subscribes = await repository.subscribes.get_all(price=0)
+        if not subscribes:
+            raise ValueError("No free subscribes available for new users")
         trail_subscribe = subscribes[0]
-        new_user = await self._create_user(
-            tg_user, trail_subscribe, repository.users
-        )
-        data["user"] = new_user
-        return await handler(event, data)
 
-    async def _get_user(
-        self, user_id: int, user_repo: UserRepository
-    ) -> UserModel | None:
-        user = await user_repo.get(user_id, "group", "subscribe")
-        if user is None:
-            await clear_cache(
-                user_repo.get, user_repo, user_id, "group", "subscribe"
-            )
-        return user
+        data["user"] = await self._create_user(
+            tg_user, trail_subscribe, user_repo
+        )
+        return await handler(event, data)
 
     async def _create_user(
         self,
@@ -63,7 +62,7 @@ class AuthMiddleware(BaseMiddleware):
             [tg_user.first_name, tg_user.last_name]
         )
 
-        new_user = await user_repo.create(
+        await user_repo.create(
             first_name=first_name,
             last_name=last_name,
             user_name=tg_user.username,
@@ -74,10 +73,12 @@ class AuthMiddleware(BaseMiddleware):
             subscribe_end_time=subscribe_end_time,
         )
 
-        if new_user is None:
-            raise ValueError(f"Failed to create user: {tg_user}")
+        # Get must be called after create to ensure relations are loaded
+        new_user = await user_repo.get(tg_user.id, "group", "subscribe")
 
-        self.logger.info(
-            f"Successfully registered new user: {tg_user.username}"
-        )
+        if new_user is None:
+            raise ValueError("Failed to create new user")
+
+        self.logger.info(f"Successfully registered new user: {new_user}")
+
         return new_user
