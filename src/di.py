@@ -17,7 +17,7 @@ from services.notify_service.notify import NotifyService
 from services.request_service.request import RequestService
 from services.sender_service.sender import SenderService
 from services.sub_checker_service.sub_checker import SubCheckerService
-from utils.config import Settings
+from settings import Settings
 from utils.constants import SCHEDULE_URLS, IntervalBgServices
 
 
@@ -59,7 +59,7 @@ class CacheModule(Module):
     @singleton
     @provider
     def provide_redis(self, settings: Settings) -> Redis:
-        return Redis.from_url(settings.redis.url())
+        return Redis.from_url(settings.cache.url())
 
     @singleton
     @provider
@@ -82,14 +82,15 @@ class BotModule(Module):
     @provider
     def provide_bot(self, settings: Settings) -> Bot:
         return Bot(
-            settings.bot.token, default=DefaultBotProperties(parse_mode="HTML")
+            settings.bot.token.get_secret_value(),
+            default=DefaultBotProperties(parse_mode="HTML"),
         )
 
     @singleton
     @provider
     def provide_dispatcher(self, settings: Settings) -> Dispatcher:
         return Dispatcher(
-            storage=RedisStorage.from_url(url=settings.redis.url(db=1))
+            storage=RedisStorage.from_url(url=settings.cache.url(db=1))
         )
 
     @singleton

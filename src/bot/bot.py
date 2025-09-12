@@ -7,7 +7,7 @@ from database.cache.profile_cache import ProfileCache
 from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
 from services.sender_service.sender import SenderService
-from utils.config import Settings
+from settings import Settings
 
 
 class BotManager:

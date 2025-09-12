@@ -1,7 +1,6 @@
 import asyncio
 import sys
 from contextlib import suppress
-from logging import getLogger
 
 from injector import Injector
 
@@ -12,7 +11,8 @@ from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
 from di import create_injector
 from services.loader_service.default_schedule import DefaultScheduleLoader
-from utils.config import Settings
+from settings import Settings
+from utils.logger import LOGGER_CONFIG, logger_configure
 
 
 class App:
@@ -27,16 +27,12 @@ class App:
         self.default_schedule_loader = self.injector.get(DefaultScheduleLoader)
 
     async def start(self):
-        self.settings.logger.configure()
+        logger_configure(LOGGER_CONFIG)
 
-        logger = getLogger(__name__)
-        logger.info("hello")
-        # async with self.db.get_session() as session:
-
-        # await asyncio.gather(
-        #     self.bot_manager.start(),
-        #     self.service_manager.start_services(),
-        # )
+        await asyncio.gather(
+            self.bot_manager.start(),
+            self.service_manager.start_services(),
+        )
 
     async def __aenter__(self):
         return self

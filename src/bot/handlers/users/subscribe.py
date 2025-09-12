@@ -15,7 +15,7 @@ from bot.keyboards.users.inline.payment_kb import get_payment_kb
 from bot.keyboards.users.inline.subscribe_kb import get_subscribe_kb
 from database.models import UserModel
 from database.repository import Repository
-from utils.config import Settings
+from settings import Settings
 from utils.constants import CallbackData
 
 router = Router(name=__name__)

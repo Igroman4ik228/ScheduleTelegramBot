@@ -1,8 +1,11 @@
 from datetime import time as dt_time
 from datetime import timedelta
 from enum import IntEnum, StrEnum
+from pathlib import Path
 
 DEBUG: bool = False
+
+ROOT_DIR = Path().absolute()
 
 SCHEDULE_URLS = [
     "https://menu.sttec.yar.ru/timetable/rasp_first.html",

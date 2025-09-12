@@ -6,7 +6,7 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 from database.models.groups import GroupModel
-from utils.config import Settings
+from settings import Settings
 
 if TYPE_CHECKING:
     from app.factory_pack.parser_factory import ParserFactory

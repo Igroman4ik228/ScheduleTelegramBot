@@ -7,7 +7,7 @@ from bot.keyboards.users.inline.group_kb import get_group_kb
 from bot.keyboards.users.reply.main_kb import get_main_kb
 from database.models import UserModel
 from database.repository import CachedRepository, Repository
-from utils.config import Settings
+from settings import Settings
 from utils.constants import CallbackData
 
 router = Router(name=__name__)

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
-    def __init__(self, admin_ids: int):
+    def __init__(self, admin_ids: list[int]):
         self.logger = getLogger(self.__class__.__name__)
         self.admin_ids = admin_ids
 
@@ -49,7 +49,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         except TelegramAPIError as e:
             self.logger.error(f"TelegramAPIError: {e}", exc_info=True)
             await self._send_api_error_message(user.id, sender)
-        except Exception as e:
+        except ValueError as e:
             self.logger.error(f"Unhandled exception: {e}", exc_info=True)
             await self._send_message_to_admins(
                 f"Unhandled exception: {e}", sender
