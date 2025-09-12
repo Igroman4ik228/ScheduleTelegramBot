@@ -9,14 +9,10 @@ Pk = Annotated[int, mapped_column(primary_key=True, autoincrement=True)]
 BoolTrue = Annotated[bool, mapped_column(server_default=text("true"))]
 BoolFalse = Annotated[bool, mapped_column(server_default=text("false"))]
 
-CreatedAt = Annotated[
-    datetime, mapped_column(server_default=func.now(), info={"readonly": True})
-]
+CreatedAt = Annotated[datetime, mapped_column(server_default=func.now())]
 UpdatedAt = Annotated[
     datetime,
-    mapped_column(
-        server_default=func.now(), onupdate=func.now(), info={"readonly": True}
-    ),
+    mapped_column(server_default=func.now(), server_onupdate=func.now()),
 ]
 
 Str128 = Annotated[str, 128]
@@ -36,15 +32,6 @@ class BaseModel(DeclarativeBase):
         Str2048: String(2048),
         Str8192: String(8192),
     }
-
-    # Readonly fields protection
-    def __setattr__(self, key, value):
-        mapper = self.__class__.__mapper__
-        if key in mapper.c and mapper.c[key].info.get("readonly"):
-            raise AttributeError(
-                f"{key} is read-only and cannot be changed manually"
-            )
-        super().__setattr__(key, value)
 
     # Tables name
     @declared_attr.directive
