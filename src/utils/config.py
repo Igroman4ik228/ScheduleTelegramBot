@@ -133,6 +133,13 @@ class LoggerSettings(BaseModel):
 
         # Disable sqlalchemy engine logs
         getLogger("sqlalchemy.engine.Engine").handlers = [NullHandler()]
+        # Disable aiogram logs
+        # for name in [
+        #     "aiogram.middlewares",
+        #     "aiogram.event",
+        #     "aiohttp.access",
+        # ]:
+        #     getLogger(name).setLevel(WARNING)
 
 
 class Settings(BaseSettings):

@@ -1,0 +1,15 @@
+[Unit]
+Description=Schedule Telegram Bot
+After=network.target
+After=mysql.service
+
+[Service]
+User=root
+Type=simple
+WorkingDirectory=/full_path/to/your/working/directory
+ExecStart=make run
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

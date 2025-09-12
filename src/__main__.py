@@ -4,14 +4,12 @@ from contextlib import suppress
 from logging import getLogger
 
 from injector import Injector
-from sqlalchemy import select
 
 from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from database.cache.base import ICache
 from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
-from database.models.users import UserModel
 from di import create_injector
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from utils.config import Settings
@@ -32,12 +30,8 @@ class App:
         self.settings.logger.configure()
 
         logger = getLogger(__name__)
-
-        async with self.db.get_session() as session:
-            res = await session.scalar(
-                select(UserModel).where(UserModel.telegram_id == 953457546)
-            )
-        logger.info(res)
+        logger.info("hello")
+        # async with self.db.get_session() as session:
 
         # await asyncio.gather(
         #     self.bot_manager.start(),

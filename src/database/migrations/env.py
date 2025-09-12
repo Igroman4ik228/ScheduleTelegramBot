@@ -2,13 +2,11 @@ import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from injector import Injector
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from database.models.base import BaseModel
-from di import ConfigModule
 from utils.config import Settings
 
 # this is the Alembic Config object, which provides
@@ -30,11 +28,8 @@ target_metadata = BaseModel.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-# It is ok, because env.py run only from alembic
-injector = Injector(ConfigModule())
 config.set_main_option(
-    "sqlalchemy.url", injector.get(Settings).db.url + "?async_fallback=True"
+    "sqlalchemy.url", Settings().db.url + "?async_fallback=True"
 )
 
 
