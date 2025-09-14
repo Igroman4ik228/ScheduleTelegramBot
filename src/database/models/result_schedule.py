@@ -15,7 +15,7 @@ class ResultScheduleModel(BaseModel):
     weekday: Mapped[int]
     data_lessons: Mapped[Str8192]
     group_id: Mapped[int] = mapped_column(
-        ForeignKey("Groups.id", ondelete="CASCADE")
+        ForeignKey("groups.id", ondelete="CASCADE")
     )
 
     group: Mapped[GroupModel] = relationship(back_populates="result_schedule")
