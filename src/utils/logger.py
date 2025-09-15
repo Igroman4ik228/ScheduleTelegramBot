@@ -1,5 +1,5 @@
 import logging
-from functools import wraps
+from functools import cached_property, wraps
 from logging import (
     WARNING,
     Filter,
@@ -30,6 +30,12 @@ def logger_configure(config: dict[str, Any]):
         "sqlalchemy.engine.Engine"
     ]:
         getLogger(name).setLevel(WARNING)
+
+
+class LoggerMixin:
+    @cached_property
+    def logger(self):
+        return getLogger(self.__class__.__name__)
 
 
 # It's useless :(
