@@ -3,13 +3,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import (
     BaseModel,
     BoolFalse,
     BoolTrue,
+    Int64,
     Str128,
 )
 from database.models.mixins.timestamp import TimestampMixin
@@ -22,9 +23,9 @@ class UserModel(BaseModel, TimestampMixin):
     first_name: Mapped[Str128]
     last_name: Mapped[Str128 | None]
     user_name: Mapped[Str128 | None]
-    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True)
+    telegram_id: Mapped[Int64] = mapped_column(unique=True, index=True)
     subscribe_end_time: Mapped[datetime | None]
-    count_referral: Mapped[int] = mapped_column(default=0)
+    count_referral: Mapped[int] = mapped_column(server_default=0)
 
     is_bot: Mapped[BoolFalse]
     is_premium: Mapped[BoolFalse]
@@ -33,16 +34,19 @@ class UserModel(BaseModel, TimestampMixin):
     is_ban: Mapped[BoolFalse]
 
     group_id: Mapped[int | None] = mapped_column(
-        ForeignKey("Groups.id", ondelete="SET NULL")
+        ForeignKey("groups.id", ondelete="SET NULL")
     )
     subscribe_id: Mapped[int | None] = mapped_column(
-        ForeignKey("Subscribes.id", ondelete="SET NULL")
+        ForeignKey("subscribes.id", ondelete="SET NULL")
     )
 
-    group: Mapped[GroupModel] = relationship(back_populates="users")
-    subscribe: Mapped[SubscribeModel] = relationship(back_populates="users")
+    group: Mapped[GroupModel | None] = relationship(back_populates="users")
+    subscribe: Mapped[SubscribeModel | None] = relationship(
+        back_populates="users"
+    )
 
-    def get_full_name(self):
+    @property
+    def full_name(self):
         if self.last_name is None:
             return self.first_name
         return f"{self.first_name} {self.last_name}"

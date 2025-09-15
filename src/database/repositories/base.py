@@ -7,21 +7,21 @@ from sqlalchemy.orm import joinedload
 
 from database.models.base import BaseModel
 
-Model = TypeVar("Model", bound=BaseModel)
+TModel = TypeVar("Model", bound=BaseModel)
 
 
-class BaseRepositoryAlchemy[Model]:
-    def __init__(self, session: AsyncSession, model: type[Model]):
+class BaseRepositoryAlchemy[TModel]:
+    def __init__(self, session: AsyncSession, model: type[TModel]):
         self.logger = getLogger(self.__class__.__name__)
         self.session = session
         self.type_model = model
 
-    async def create(self, **kwargs) -> Model | None:
+    async def create(self, **kwargs) -> TModel | None:
         instance = self.type_model(**kwargs)
         self.session.add(instance)
         return instance
 
-    async def get(self, *options: str, **kwargs) -> Model | None:
+    async def get(self, *options: str, **kwargs) -> TModel | None:
         query = self._build_get_query(*options, limit=1, **kwargs)
         if query is None:
             return
@@ -31,14 +31,14 @@ class BaseRepositoryAlchemy[Model]:
 
     async def get_where(
         self, *conditions: ColumnExpressionArgument[bool], **kwargs
-    ) -> Model | None:
+    ) -> TModel | None:
         return await self.session.scalar(
             select(self.type_model).where(*conditions)
         )
 
     async def get_all(
         self, *options: str, limit: int | None = None, **kwargs
-    ) -> list[Model]:
+    ) -> list[TModel]:
         query = self._build_get_query(*options, limit=limit, **kwargs)
         if query is None:
             return []
@@ -46,7 +46,7 @@ class BaseRepositoryAlchemy[Model]:
         result = await self.session.execute(query)
         return result.unique().scalars().all()
 
-    async def update(self, instance: Model) -> Model | None:
+    async def update(self, instance: TModel) -> TModel | None:
         """Обновление"""
         instance_id = getattr(instance, "id", None)
         if instance_id is None:
@@ -66,7 +66,7 @@ class BaseRepositoryAlchemy[Model]:
         await self.session.flush()
         return merged
 
-    async def upsert(self, instance: Model) -> Model:
+    async def upsert(self, instance: TModel) -> TModel:
         """Обновление или вставка"""
         merged = await self.session.merge(instance)
         await self.session.flush()

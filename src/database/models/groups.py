@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 class GroupModel(BaseModel):
     name: Mapped[Str128] = mapped_column(unique=True)
     department_id: Mapped[int] = mapped_column(
-        ForeignKey("Departments.id", ondelete="CASCADE")
+        ForeignKey("departments.id", ondelete="CASCADE")
     )
     global_shift: Mapped[int] = mapped_column(
-        default=1
+        server_default=1
     )  # Смена для всех групп (первая или вторая)
 
     department: Mapped[DepartmentModel] = relationship(back_populates="groups")

@@ -6,10 +6,10 @@ from injector import Injector
 
 from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
+from container import create_injector
 from database.cache.base import ICache
 from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
-from di import create_injector
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from settings import Settings
 from utils.logger import LOGGER_CONFIG, logger_configure

@@ -7,9 +7,7 @@ from sqlalchemy.orm import Mapped, relationship
 from database.models.base import BaseModel, BoolTrue, Str128, Str512
 
 if TYPE_CHECKING:
-    from database.models import (
-        UserModel,
-    )
+    from database.models import UserModel
 
 
 class SubscribeModel(BaseModel):
