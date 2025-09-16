@@ -7,6 +7,7 @@ from sqlalchemy import (
     update,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import QueryableAttribute, joinedload, selectinload
 from sqlalchemy.sql.functions import count
 
 from database.models.base import BaseModel
@@ -14,6 +15,9 @@ from helpers.cls import check_sub_class
 from utils.logger import LoggerMixin
 
 TModel = TypeVar("TModel", bound=BaseModel)
+
+
+DEFAULT_LIMIT = 10000
 
 
 class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
@@ -25,18 +29,23 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
     @final
     async def _get_by_id(self, id: int, detach: bool = True) -> TModel | None:
         instance = await self.session.get(self.model_cls, id)
-        if detach:
+        if instance and detach:
             self.session.expunge(instance)
         return instance
 
     @final
     async def _get(
-        self, *conditions: ColumnExpressionArgument[bool], detach: bool = True
+        self,
+        *conditions: ColumnExpressionArgument[bool],
+        options: tuple[QueryableAttribute[TModel], ...] = (),
+        detach: bool = True,
     ) -> TModel | None:
-        instance = await self.session.scalar(
-            select(self.model_cls).where(*conditions).limit(1)
-        )
-        if detach:
+        query = self._build_get_query(*conditions, limit=1)
+        for option in options:
+            query = query.options(joinedload(option))
+
+        instance = await self.session.scalar(query)
+        if instance and detach:
             self.session.expunge(instance)
         return instance
 
@@ -44,19 +53,32 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
     async def _get_many(
         self,
         *conditions: ColumnExpressionArgument[bool],
-        limit: int = 1000,
+        options: tuple[QueryableAttribute[Any], ...] = (),
+        limit: int = DEFAULT_LIMIT,
         detach: bool = True,
     ) -> list[TModel]:
-        instances = list(
-            await self.session.scalars(
-                select(self.model_cls).where(*conditions).limit(limit)
-            )
-        )
+        query = self._build_get_query(*conditions, limit=limit)
+        for option in options:
+            query = query.options(selectinload(option))
+
+        instances = list(await self.session.scalars(query))
         if detach:
             for instance in instances:
                 self.session.expunge(instance)
-        return instance
+        return instances
 
+    @final
+    def _build_get_query(
+        self,
+        *conditions: ColumnExpressionArgument[bool],
+        limit: int = DEFAULT_LIMIT,
+    ):
+        query = select(self.model_cls).where(*conditions)
+        if limit is not None:
+            query = query.limit(limit)
+        return query
+
+    @final
     async def _update(
         self,
         *conditions: ColumnExpressionArgument[bool],
@@ -77,6 +99,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
             update(self.model_cls).where(*conditions).values(**values)
         )
         await self.session.commit()
+        # await self.session.flush()
 
         if result.rowcount == 0:
             conditions_str = (

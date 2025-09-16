@@ -11,8 +11,7 @@ from container import create_injector
 from database.cache.base import ICache
 from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
-from database.models.users import UserModel
-from database.repositories.base_copy import BaseRepositoryAlchemy
+from database.uow import UoW
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from settings import Settings
 from utils.logger import LOGGER_CONFIG, logger_configure
@@ -32,22 +31,33 @@ class App:
     async def start(self):
         logger_configure(LOGGER_CONFIG)
         logger = getLogger(self.__class__.__name__)
-        async with self.db.get_session() as session:
-            rep = BaseRepositoryAlchemy(session, UserModel)
+        async with UoW(self.db.sessionmaker) as uow:
+            users = await uow.users.get_many_with_all()
+            logger.info(f"users={users}")
 
-            user = await rep._get(UserModel.id == 2, detach=False)
-            logger.info(f"user={user}")
-            user.first_name = "132"
-            await session.merge(user)
-            await session.commit()
-            # is_user_update = await rep._update(
-            #     UserModel.first_name == "Ники11тосик"
-            # )
-            # logger.info(f"user_update={is_user_update}")
+            # user.first_name = "123"
 
-            user1 = await rep._get(UserModel.id == 2)
+            # await uow.users.update(user)
 
-            logger.info(f"user1={user1}")
+            # user = UserModel(first_name="123", telegram_id=1)
+
+            # await uow.commit()
+
+        # rep = BaseRepositoryAlchemy(session, UserModel)
+
+        # user = await rep._get(UserModel.id == 2, detach=False)
+        # logger.info(f"user={user}")
+        # user.first_name = "132"
+        # await session.merge(user)
+        # await session.commit()
+        # is_user_update = await rep._update(
+        #     UserModel.first_name == "Ники11тосик"
+        # )
+        # logger.info(f"user_update={is_user_update}")
+
+        # user1 = await rep._get(UserModel.id == 2)
+
+        # logger.info(f"user1={user1}")
 
         # async with self.db.get_session() as session:
         #     rep = BaseRepositoryAlchemy(session, UserModel)
