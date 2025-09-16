@@ -39,6 +39,8 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
                 return
             group_id = group.id
 
+        await self._clear_user_cache(telegram_id)
+
         res = await super().create(
             first_name=first_name,
             user_name=user_name,
@@ -46,7 +48,6 @@ class UserRepository(BaseRepositoryAlchemy[UserModel]):
             group_id=group_id,
             **kwargs,
         )
-        await self._clear_user_cache(telegram_id)
         return res
 
     @cached(ttl_seconds=CacheTTL.USER.value)

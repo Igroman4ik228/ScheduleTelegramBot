@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import (
@@ -25,7 +25,7 @@ class UserModel(BaseModel, TimestampMixin):
     user_name: Mapped[Str128 | None]
     telegram_id: Mapped[Int64] = mapped_column(unique=True, index=True)
     subscribe_end_time: Mapped[datetime | None]
-    count_referral: Mapped[int] = mapped_column(server_default=0)
+    count_referral: Mapped[int] = mapped_column(server_default=text("0"))
 
     is_bot: Mapped[BoolFalse]
     is_premium: Mapped[BoolFalse]

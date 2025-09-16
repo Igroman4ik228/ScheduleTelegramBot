@@ -19,6 +19,7 @@ class BaseRepositoryAlchemy[TModel]:
     async def create(self, **kwargs) -> TModel | None:
         instance = self.type_model(**kwargs)
         self.session.add(instance)
+        await self.session.commit()
         return instance
 
     async def get(self, *options: str, **kwargs) -> TModel | None:
@@ -95,6 +96,98 @@ class BaseRepositoryAlchemy[TModel]:
         for option in options:
             query = query.options(joinedload(getattr(self.type_model, option)))
         return query
+
+    # async def _update(
+    #     self,
+    #     conditions: list[ColumnExpressionArgument[bool]],
+    #     load_result: bool = True,
+    #     **values: Any,
+    # ) -> TModel | tuple[TModel] | None:
+    #     if not values:
+    #         if not load_result:
+    #             return None
+    #         return await self._get(*conditions)
+
+    #     query = update(self.type_model).where(*conditions).values(**values)
+    #     if load_result:
+    #         query = query.returning(self.type_model)
+    #         result = await self.session.execute(query)
+    #         await self.session.commit()
+
+    #         rows = result.scalars().all()
+    #         if not rows:
+    #             self.logger.warning(
+    #                 f"UPDATE {self.type_model.__name__} did not affect any rows "
+    #                 f"with conditions={conditions} and values={values}"
+    #             )
+    #             return None
+    #         if len(rows) == 1:
+    #             return rows[0]
+    #         return tuple(rows)  # если больше одной записи
+
+    #     await self.session.execute(query)
+    #     await self.session.commit()
+    #     return None
+
+    # async def _update(
+    #     self,
+    #     conditions: list[ColumnExpressionArgument[bool]],
+    #     load_result: bool = True,
+    #     **kwargs: Any,
+    # ) -> TModel | None:
+    #     if not kwargs:
+    #         if not load_result:
+    #             return None
+    #         return await self._get(*conditions)
+
+    #     query = update(self.type_model).where(*conditions).values(**kwargs)
+    #     if load_result:
+    #         query = query.returning(self.type_model)
+    #     result = await self.session.execute(query)
+    #     await self.session.commit()
+
+    #     if not load_result:
+    #         return None
+
+    #     try:
+    #         row = result.scalar_one_or_none()
+    #         if row is None:
+    #             self.logger.warning(
+    #                 f"UPDATE {self.type_model.__name__} did not affect any rows "
+    #                 f"with conditions={conditions} and values={kwargs}"
+    #             )
+    #         return row
+    #     except MultipleResultsFound as e:
+    #         message = (
+    #             f"Multiple rows updated in {self.type_model.__name__}. "
+    #             f"conditions={conditions}, values={kwargs}"
+    #         )
+    #         self.logger.error(message)
+    #         raise MultipleRowsUpdatedError(message) from e
+
+    # async def _update_many(
+    #     self,
+    #     conditions: list[ColumnExpressionArgument[Any]],
+    #     **values: Any,
+    # ) -> list[TModel]:
+    #     if not values:
+    #         return await self._get_many(*conditions)
+
+    #     query = update(self.type_model).where(*conditions).values(**values)
+
+    #     result = await self.session.execute(query)
+    #     await self.session.flush()
+
+    #     rows = result.scalars().all()
+    #     if not rows:
+    #         self.logger.warning(
+    #             f"{self.__class__.__name__} "
+    #             f"UPDATE {self.type_model.__name__} did not affect any rows "
+    #             f"with conditions={conditions} and values={values}"
+    #         )
+    #         return None
+
+    #     return list(rows)
 
 
 class RepositoryException(Exception): ...

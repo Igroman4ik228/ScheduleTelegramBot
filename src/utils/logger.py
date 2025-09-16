@@ -3,6 +3,7 @@ from functools import cached_property, wraps
 from logging import (
     WARNING,
     Filter,
+    NullHandler,
     getLogger,
 )
 from logging.config import dictConfig
@@ -20,14 +21,14 @@ def logger_configure(config: dict[str, Any]):
     dictConfig(config)
 
     # Disable sqlalchemy engine logs
-    # getLogger("sqlalchemy.engine.Engine").handlers = [NullHandler()]
+    getLogger("sqlalchemy.engine.Engine").handlers = [NullHandler()]
 
     # Disable aiogram logs
     for name in [
         # "aiogram.middlewares",
         # "aiogram.event",
         # "aiohttp.access",
-        "sqlalchemy.engine.Engine"
+        # "sqlalchemy.engine.Engine"
     ]:
         getLogger(name).setLevel(WARNING)
 
@@ -130,7 +131,8 @@ class LevelFilter(Filter):
 KB = 1024
 MB = KB * 1024
 
-DEFAULT_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(filename)s:%(funcName)s:%(lineno)s  -> %(message)s"
+DEFAULT_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(filename)s:%(funcName)s:%(lineno)s -> %(message)s"
+SIMPLE_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s -> %(message)s"
 
 LOGGER_CONFIG = {
     "version": 1,
@@ -141,7 +143,7 @@ LOGGER_CONFIG = {
             "datefmt": "%d.%m.%y %H:%M:%S",
         },
         "simple": {
-            "format": DEFAULT_FORMAT,
+            "format": SIMPLE_FORMAT,
             "datefmt": "%H:%M:%S",
         },
     },

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.models.base import BaseModel, Str128
@@ -22,7 +22,7 @@ class GroupModel(BaseModel):
         ForeignKey("departments.id", ondelete="CASCADE")
     )
     global_shift: Mapped[int] = mapped_column(
-        server_default=1
+        server_default=text("1")
     )  # Смена для всех групп (первая или вторая)
 
     department: Mapped[DepartmentModel] = relationship(back_populates="groups")

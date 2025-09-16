@@ -49,6 +49,32 @@ class DatabaseAlchemy:
         await self.engine.dispose()
 
 
+def connection(self, commit: bool = True):
+    """
+    Декоратор для управления сессией с возможностью настройки уровня изоляции и коммита.
+    - `commit`: если `True`, выполняется коммит после вызова метода.
+    """
+
+    def decorator(method):
+        @wraps(method)
+        async def wrapper(*args, **kwargs):
+            async with self.session_maker() as session:
+                try:
+                    result = await method(*args, session=session, **kwargs)
+                    if commit:
+                        await session.commit()
+                    return result
+                except Exception:
+                    await session.rollback()
+                    raise
+                finally:
+                    await session.close()
+
+        return wrapper
+
+    return decorator
+
+
 def with_session(func):
     """
     Декоратор для автоматического управления сессией.
