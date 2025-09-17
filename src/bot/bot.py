@@ -4,7 +4,7 @@ from app.factory_pack.parser_factory import ParserFactory
 from bot.handlers import register_routers
 from bot.middlewares import register_middlewares
 from database.cache.profile_cache import ProfileCache
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy
 from services.sender_service.sender import SenderService
 from settings import Settings
@@ -19,7 +19,7 @@ class BotManager:
         db: DatabaseAlchemy,
         sender_service: SenderService,
         profile_cache: ProfileCache,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
         parser_factory: ParserFactory,
     ):
         self.bot = bot

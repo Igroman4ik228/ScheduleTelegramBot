@@ -7,7 +7,7 @@ from database.cache.serialization import AbstractSerializer, PickleSerializer
 DEFAULT_NAMESPACE = "main"
 
 
-class CacheRepositoryService:
+class CacheService:
     def __init__(
         self, cache: ICache, serializer: AbstractSerializer = PickleSerializer()
     ):
@@ -18,13 +18,10 @@ class CacheRepositoryService:
         self,
         key: str | bytes,
         value: Any,
-        ttl_seconds: int | None = None,
+        ttl_seconds: int,
     ):
         value = self.serializer.serialize(value)
-        if ttl_seconds is None:
-            await self.cache.create(key, value)
-        else:
-            await self.cache.create(key, value, ex=ttl_seconds)
+        await self.cache.create(key, value, ex=ttl_seconds)
 
     async def get_value(self, key: str | bytes) -> Any | None:
         cached_value = await self.cache.get(key)
@@ -36,8 +33,14 @@ class CacheRepositoryService:
         await self.cache.delete(key)
 
 
+class Cacheable:
+    cache_service: CacheService
+
+    def __init__(self, cache_service: CacheService):
+        self.cache_service = cache_service
+
+
 def default_key_build(instance: Any, *args: Any, **kwargs: Any) -> str:
-    """Генерация ключа на основе модели и аргументов репозитория."""
     name = instance.__class__.__name__
     args_str = ":".join(map(str, args))
     kwargs_str = ":".join(
@@ -51,8 +54,6 @@ def cached(
     namespace: str = DEFAULT_NAMESPACE,
     key_builder: Callable[..., str] = default_key_build,
 ) -> Callable:
-    """Декоратор для кэширования результатов методов репозиториев."""
-
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(instance: Any, *args: tuple, **kwargs: dict) -> Any:
@@ -70,11 +71,12 @@ def cached(
             result = await func(instance, *args, **kwargs)
 
             # Сохраняем результат в кэш
-            await cache_service.set_value(
-                key,
-                result,
-                ttl_seconds,
-            )
+            if result is not None:
+                await cache_service.set_value(
+                    key,
+                    result,
+                    ttl_seconds,
+                )
 
             return result
 
@@ -89,13 +91,10 @@ async def clear_cache(
     func: Callable,
     instance: Any,
     *args: Any,
-    namespace: str | None = None,
     **kwargs: Any,
 ):
     """Очистка кэша для конкретного метода"""
-    if namespace is None:
-        namespace = getattr(func, "_namespace", DEFAULT_NAMESPACE)
-
+    namespace = getattr(func, "_namespace", DEFAULT_NAMESPACE)
     key_builder = getattr(func, "_key_builder", default_key_build)
 
     key = key_builder(instance, *args, **kwargs)
@@ -104,8 +103,8 @@ async def clear_cache(
     await get_cached_service(instance).clear(key)
 
 
-def get_cached_service(instance: Any) -> CacheRepositoryService:
-    cache_service: CacheRepositoryService | None = getattr(
+def get_cached_service(instance: Any) -> CacheService:
+    cache_service: CacheService | None = getattr(
         instance, "cache_service", None
     )
     if cache_service is None:

@@ -2,7 +2,7 @@ from app.background_service_pack.models import (
     IntervalService,
 )
 from app.observer_pack.models import Publisher
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy, with_session
 from database.repository import CachedRepository
 from services.notify_service.notify import NotifyService
@@ -20,7 +20,7 @@ class ParserService(IntervalService, Publisher):
         interval: int,
         request: RequestService,
         db: DatabaseAlchemy,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
         notify: NotifyService,
     ):
         IntervalService.__init__(self, interval)

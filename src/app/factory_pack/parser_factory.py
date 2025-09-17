@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from app.factory_pack.models import BackgroundServiceFactory
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy
 from helpers.week import Week
 from services.parser_service.parser import ParserService
@@ -21,7 +21,7 @@ class ParserFactory(BackgroundServiceFactory):
         request: RequestService,
         db: DatabaseAlchemy,
         notify: NotifyService,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
     ):
         self._parsers: list[ParserService] | None = None
         self.interval = interval

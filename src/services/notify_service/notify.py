@@ -8,7 +8,7 @@ from aiogram import html
 
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy, with_session
 from database.models import UserModel
 from database.repository import CachedRepository
@@ -26,7 +26,7 @@ class NotifyService(Observer):
         self,
         db: DatabaseAlchemy,
         sender: SenderService,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
     ):
         self.logger = getLogger(self.__class__.__name__)
         self.db = db

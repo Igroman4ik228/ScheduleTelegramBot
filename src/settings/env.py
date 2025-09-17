@@ -38,6 +38,7 @@ class DatabaseEnv(BaseSettingsEnv, env_prefix="db__"):
     user: str = "mysql"
     password: SecretStr | None = None
     name: str = "mysql"
+    echo: bool = False
 
     @property
     def url(self) -> str:

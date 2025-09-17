@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
     from aiogram.types import TelegramObject
 
-    from database.cache.repositories import CacheRepositoryService
+    from database.cache.repositories import CacheService
     from database.db import DatabaseAlchemy
 
 
@@ -23,7 +23,7 @@ class DatabaseMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         db: DatabaseAlchemy = data["db"]
-        cache_service: CacheRepositoryService = data["cache_service"]
+        cache_service: CacheService = data["cache_service"]
         async with db.get_session() as session:
             data["repository"] = CachedRepository(session, cache_service)
             return await handler(event, data)

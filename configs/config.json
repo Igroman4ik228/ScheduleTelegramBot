@@ -1,6 +1,5 @@
 {
     "rate_limit": 0.2,
-    "echo": false,
     "pre_ping": true,
     "pool_size": 50,
     "max_overflow": 10

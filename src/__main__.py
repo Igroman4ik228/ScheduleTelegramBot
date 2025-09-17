@@ -1,7 +1,6 @@
 import asyncio
 import sys
 from contextlib import suppress
-from logging import getLogger
 
 from injector import Injector
 
@@ -9,13 +8,11 @@ from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from container import create_injector
 from database.cache.base import ICache
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy
-from database.models.users import UserModel
-from database.repositories.base_copy import BaseRepositoryAlchemy
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from settings import Settings
-from utils.logger import LOGGER_CONFIG, logger_configure
+from utils.logger import LOGGER_CONFIG_EXTRA_FILES, logger_configure
 
 
 class App:
@@ -24,41 +21,20 @@ class App:
         self.settings = self.injector.get(Settings)
         self.db = self.injector.get(DatabaseAlchemy)
         self.cache = self.injector.get(ICache)
-        self.cache_repository = self.injector.get(CacheRepositoryService)
+        self.cache_repository = self.injector.get(CacheService)
         self.bot_manager = self.injector.get(BotManager)
         self.service_manager = self.injector.get(BackgroundManager)
         self.default_schedule_loader = self.injector.get(DefaultScheduleLoader)
 
     async def start(self):
-        logger_configure(LOGGER_CONFIG)
-        logger = getLogger(self.__class__.__name__)
-        async with self.db.get_session() as session:
-            rep = BaseRepositoryAlchemy(session, UserModel)
+        logger_configure(LOGGER_CONFIG_EXTRA_FILES)
 
-            user = await rep._get(UserModel.id == 2, detach=False)
-            logger.info(f"user={user}")
-            user.first_name = "132"
-            await session.merge(user)
-            await session.commit()
-            # is_user_update = await rep._update(
-            #     UserModel.first_name == "Ники11тосик"
-            # )
-            # logger.info(f"user_update={is_user_update}")
+        await self.default_schedule_loader.process_all_files()
 
-            user1 = await rep._get(UserModel.id == 2)
-
-            logger.info(f"user1={user1}")
-
-        # async with self.db.get_session() as session:
-        #     rep = BaseRepositoryAlchemy(session, UserModel)
-
-        #     user = await rep._get(UserModel.user_name == "Notoxikk")
-        #     logger.info(f"user={user}")
-
-        # await asyncio.gather(
-        #     self.bot_manager.start(),
-        #     self.service_manager.start_services(),
-        # )
+        await asyncio.gather(
+            self.bot_manager.start(),
+            self.service_manager.start_services(),
+        )
 
     async def __aenter__(self):
         return self

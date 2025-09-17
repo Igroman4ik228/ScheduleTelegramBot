@@ -10,7 +10,7 @@ from app.factory_pack.parser_factory import ParserFactory
 from bot.bot import BotManager
 from database.cache.base import BaseRedis, ICache
 from database.cache.profile_cache import ProfileCache
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.db import DatabaseAlchemy
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from services.notify_service.notify import NotifyService
@@ -73,8 +73,8 @@ class CacheModule(Module):
 
     @singleton
     @provider
-    def provide_cache_service(self, cache: ICache) -> CacheRepositoryService:
-        return CacheRepositoryService(cache)
+    def provide_cache_service(self, cache: ICache) -> CacheService:
+        return CacheService(cache)
 
 
 class BotModule(Module):
@@ -99,7 +99,7 @@ class BotModule(Module):
         self,
         db: DatabaseAlchemy,
         bot: Bot,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
     ) -> SenderService:
         return SenderService(db, bot, cache_service)
 
@@ -113,7 +113,7 @@ class BotModule(Module):
         db: DatabaseAlchemy,
         sender_service: SenderService,
         profile_cache: ProfileCache,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
         parser_factory: ParserFactory,
     ) -> BotManager:
         return BotManager(
@@ -135,7 +135,7 @@ class ServiceModule(Module):
         self,
         db: DatabaseAlchemy,
         sender: SenderService,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
     ) -> NotifyService:
         return NotifyService(db, sender, cache_service)
 
@@ -163,7 +163,7 @@ class ServiceModule(Module):
         request: RequestService,
         db: DatabaseAlchemy,
         notify: NotifyService,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheService,
     ) -> ParserFactory:
         return ParserFactory(
             IntervalBgServices.PARSER.value,

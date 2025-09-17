@@ -68,12 +68,12 @@ class CacheTTL(IntEnum):
 
 class IntervalBgServices(IntEnum):
     SUB_CHECKER = timedelta(minutes=10).seconds
-    PARSER = timedelta(minutes=1).seconds
+    PARSER = timedelta(minutes=3).seconds
 
 
 # Integers
 MAX_REFERRAL = 5
-SENDER_TIME_SLEEP = timedelta(milliseconds=500).seconds
+SENDER_TIME_SLEEP = timedelta(milliseconds=1000).seconds
 
 # Strings
 FILE_EXTENSION = "json"

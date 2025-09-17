@@ -3,7 +3,7 @@ from functools import cached_property
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.cache.repositories import CacheRepositoryService
+from database.cache.repositories import CacheService
 from database.repositories import (
     DefaultScheduleRepository,
     DepartmentRepository,
@@ -46,7 +46,7 @@ class Repository:
 class CachedRepository(Repository):
     """Фабрика для репозиториев, включающая репозитории с кэшом"""
 
-    cache_service: CacheRepositoryService
+    cache_service: CacheService
 
     @cached_property
     def users(self) -> UserRepository:

@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import GroupModel
@@ -9,7 +7,6 @@ from database.repositories.departments import DepartmentRepository
 
 class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     def __init__(self, session: AsyncSession):
-        self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, GroupModel)
         self.department_repo = DepartmentRepository(session)
 

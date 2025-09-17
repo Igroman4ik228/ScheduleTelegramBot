@@ -28,7 +28,6 @@ def logger_configure(config: dict[str, Any]):
         # "aiogram.middlewares",
         # "aiogram.event",
         # "aiohttp.access",
-        # "sqlalchemy.engine.Engine"
     ]:
         getLogger(name).setLevel(WARNING)
 
