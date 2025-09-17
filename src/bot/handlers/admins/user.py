@@ -20,7 +20,7 @@ from bot.keyboards.admins.inline.user.subscribe_list_users_kb import (
 )
 from bot.keyboards.admins.inline.user.user_kb import get_user_kb
 from bot.views.user import UserView
-from database.repository import Repository
+from database.repository import CachedRepository, Repository
 from helpers.subscribe import calc_subscribe_end_time
 from helpers.text import split_text_with_wrap
 from services.sender_service.sender import SenderService
@@ -51,7 +51,7 @@ async def handle_user(callback_query: CallbackQuery):
 # *List users
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
 async def handle_list_users(
-    callback_query: CallbackQuery, repository: Repository
+    callback_query: CallbackQuery, repository: CachedRepository
 ):
     groups = await repository.groups.get_all()
     users = await repository.users.get_all()
@@ -73,7 +73,7 @@ async def handle_list_users(
 async def handle_group_list_users(
     callback_query: CallbackQuery,
     callback_data: GroupCallbackFactory,
-    repository: Repository,
+    repository: CachedRepository,
     state: FSMContext,
 ):
     group_id = callback_data.group_id
@@ -158,7 +158,7 @@ async def handle_cancel_ban_unban(message: Message, state: FSMContext):
 
 @router.message(BanUnbanStates.tg_user_id, F.text.isdigit())
 async def handle_ban_unban(
-    message: Message, repository: Repository, bot: Bot, state: FSMContext
+    message: Message, repository: CachedRepository, bot: Bot, state: FSMContext
 ):
     user_input = message.text
     await state.update_data(tg_user_id=user_input)

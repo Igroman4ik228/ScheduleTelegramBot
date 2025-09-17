@@ -1,3 +1,6 @@
+from typing import Sequence
+
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.cache.repositories import (
@@ -45,6 +48,24 @@ class ResultScheduleRepository(
         self, weekday: int, group_id: int, *options
     ) -> ResultScheduleModel | None:
         return await super().get(weekday=weekday, group_id=group_id, *options)
+
+    async def get_all_by_weekday_and_groups(
+        self, weekday: int, group_ids: Sequence[int], *options
+    ) -> list[ResultScheduleModel]:
+        if not group_ids:
+            return []
+
+        stmt = (
+            select(ResultScheduleModel)
+            .where(
+                ResultScheduleModel.weekday == weekday,
+                ResultScheduleModel.group_id.in_(group_ids),
+            )
+            .options(*options)
+        )
+
+        result = await self.session.execute(stmt)
+        return result.scalars().all()
 
     # No cache
     async def get_by_group_name(

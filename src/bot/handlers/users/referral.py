@@ -1,7 +1,7 @@
 from aiogram import Bot, F, Router, html
 from aiogram.types import CallbackQuery
 
-from database.repository import Repository
+from database.repository import CachedRepository
 from utils.constants import MAX_REFERRAL, CallbackData
 
 router = Router(name=__name__)
@@ -11,7 +11,7 @@ TITLE = "Приветствие"
 
 @router.callback_query(F.data == CallbackData.REFERRAL.value)
 async def handle_referral(
-    callback_query: CallbackQuery, bot: Bot, repository: Repository
+    callback_query: CallbackQuery, bot: Bot, repository: CachedRepository
 ):
     tg_id = callback_query.from_user.id
     bot_name = await bot.get_my_name()

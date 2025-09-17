@@ -52,11 +52,29 @@ class ParserService(IntervalService, Publisher):
 
         is_update = False
         async with self.db.get_session() as session:
-            repository = CachedRepository(session, self.cache_service)
+            repo = CachedRepository(session, self.cache_service)
+            groups = await repo.groups.get_all_by_global_shift(
+                self.global_shift
+            )
 
-            for group, schedule in result_schedule.items():
-                if await self._check_changed_schedule(
-                    group, schedule, repository
+            existing_schedules = (
+                await repo.result_schedule.get_all_by_weekday_and_groups(
+                    self.parser.week.weekday, [g.id for g in groups]
+                )
+            )
+
+            existing_dict = {sch.group_id: sch for sch in existing_schedules}
+            groups_dict = {g.name: g for g in groups}
+
+            for group_name, schedule in result_schedule.items():
+                group = groups_dict.get(group_name)
+                if not group:
+                    continue
+
+                old_schedule = existing_dict.get(group.id)
+                if (
+                    old_schedule is None
+                    or old_schedule.data_lessons != schedule
                 ):
                     is_update = True
                     break
@@ -102,27 +120,27 @@ class ParserService(IntervalService, Publisher):
                 self.parser.week.weekday, schedule, group
             )
 
-    async def _check_changed_schedule(
-        self,
-        group_name: str,
-        current_result_schedule: str,
-        repository: CachedRepository,
-    ) -> bool:
-        group = await repository.groups.get_by_name(group_name)
-        if group is None:
-            return False
+    # async def _check_changed_schedule(
+    #     self,
+    #     group_name: str,
+    #     current_result_schedule: str,
+    #     repository: CachedRepository,
+    # ) -> bool:
+    #     group = await repository.groups.get_by_name(group_name)
+    #     if group is None:
+    #         return False
 
-        if group.global_shift != self.global_shift:
-            return False
+    #     if group.global_shift != self.global_shift:
+    #         return False
 
-        result_schedule = await repository.result_schedule.get(
-            self.parser.week.weekday, group.id
-        )
+    #     result_schedule = await repository.result_schedule.get(
+    #         self.parser.week.weekday, group.id
+    #     )
 
-        if (
-            result_schedule is None
-            or result_schedule.data_lessons != current_result_schedule
-        ):
-            return True
+    #     if (
+    #         result_schedule is None
+    #         or result_schedule.data_lessons != current_result_schedule
+    #     ):
+    #         return True
 
-        return False
+    #     return False

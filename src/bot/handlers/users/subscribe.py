@@ -14,7 +14,7 @@ from bot.filters.subscribe import SubscribeFilter
 from bot.keyboards.users.inline.payment_kb import get_payment_kb
 from bot.keyboards.users.inline.subscribe_kb import get_subscribe_kb
 from database.models import UserModel
-from database.repository import Repository
+from database.repository import CachedRepository, Repository
 from settings import Settings
 from utils.constants import CallbackData
 
@@ -98,7 +98,7 @@ async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
 
 @router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
 async def handle_successful_payment(
-    message: Message, user: UserModel, repository: Repository
+    message: Message, user: UserModel, repository: CachedRepository
 ):
     subscribe_id = int(message.successful_payment.invoice_payload)
     subscribe = await repository.subscribes.get(subscribe_id)

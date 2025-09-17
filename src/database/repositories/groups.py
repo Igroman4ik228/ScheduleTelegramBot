@@ -34,6 +34,11 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
         department = await self.department_repo.get_by_name(department_name)
         return await super().get_all(department_id=department.id)
 
+    async def get_all_by_global_shift(
+        self, global_shift: int
+    ) -> list[GroupModel]:
+        return await super().get_all(global_shift=global_shift)
+
     async def delete(self, group_id: int):
         await super().delete(id=group_id)
 
