@@ -5,22 +5,15 @@ from typing import Any
 
 class AbstractSerializer(ABC):
     @abstractmethod
-    def serialize(self, obj: Any) -> Any:
-        "Support for serializing objects stored in Redis."
-        raise NotImplementedError
+    def serialize(self, obj: Any) -> Any: ...
 
     @abstractmethod
-    def deserialize(self, obj: Any) -> Any:
-        "Support for deserializing objects stored in Redis."
-        raise NotImplementedError
+    def deserialize(self, obj: Any) -> Any: ...
 
 
 class PickleSerializer(AbstractSerializer):
-    "Serialize values using pickle."
-
     def serialize(self, obj: Any) -> bytes:
-        return pickle.dumps(obj)
+        return pickle.dumps(obj, protocol=pickle.HIGHEST_PROTOCOL)
 
     def deserialize(self, obj: bytes) -> Any:
-        "Deserialize values using pickle."
         return pickle.loads(obj)

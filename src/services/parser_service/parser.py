@@ -2,9 +2,9 @@ from app.background_service_pack.models import (
     IntervalService,
 )
 from app.observer_pack.models import Publisher
-from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy, with_session
 from database.repository import CachedRepository
+from helpers.cache import CacheHelper
 from services.notify_service.notify import NotifyService
 from services.parser_service.builder import Builder
 from services.parser_service.html_parser import HtmlParser
@@ -20,7 +20,7 @@ class ParserService(IntervalService, Publisher):
         interval: int,
         request: RequestService,
         db: DatabaseAlchemy,
-        cache_service: CacheRepositoryService,
+        cache_helper: CacheHelper,
         notify: NotifyService,
     ):
         IntervalService.__init__(self, interval)
@@ -32,7 +32,7 @@ class ParserService(IntervalService, Publisher):
         self.global_shift = global_shift
         self.request = request
         self.db = db
-        self.cache_service = cache_service
+        self.cache_service = cache_helper
 
         self.attach(notify)
 

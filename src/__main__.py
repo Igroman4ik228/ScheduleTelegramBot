@@ -9,9 +9,9 @@ from app.background_service_pack.manager import BackgroundManager
 from bot.bot import BotManager
 from container import create_injector
 from database.cache.base import ICache
-from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
-from database.uow import UoW
+from database.uow import CachedUoW
+from helpers.cache import CacheHelper
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from settings import Settings
 from utils.logger import LOGGER_CONFIG, logger_configure
@@ -23,7 +23,7 @@ class App:
         self.settings = self.injector.get(Settings)
         self.db = self.injector.get(DatabaseAlchemy)
         self.cache = self.injector.get(ICache)
-        self.cache_repository = self.injector.get(CacheRepositoryService)
+        self.cache_helper = self.injector.get(CacheHelper)
         self.bot_manager = self.injector.get(BotManager)
         self.service_manager = self.injector.get(BackgroundManager)
         self.default_schedule_loader = self.injector.get(DefaultScheduleLoader)
@@ -31,39 +31,13 @@ class App:
     async def start(self):
         logger_configure(LOGGER_CONFIG)
         logger = getLogger(self.__class__.__name__)
-        async with UoW(self.db.sessionmaker) as uow:
-            users = await uow.users.get_many_with_all()
-            logger.info(f"users={users}")
 
-            # user.first_name = "123"
-
-            # await uow.users.update(user)
-
-            # user = UserModel(first_name="123", telegram_id=1)
-
-            # await uow.commit()
-
-        # rep = BaseRepositoryAlchemy(session, UserModel)
-
-        # user = await rep._get(UserModel.id == 2, detach=False)
-        # logger.info(f"user={user}")
-        # user.first_name = "132"
-        # await session.merge(user)
-        # await session.commit()
-        # is_user_update = await rep._update(
-        #     UserModel.first_name == "Ники11тосик"
-        # )
-        # logger.info(f"user_update={is_user_update}")
-
-        # user1 = await rep._get(UserModel.id == 2)
-
-        # logger.info(f"user1={user1}")
-
-        # async with self.db.get_session() as session:
-        #     rep = BaseRepositoryAlchemy(session, UserModel)
-
-        #     user = await rep._get(UserModel.user_name == "Notoxikk")
-        #     logger.info(f"user={user}")
+        async with CachedUoW(self.db.sessionmaker, self.cache_helper) as (
+            uow,
+            rep,
+        ):
+            user = await rep.users.get(953457547)
+            logger.info(f"user={user}")
 
         # await asyncio.gather(
         #     self.bot_manager.start(),

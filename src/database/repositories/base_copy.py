@@ -11,7 +11,6 @@ from sqlalchemy.orm import QueryableAttribute, joinedload, selectinload
 from sqlalchemy.sql.functions import count
 
 from database.models.base import BaseModel
-from helpers.cls import check_sub_class
 from utils.logger import LoggerMixin
 
 TModel = TypeVar("TModel", bound=BaseModel)
@@ -22,7 +21,6 @@ DEFAULT_LIMIT = 10000
 
 class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
     def __init__(self, session: AsyncSession, model_cls: type[TModel]):
-        check_sub_class(model_cls, BaseModel)
         self.session = session
         self.model_cls = model_cls
 
@@ -55,17 +53,12 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         *conditions: ColumnExpressionArgument[bool],
         options: tuple[QueryableAttribute[Any], ...] = (),
         limit: int = DEFAULT_LIMIT,
-        detach: bool = True,
     ) -> list[TModel]:
         query = self._build_get_query(*conditions, limit=limit)
         for option in options:
             query = query.options(selectinload(option))
 
-        instances = list(await self.session.scalars(query))
-        if detach:
-            for instance in instances:
-                self.session.expunge(instance)
-        return instances
+        return list(await self.session.scalars(query))
 
     @final
     def _build_get_query(
@@ -98,6 +91,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         result = await self.session.execute(
             update(self.model_cls).where(*conditions).values(**values)
         )
+        # todo: flush or commit?
         await self.session.commit()
         # await self.session.flush()
 
@@ -121,6 +115,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         result = await self.session.execute(
             delete(self.model_cls).where(*conditions)
         )
+        # todo: flush or commit?
         await self.session.commit()
         # await self.session.flush()
 

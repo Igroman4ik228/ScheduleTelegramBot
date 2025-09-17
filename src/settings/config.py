@@ -44,7 +44,6 @@ class BotConfig(BaseSettingsConfig):
 
 
 class DatabaseConfig(BaseSettingsConfig):
-    echo: bool = False
     pre_ping: bool = True
     pool_size: int = Field(default=50, ge=1)
     max_overflow: int = Field(default=10, ge=1)

@@ -3,10 +3,10 @@ from logging import getLogger
 
 from aiogram import Bot
 
-from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy, with_session
 from database.models import UserModel
 from database.repository import CachedRepository
+from helpers.cache import CacheHelper
 from utils.constants import SENDER_TIME_SLEEP
 
 
@@ -15,7 +15,7 @@ class SenderService:
         self,
         db: DatabaseAlchemy,
         bot: Bot,
-        cache_service: CacheRepositoryService,
+        cache_service: CacheHelper,
     ):
         self.logger = getLogger(self.__class__.__name__)
         self.db = db

@@ -2,21 +2,19 @@ from logging import getLogger
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.cache.repositories import (
-    CacheRepositoryService,
-    cached,
-    clear_cache,
-)
 from database.models import ResultScheduleModel
 from database.repositories import GroupRepository
 from database.repositories.base import BaseRepositoryAlchemy
+from helpers.cache import (
+    CacheHelper,
+    cached,
+    clear_cache,
+)
 from utils.constants import CacheTTL
 
 
 class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
-    def __init__(
-        self, session: AsyncSession, cache_service: CacheRepositoryService
-    ):
+    def __init__(self, session: AsyncSession, cache_service: CacheHelper):
         self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, ResultScheduleModel)
         self.group_repo = GroupRepository(session)

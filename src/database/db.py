@@ -75,6 +75,7 @@ def connection(self, commit: bool = True):
     return decorator
 
 
+# todo: refactor to with_uow
 def with_session(func):
     """
     Декоратор для автоматического управления сессией.

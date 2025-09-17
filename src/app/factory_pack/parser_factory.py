@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from app.factory_pack.models import BackgroundServiceFactory
-from database.cache.repositories import CacheRepositoryService
 from database.db import DatabaseAlchemy
+from helpers.cache import CacheHelper
 from helpers.week import Week
 from services.parser_service.parser import ParserService
 from services.request_service.request import RequestService
@@ -21,7 +21,7 @@ class ParserFactory(BackgroundServiceFactory):
         request: RequestService,
         db: DatabaseAlchemy,
         notify: NotifyService,
-        cache_service: CacheRepositoryService,
+        cache_helper: CacheHelper,
     ):
         self._parsers: list[ParserService] | None = None
         self.interval = interval
@@ -29,7 +29,7 @@ class ParserFactory(BackgroundServiceFactory):
         self.request = request
         self.db = db
         self.notify = notify
-        self.cache_service = cache_service
+        self.cache_helper = cache_helper
 
     def get(self):
         if self._parsers is None:
@@ -53,7 +53,7 @@ class ParserFactory(BackgroundServiceFactory):
                 self.interval,
                 self.request,
                 self.db,
-                self.cache_service,
+                self.cache_helper,
                 self.notify,
             )
             for global_shift, url in enumerate(self.urls, 1)
