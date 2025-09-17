@@ -24,28 +24,19 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         self.session = session
         self.model_cls = model_cls
 
-    @final
-    async def _get_by_id(self, id: int, detach: bool = True) -> TModel | None:
-        instance = await self.session.get(self.model_cls, id)
-        if instance and detach:
-            self.session.expunge(instance)
-        return instance
+    async def get_by_id(self, id: int) -> TModel | None:
+        await self.session.get(self.model_cls, id)
 
     @final
     async def _get(
         self,
         *conditions: ColumnExpressionArgument[bool],
         options: tuple[QueryableAttribute[TModel], ...] = (),
-        detach: bool = True,
     ) -> TModel | None:
         query = self._build_get_query(*conditions, limit=1)
         for option in options:
             query = query.options(joinedload(option))
-
-        instance = await self.session.scalar(query)
-        if instance and detach:
-            self.session.expunge(instance)
-        return instance
+        return await self.session.scalar(query)
 
     @final
     async def _get_many(
@@ -70,6 +61,9 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         if limit is not None:
             query = query.limit(limit)
         return query
+
+    async def update(self, instance: TModel) -> TModel:
+        return await self.session.merge(instance)
 
     @final
     async def _update(
@@ -107,6 +101,9 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
             return False
 
         return True
+
+    async def delete(self, instance: TModel):
+        await self.session.delete(instance)
 
     @final
     async def _delete(

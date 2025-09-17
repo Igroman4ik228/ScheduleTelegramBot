@@ -5,9 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from database.models.base import BaseModel
 from database.repository import CachedRepository, Repository
 from helpers.cache import CacheHelper
+from utils.logger import LoggerMixin
 
 
-class UoW:
+class UoW(LoggerMixin):
     """
     example:
         async with UoW(sessionmaker) as (uow,rep):...
@@ -37,7 +38,8 @@ class UoW:
         try:
             if self._commit and exc_type is None:
                 await self._session.commit()
-        except Exception:
+        except Exception as e:
+            self.logger.error(f"Exeption on commit: {e}", exc_info=True)
             await self._session.rollback()
         finally:
             await self._session.close()

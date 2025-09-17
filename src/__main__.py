@@ -10,7 +10,6 @@ from bot.bot import BotManager
 from container import create_injector
 from database.cache.base import ICache
 from database.db import DatabaseAlchemy
-from database.uow import CachedUoW
 from helpers.cache import CacheHelper
 from services.loader_service.default_schedule import DefaultScheduleLoader
 from settings import Settings
@@ -32,13 +31,6 @@ class App:
         logger_configure(LOGGER_CONFIG)
         logger = getLogger(self.__class__.__name__)
 
-        async with CachedUoW(self.db.sessionmaker, self.cache_helper) as (
-            uow,
-            rep,
-        ):
-            user = await rep.users.get(953457547)
-            logger.info(f"user={user}")
-
         # await asyncio.gather(
         #     self.bot_manager.start(),
         #     self.service_manager.start_services(),
@@ -48,7 +40,7 @@ class App:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.db.dispose()
+        await self.db.close()
         await self.cache.close()
 
 

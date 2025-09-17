@@ -3,14 +3,12 @@ from functools import cached_property
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.repositories import (
+from database.repositories.default_schedule_copy import (
     DefaultScheduleRepository,
-    DepartmentRepository,
-    GroupRepository,
-    ReferralRepository,
-    ResultScheduleRepository,
-    SubscribeRepository,
 )
+from database.repositories.departments_copy import DepartmentRepository
+from database.repositories.groups_copy import GroupRepository
+from database.repositories.result_schedule_copy import ResultScheduleRepository
 from database.repositories.users_copy import UserRepository
 from helpers.cache import CacheHelper
 
@@ -22,24 +20,24 @@ class Repository:
     session: AsyncSession
 
     @cached_property
-    def groups(self) -> GroupRepository:
-        return GroupRepository(self.session)
-
-    @cached_property
     def departments(self) -> DepartmentRepository:
         return DepartmentRepository(self.session)
+
+    @cached_property
+    def groups(self) -> GroupRepository:
+        return GroupRepository(self.session)
 
     @cached_property
     def default_schedule(self) -> DefaultScheduleRepository:
         return DefaultScheduleRepository(self.session)
 
-    @cached_property
-    def subscribes(self) -> SubscribeRepository:
-        return SubscribeRepository(self.session)
+    # @cached_property
+    # def subscribes(self) -> SubscribeRepository:
+    #     return SubscribeRepository(self.session)
 
-    @cached_property
-    def referrals(self) -> ReferralRepository:
-        return ReferralRepository(self.session)
+    # @cached_property
+    # def referrals(self) -> ReferralRepository:
+    #     return ReferralRepository(self.session)
 
 
 @dataclass

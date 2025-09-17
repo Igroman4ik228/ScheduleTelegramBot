@@ -1,5 +1,3 @@
-from logging import getLogger
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import ResultScheduleModel
@@ -11,11 +9,13 @@ from helpers.cache import (
     clear_cache,
 )
 from utils.constants import CacheTTL
+from utils.logger import LoggerMixin
 
 
-class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
+class ResultScheduleRepository(
+    BaseRepositoryAlchemy[ResultScheduleModel], LoggerMixin
+):
     def __init__(self, session: AsyncSession, cache_service: CacheHelper):
-        self.logger = getLogger(self.__class__.__name__)
         super().__init__(session, ResultScheduleModel)
         self.group_repo = GroupRepository(session)
         self.cache_service = cache_service

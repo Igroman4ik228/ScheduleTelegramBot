@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from typing import Any, Awaitable, Callable, Dict
 
     from aiogram.types import TelegramObject
-    from aiogram.types.user import User
+    from aiogram.types.user import User as AiogramUser
 
     from database.models import SubscribeModel, UserModel
     from database.repositories import UserRepository
@@ -30,7 +30,7 @@ class AuthMiddleware(BaseMiddleware):
         data: Dict[str, Any],
     ) -> Any:
         repository: CachedRepository = data["repository"]
-        tg_user: User = data["event_from_user"]
+        tg_user: AiogramUser = data["event_from_user"]
 
         user_repo = repository.users
         existing_user = await user_repo.get(tg_user.id, "group", "subscribe")
@@ -50,7 +50,7 @@ class AuthMiddleware(BaseMiddleware):
 
     async def _create_user(
         self,
-        tg_user: User,
+        tg_user: AiogramUser,
         trail_subscribe: SubscribeModel,
         user_repo: UserRepository,
     ) -> UserModel:
