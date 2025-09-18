@@ -1,5 +1,5 @@
 {
-    "rate_limit": 0.2,
+    "rate_limit": 0.5,
     "pre_ping": true,
     "pool_size": 50,
     "max_overflow": 10

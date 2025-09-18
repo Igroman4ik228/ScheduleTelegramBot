@@ -61,19 +61,19 @@ class CallbackDataAdmin(StrEnum):
 
 
 class CacheTTL(IntEnum):
-    USER = timedelta(minutes=3).seconds
+    USER = timedelta(minutes=5).seconds
     RESULT_SCHEDULE = timedelta(hours=6).seconds
     DEFAULT = timedelta(hours=24).seconds
 
 
 class IntervalBgServices(IntEnum):
     SUB_CHECKER = timedelta(minutes=10).seconds
-    PARSER = timedelta(minutes=3).seconds
+    PARSER = timedelta(minutes=5).seconds
 
 
 # Integers
 MAX_REFERRAL = 5
-SENDER_TIME_SLEEP = timedelta(milliseconds=1000).seconds
+SENDER_TIME_SLEEP = timedelta(seconds=1).seconds
 
 # Strings
 FILE_EXTENSION = "json"

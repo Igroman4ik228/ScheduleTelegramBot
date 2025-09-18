@@ -50,34 +50,11 @@ class ParserService(IntervalService, Publisher):
         await builder.initialize()
         result_schedule = await builder.build()
 
-        is_update = False
         async with self.db.get_session() as session:
             repo = CachedRepository(session, self.cache_service)
-            groups = await repo.groups.get_all_by_global_shift(
-                self.global_shift
+            is_update = await self._check_changed_schedule(
+                result_schedule, repo
             )
-
-            existing_schedules = (
-                await repo.result_schedule.get_all_by_weekday_and_groups(
-                    self.parser.week.weekday, [g.id for g in groups]
-                )
-            )
-
-            existing_dict = {sch.group_id: sch for sch in existing_schedules}
-            groups_dict = {g.name: g for g in groups}
-
-            for group_name, schedule in result_schedule.items():
-                group = groups_dict.get(group_name)
-                if not group:
-                    continue
-
-                old_schedule = existing_dict.get(group.id)
-                if (
-                    old_schedule is None
-                    or old_schedule.data_lessons != schedule
-                ):
-                    is_update = True
-                    break
 
         if is_update:
             await self._save_schedule_to_db(result_schedule)
@@ -120,27 +97,25 @@ class ParserService(IntervalService, Publisher):
                 self.parser.week.weekday, schedule, group
             )
 
-    # async def _check_changed_schedule(
-    #     self,
-    #     group_name: str,
-    #     current_result_schedule: str,
-    #     repository: CachedRepository,
-    # ) -> bool:
-    #     group = await repository.groups.get_by_name(group_name)
-    #     if group is None:
-    #         return False
+    async def _check_changed_schedule(
+        self, result_schedule: dict[str, str], repo: CachedRepository
+    ) -> bool:
+        groups = await repo.groups.get_all_by_global_shift(self.global_shift)
+        existing_schedules = (
+            await repo.result_schedule.get_all_by_weekday_and_groups(
+                self.parser.week.weekday, [g.id for g in groups]
+            )
+        )
 
-    #     if group.global_shift != self.global_shift:
-    #         return False
+        existing_dict = {sch.group_id: sch for sch in existing_schedules}
+        groups_dict = {g.name: g for g in groups}
 
-    #     result_schedule = await repository.result_schedule.get(
-    #         self.parser.week.weekday, group.id
-    #     )
+        for group_name, schedule in result_schedule.items():
+            group = groups_dict.get(group_name)
+            if not group:
+                continue
 
-    #     if (
-    #         result_schedule is None
-    #         or result_schedule.data_lessons != current_result_schedule
-    #     ):
-    #         return True
-
-    #     return False
+            old_schedule = existing_dict.get(group.id)
+            if old_schedule is None or old_schedule.data_lessons != schedule:
+                return True
+        return False
