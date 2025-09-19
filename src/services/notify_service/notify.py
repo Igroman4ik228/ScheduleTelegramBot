@@ -43,7 +43,6 @@ class NotifyService(Observer):
         users = await repository.users.get_all(
             "group", is_notify=True, is_ban=False, is_bot=False
         )
-
         for user in users:
             if not self._should_notify(user, global_shift):
                 continue
@@ -53,10 +52,13 @@ class NotifyService(Observer):
             )
 
             formatted_schedule = self._format_message(schedule)
-            await self.sender.safe_send_message(
-                user.telegram_id, formatted_schedule, session=session
+            is_send = await self.sender.safe_send_message(
+                user.telegram_id, formatted_schedule
             )
-            self.logger.info(f"Notify sent to {user}")
+            if is_send:
+                self.logger.debug(f"Notify send to {user}")
+            else:
+                self.logger.debug(f"Notify failed to send to {user}")
 
         await asyncio.sleep(SENDER_TIME_SLEEP)
 

@@ -4,9 +4,7 @@ from logging import getLogger
 from aiogram import Bot
 
 from database.cache.repositories import CacheService
-from database.db import DatabaseAlchemy, with_session
-from database.models import UserModel
-from database.repository import CachedRepository
+from database.db import DatabaseAlchemy
 from utils.constants import SENDER_TIME_SLEEP
 
 
@@ -27,29 +25,12 @@ class SenderService:
         for tg_id in tg_ids:
             await self.safe_send_message(tg_id, message)
             await asyncio.sleep(SENDER_TIME_SLEEP)
-            self.logger.debug(f"Send {tg_id} : {message}")
 
-    @with_session
-    async def safe_send_message(self, tg_id: int, message: str, session=None):
-        user = await CachedRepository(session, self.cache_service).users.get(
-            tg_id
-        )
-
-        if self._is_valid_user(user):
-            try:
-                await self.bot.send_message(tg_id, message)
-            except Exception as e:
-                self.logger.debug(f"Failed send message to user {tg_id}\n{e}")
-        else:
-            self.logger.debug(
-                f"Dont send message to {user}because user is banned or bot"
-            )
-
-    def _is_valid_user(self, user: UserModel | None) -> bool:
-        if user is None:
+    async def safe_send_message(self, tg_id: int, message: str) -> bool:
+        try:
+            await self.bot.send_message(tg_id, message)
+            self.logger.info(f"Message send to tg_id={tg_id}")
+            return True
+        except Exception as e:
+            self.logger.debug(f"Failed send message to user tg_id={tg_id}:{e}")
             return False
-
-        if user.is_ban or user.is_bot:
-            return False
-
-        return True
