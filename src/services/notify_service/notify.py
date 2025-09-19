@@ -62,6 +62,8 @@ class NotifyService(Observer):
     def _should_notify(self, user: UserModel, global_shift: int) -> bool:
         if user.subscribe_id is None:
             return False
+        if user.group is None:
+            return False
         if user.group.global_shift != global_shift:
             return False
         return True
