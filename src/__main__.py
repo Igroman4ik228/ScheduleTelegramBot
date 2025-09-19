@@ -1,6 +1,4 @@
 import asyncio
-import sys
-from contextlib import suppress
 
 from injector import Injector
 
@@ -40,31 +38,15 @@ class App:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.service_manager.stop_services()
         await self.db.dispose()
         await self.cache.close()
 
 
 async def main():
-    # For Unix-based systems
-    stop_event = asyncio.Event()
-    unix_signal_handler(stop_event)
-
     injector = create_injector()
     async with App(injector) as app:
-        start_task = asyncio.create_task(app.start())
-        await stop_event.wait()
-        start_task.cancel()
-        with suppress(asyncio.CancelledError):
-            await start_task
-
-
-def unix_signal_handler(stop_event: asyncio.Event):
-    if sys.platform != "win32":
-        import signal
-
-        loop = asyncio.get_event_loop()
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(sig, stop_event.set)
+        await app.start()
 
 
 if __name__ == "__main__":

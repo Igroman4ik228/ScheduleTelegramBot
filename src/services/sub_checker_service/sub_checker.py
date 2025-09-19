@@ -84,7 +84,7 @@ class SubCheckerService(IntervalService):
 
     async def stop(self):
         self.logger.info("SubCheckerService stopped")
-        await self.pause()
+        await super().stop()
 
 
 class TimeMessage(Enum):

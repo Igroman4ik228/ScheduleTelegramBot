@@ -72,7 +72,7 @@ class ParserService(IntervalService, Publisher):
 
     async def stop(self):
         self.logger.info("ParserService stopped")
-        super().stop()
+        await super().stop()
 
     async def _get_response_text(self):
         if DEBUG:
