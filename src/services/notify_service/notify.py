@@ -1,24 +1,18 @@
 from __future__ import annotations
 
-import asyncio
 from logging import getLogger
-from typing import TYPE_CHECKING
 
 from aiogram import html
 
 from app.observer_pack.models import Observer
 from bot.handlers.users.schedule import get_schedule
 from database.cache.repositories import CacheService
-from database.db import DatabaseAlchemy, with_session
+from database.db import DatabaseAlchemy
 from database.models import UserModel
 from database.repository import CachedRepository
 from helpers.week import Week
 from services.formatter_service.schedule import add_time_to_schedule
 from services.sender_service.sender import SenderService
-from utils.constants import SENDER_TIME_SLEEP
-
-if TYPE_CHECKING:
-    pass
 
 
 class NotifyService(Observer):
@@ -33,34 +27,37 @@ class NotifyService(Observer):
         self.sender = sender
         self.cache_service = cache_service
 
-    @with_session
-    async def update(self, *, global_shift: int, week: Week, session=None):
+    async def update(self, *, global_shift: int, week: Week):
         self.logger.info(
             f"Start NotifyService: global_shift={global_shift}, week={week}"
         )
-
-        repository = CachedRepository(session, self.cache_service)
-        users = await repository.users.get_all(
-            "group", is_notify=True, is_ban=False, is_bot=False
-        )
-        for user in users:
-            if not self._should_notify(user, global_shift):
-                continue
-
-            schedule = await get_schedule(
-                user.group_id, repository, week.weekday, week.shift
+        async with self.db.get_session() as session:
+            repository = CachedRepository(session, self.cache_service)
+            users = await repository.users.get_all(
+                "group", is_notify=True, is_ban=False, is_bot=False
             )
+        filtered_users = [
+            user for user in users if self._should_notify(user, global_shift)
+        ]
+        grouped_users: dict[int, list[UserModel]] = {}
+        for user in filtered_users:
+            grouped_users.setdefault(user.group_id, []).append(user)
 
+        for group_id, group_users in grouped_users.items():
+            async with self.db.get_session() as session:
+                repository = CachedRepository(session, self.cache_service)
+                schedule = await get_schedule(
+                    group_id, repository, week.weekday, week.shift
+                )
             formatted_schedule = self._format_message(schedule)
-            is_send = await self.sender.safe_send_message(
-                user.telegram_id, formatted_schedule
-            )
-            if is_send:
-                self.logger.debug(f"Notify send to {user}")
-            else:
-                self.logger.debug(f"Notify failed to send to {user}")
 
-        await asyncio.sleep(SENDER_TIME_SLEEP)
+            # Отправка всем пользователям группы
+            tg_ids = [user.telegram_id for user in group_users]
+            await self.sender.safe_send_range(tg_ids, formatted_schedule)
+
+            self.logger.debug(
+                f"Notify sent to {len(group_users)} users in group {group_id}"
+            )
 
     def _should_notify(self, user: UserModel, global_shift: int) -> bool:
         if user.subscribe_id is None:

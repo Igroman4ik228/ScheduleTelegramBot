@@ -21,7 +21,7 @@ class SenderService:
         self.cache_service = cache_service
 
     async def safe_send_range(self, tg_ids: list[int], message: str):
-        self.logger.info(f"Start range send with message: {message}")
+        self.logger.debug(f"Start range send with message: {message}")
         for tg_id in tg_ids:
             await self.safe_send_message(tg_id, message)
             await asyncio.sleep(SENDER_TIME_SLEEP)
