@@ -46,10 +46,10 @@ class App:
 
 async def main():
     # For Unix-based systems
-    unix_signal_handler()
+    stop_event = asyncio.Event()
+    unix_signal_handler(stop_event)
 
     injector = create_injector()
-    stop_event = asyncio.Event()
     async with App(injector) as app:
         start_task = asyncio.create_task(app.start())
         await stop_event.wait()
@@ -58,13 +58,13 @@ async def main():
             await start_task
 
 
-def unix_signal_handler():
+def unix_signal_handler(stop_event: asyncio.Event):
     if sys.platform != "win32":
         import signal
 
         loop = asyncio.get_event_loop()
         for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(sig, loop.stop)
+            loop.add_signal_handler(sig, stop_event.set)
 
 
 if __name__ == "__main__":
