@@ -6,7 +6,7 @@ from database.repositories.base_copy import BaseRepositoryAlchemy
 
 class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
     def __init__(self, session: AsyncSession):
-        BaseRepositoryAlchemy.__init__(session, DefaultScheduleModel)
+        BaseRepositoryAlchemy.__init__(self, session, DefaultScheduleModel)
 
     async def get(
         self, weekday: int, shift: int, group_id: int

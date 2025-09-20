@@ -19,7 +19,7 @@ class BotManager:
         db: DatabaseAlchemy,
         sender_service: SenderService,
         profile_cache: ProfileCache,
-        cache_service: CacheHelper,
+        cache_helper: CacheHelper,
         parser_factory: ParserFactory,
     ):
         self.bot = bot
@@ -28,7 +28,7 @@ class BotManager:
         self.db = db
         self.sender_service = sender_service
         self.profile_cache = profile_cache
-        self.cache_service = cache_service
+        self.cache_helper = cache_helper
         self.parser_factory = parser_factory
 
     async def start(self):
@@ -46,7 +46,7 @@ class BotManager:
         self.dp["db"] = self.db
         self.dp["sender_service"] = self.sender_service
         self.dp["profile_cache"] = self.profile_cache
-        self.dp["cache_service"] = self.cache_service
+        self.dp["cache_helper"] = self.cache_helper
         self.dp["parser_factory"] = self.parser_factory
 
         register_middlewares(self.dp)

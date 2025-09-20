@@ -6,7 +6,7 @@ from database.repositories.base_copy import BaseRepositoryAlchemy
 
 class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     def __init__(self, session: AsyncSession):
-        BaseRepositoryAlchemy.__init__(session, GroupModel)
+        BaseRepositoryAlchemy.__init__(self, session, GroupModel)
 
     async def get_by_name(self, name: str) -> GroupModel | None:
         return await self._get(GroupModel.name == name)

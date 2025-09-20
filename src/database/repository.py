@@ -9,6 +9,7 @@ from database.repositories.default_schedule_copy import (
 from database.repositories.departments_copy import DepartmentRepository
 from database.repositories.groups_copy import GroupRepository
 from database.repositories.result_schedule_copy import ResultScheduleRepository
+from database.repositories.subscribes_copy import SubscribeRepository
 from database.repositories.users_copy import UserRepository
 from helpers.cache import CacheHelper
 
@@ -31,9 +32,9 @@ class Repository:
     def default_schedule(self) -> DefaultScheduleRepository:
         return DefaultScheduleRepository(self.session)
 
-    # @cached_property
-    # def subscribes(self) -> SubscribeRepository:
-    #     return SubscribeRepository(self.session)
+    @cached_property
+    def subscribes(self) -> SubscribeRepository:
+        return SubscribeRepository(self.session)
 
     # @cached_property
     # def referrals(self) -> ReferralRepository:

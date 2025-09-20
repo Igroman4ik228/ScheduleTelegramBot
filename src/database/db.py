@@ -19,7 +19,7 @@ class DatabaseAlchemy:
         pool_size: int = 5,
         max_overflow: int = 10,
     ):
-        self.engine = create_async_engine(
+        self._engine = create_async_engine(
             url=url,
             echo=echo,
             echo_pool=echo_pool,
@@ -28,7 +28,7 @@ class DatabaseAlchemy:
             max_overflow=max_overflow,
         )
         self.sessionmaker = async_sessionmaker(
-            bind=self.engine,
+            bind=self._engine,
             autoflush=False,
             expire_on_commit=False,
         )
@@ -39,7 +39,7 @@ class DatabaseAlchemy:
             yield session
 
     async def close(self):
-        await self.engine.dispose()
+        await self._engine.dispose()
 
 
 # todo: refactor to with_uow

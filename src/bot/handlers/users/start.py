@@ -3,8 +3,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 
 from bot.keyboards.users.inline.department_kb import get_department_kb
-from database.repositories.referrals import ReferralRepository
-from database.repository import CachedRepository
+from database.uow import CachedUoW
 from helpers.command import find_command_argument
 from helpers.text import quote_html
 from utils.constants import MAX_REFERRAL
@@ -33,7 +32,7 @@ MAX_FULLNAME_LENGTH = 100
 
 
 @router.message(CommandStart())
-async def handle_start(message: Message, repository: CachedRepository):
+async def handle_start(message: Message, uow: CachedUoW):
     user_full_name = quote_html(
         message.from_user.full_name[:MAX_FULLNAME_LENGTH]
     )
@@ -44,13 +43,13 @@ async def handle_start(message: Message, repository: CachedRepository):
     if owner_id is not None:
         user_id = message.from_user.id
         try:
-            await register_referral(owner_id, user_id, repository.referrals)
+            await register_referral(owner_id, user_id, uow)
         except (MaxReferralExceededError, SelfReferralError) as e:
             await message.answer(str(e))
 
     await message.answer(welcome_message.strip())
 
-    departments = await repository.departments.get_all()
+    departments = await uow.rep.departments.get_many()
     await message.answer(
         "Выберите отделение пожалуйста",
         reply_markup=get_department_kb(departments),
@@ -69,10 +68,8 @@ def parse_owner_id(argument: str) -> int | None:
     return owner_id
 
 
-async def register_referral(
-    owner_id: int, user_id: int, referral_repo: ReferralRepository
-):
-    referrals = await referral_repo.get_all(owner_id=owner_id)
+async def register_referral(owner_id: int, user_id: int, uow: CachedUoW):
+    referrals = await uow.rep.get_all(owner_id=owner_id)
     if len(referrals) > MAX_REFERRAL:
         raise MaxReferralExceededError(
             f"Достигнут лимит количество рефералов ({MAX_REFERRAL})"

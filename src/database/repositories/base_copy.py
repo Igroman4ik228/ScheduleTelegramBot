@@ -86,8 +86,8 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
             update(self.model_cls).where(*conditions).values(**values)
         )
         # todo: flush or commit?
-        await self.session.commit()
-        # await self.session.flush()
+        # await self.session.commit()
+        await self.session.flush()
 
         if result.rowcount == 0:
             conditions_str = (
@@ -113,8 +113,8 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
             delete(self.model_cls).where(*conditions)
         )
         # todo: flush or commit?
-        await self.session.commit()
-        # await self.session.flush()
+        # await self.session.commit()
+        await self.session.flush()
 
         if result.rowcount == 0:
             conditions_str = (

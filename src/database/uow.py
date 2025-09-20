@@ -23,9 +23,10 @@ class UoW(LoggerMixin):
         self._commit = commit
         self._session: AsyncSession | None = None
 
-    async def __aenter__(self) -> tuple[Self, Repository]:
+    async def __aenter__(self) -> Self:
         self._session = await self._session_pool().__aenter__()
-        return self, Repository(self._session)
+        self.rep = Repository(self._session)
+        return self
 
     async def __aexit__(
         self,
@@ -74,6 +75,7 @@ class CachedUoW(UoW):
         super().__init__(session_pool, commit)
         self._cache_helper = cache_helper
 
-    async def __aenter__(self) -> tuple[Self, CachedRepository]:
+    async def __aenter__(self) -> Self:
         self._session = await self._session_pool().__aenter__()
-        return self, CachedRepository(self._session, self._cache_helper)
+        self.rep = CachedRepository(self._session, self._cache_helper)
+        return self

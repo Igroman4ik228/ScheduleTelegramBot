@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
 
+from database.uow import CachedUoW
 from helpers.text import quote_html_range
 
 if TYPE_CHECKING:
@@ -14,9 +15,7 @@ if TYPE_CHECKING:
     from aiogram.types import TelegramObject
     from aiogram.types.user import User as AiogramUser
 
-    from database.models import SubscribeModel, UserModel
-    from database.repositories import UserRepository
-    from database.repository import CachedRepository
+    from database.models import UserModel
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -29,31 +28,25 @@ class AuthMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
-        repository: CachedRepository = data["repository"]
         tg_user: AiogramUser = data["event_from_user"]
-
-        user_repo = repository.users
-        existing_user = await user_repo.get(tg_user.id, "group", "subscribe")
+        uow: CachedUoW = data["uow"]
+        existing_user = await uow.rep.users.get_with_all(tg_user.id)
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
 
-        subscribes = await repository.subscribes.get_all(price=0)
-        if not subscribes:
-            raise ValueError("No free subscribes available for new users")
-        trail_subscribe = subscribes[0]
-
-        data["user"] = await self._create_user(
-            tg_user, trail_subscribe, user_repo
-        )
+        data["user"] = await self._create_user(tg_user, uow)
         return await handler(event, data)
 
     async def _create_user(
         self,
         tg_user: AiogramUser,
-        trail_subscribe: SubscribeModel,
-        user_repo: UserRepository,
+        uow: CachedUoW,
     ) -> UserModel:
+        subscribes = await uow.rep.subscribes.get_many_by_price(0)
+        if not subscribes:
+            raise ValueError("No free subscribes available for new users")
+        trail_subscribe = subscribes[0]
         subscribe_end_time = datetime.now() + timedelta(
             days=trail_subscribe.duration_days
         )
@@ -62,7 +55,7 @@ class AuthMiddleware(BaseMiddleware):
             [tg_user.first_name, tg_user.last_name]
         )
 
-        await user_repo.create(
+        new_user = UserModel(
             first_name=first_name,
             last_name=last_name,
             user_name=tg_user.username,
@@ -72,13 +65,13 @@ class AuthMiddleware(BaseMiddleware):
             subscribe_id=trail_subscribe.id,
             subscribe_end_time=subscribe_end_time,
         )
+        await uow.commit(new_user)
 
-        # Get must be called after create to ensure relations are loaded
-        new_user = await user_repo.get(tg_user.id, "group", "subscribe")
+        # # Get must be called after create to ensure relations are loaded
+        new_user = await uow.rep.users.get_with_all(new_user.telegram_id)
 
         if new_user is None:
             raise ValueError("Failed to create new user")
 
         self.logger.info(f"Successfully registered new user: {new_user}")
-
         return new_user
