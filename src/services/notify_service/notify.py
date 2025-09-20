@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from logging import getLogger
-from typing import TYPE_CHECKING
 
 from aiogram import html
 
@@ -16,9 +15,6 @@ from helpers.week import Week
 from services.formatter_service.schedule import add_time_to_schedule
 from services.sender_service.sender import SenderService
 from utils.constants import SENDER_TIME_SLEEP
-
-if TYPE_CHECKING:
-    pass
 
 
 class NotifyService(Observer):

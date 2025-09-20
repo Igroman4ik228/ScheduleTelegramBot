@@ -31,11 +31,13 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
     async def _get(
         self,
         *conditions: ColumnExpressionArgument[bool],
-        options: tuple[QueryableAttribute[TModel], ...] = (),
+        options: tuple[QueryableAttribute[Any], ...] = (),
     ) -> TModel | None:
         query = self._build_get_query(*conditions, limit=1)
+
         for option in options:
             query = query.options(joinedload(option))
+
         return await self.session.scalar(query)
 
     @final
@@ -46,6 +48,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         limit: int = DEFAULT_LIMIT,
     ) -> list[TModel]:
         query = self._build_get_query(*conditions, limit=limit)
+
         for option in options:
             query = query.options(selectinload(option))
 
@@ -58,8 +61,10 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         limit: int = DEFAULT_LIMIT,
     ):
         query = select(self.model_cls).where(*conditions)
+
         if limit is not None:
             query = query.limit(limit)
+
         return query
 
     async def update(self, instance: TModel) -> TModel:
@@ -85,8 +90,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         result = await self.session.execute(
             update(self.model_cls).where(*conditions).values(**values)
         )
-        # todo: flush or commit?
-        # await self.session.commit()
+
         await self.session.flush()
 
         if result.rowcount == 0:
@@ -112,8 +116,7 @@ class BaseRepositoryAlchemy(Generic[TModel], LoggerMixin):
         result = await self.session.execute(
             delete(self.model_cls).where(*conditions)
         )
-        # todo: flush or commit?
-        # await self.session.commit()
+
         await self.session.flush()
 
         if result.rowcount == 0:

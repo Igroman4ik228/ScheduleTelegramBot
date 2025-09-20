@@ -28,14 +28,19 @@ class AuthMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
-        tg_user: AiogramUser = data["event_from_user"]
+        aiogram_user: AiogramUser | None = data.get("event_from_user")
+        if aiogram_user is None or aiogram_user.is_bot:
+            # Prevents the bot itself from being added to the database
+            # when accepting chat_join_request and receiving chat_member updates.
+            return await handler(event, data)
+
         uow: CachedUoW = data["uow"]
-        existing_user = await uow.rep.users.get_with_all(tg_user.id)
+        existing_user = await uow.rep.users.get_with_all(aiogram_user.id)
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
 
-        data["user"] = await self._create_user(tg_user, uow)
+        data["user"] = await self._create_user(aiogram_user, uow)
         return await handler(event, data)
 
     async def _create_user(

@@ -41,20 +41,25 @@ class ResultScheduleRepository(
             options=(ResultScheduleModel.group,),
         )
 
-    async def update(self, result_schedule: ResultScheduleModel):
+    async def update(
+        self, instance: ResultScheduleModel
+    ) -> ResultScheduleModel:
         await self._clear_result_schedule_cache(
-            result_schedule.weekday, result_schedule.group_id
+            instance.weekday, instance.group_id
         )
-        return await self.session.merge(result_schedule)
 
-    async def delete(self, result_schedule: ResultScheduleModel):
+        return await self.session.merge(instance)
+
+    async def delete(self, instance: ResultScheduleModel):
         await self._clear_result_schedule_cache(
-            result_schedule.weekday, result_schedule.group_id
+            instance.weekday, instance.group_id
         )
-        return await self.session.delete(result_schedule)
+
+        await self.session.delete(instance)
 
     async def delete_by(self, weekday: int, group_id: int):
         await self._clear_result_schedule_cache(weekday, group_id)
+
         await self._delete(
             ResultScheduleModel.weekday == weekday,
             ResultScheduleModel.group_id == group_id,

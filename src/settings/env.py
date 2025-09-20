@@ -78,7 +78,7 @@ class CacheEnv(BaseSettingsEnv):
         )
 
 
-def get_secret_value(password: SecretStr | None) -> str | None:
-    if password is None:
+def get_secret_value(value: SecretStr | None) -> str | None:
+    if value is None:
         return None
-    return password.get_secret_value()
+    return value.get_secret_value()

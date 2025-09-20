@@ -56,7 +56,7 @@ class BaseModel(DeclarativeBase):
         return self.__name__[:-5].lower() + "s"
 
     repr_cols_num: int = 4  # print first columns (don't count id)
-    repr_cols: tuple[str,] = ()  # extra printed columns
+    repr_cols: tuple[str, ...] = ()  # extra printed columns
 
     def __repr__(self) -> str:
         cols = [f"id={self.id}"]

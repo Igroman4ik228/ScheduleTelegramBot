@@ -32,7 +32,7 @@ class App:
         logger_configure(LOGGER_CONFIG)
         logger = getLogger(self.__class__.__name__)
         async with CachedUoW(self.db.sessionmaker, self.cache_helper) as uow:
-            await uow.rep.result_schedule.get(1, 1)
+            user = await uow.rep.users.get(1)
 
         # await asyncio.gather(
         #     self.bot_manager.start(),

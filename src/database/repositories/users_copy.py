@@ -49,13 +49,13 @@ class UserRepository(BaseRepositoryAlchemy[UserModel], Cacheable):
 
         await self.update(user)
 
-    async def update(self, user: UserModel) -> UserModel:
-        self.clear_cache(user.telegram_id)
-        return await self.session.merge(user)
+    async def update(self, instance: UserModel) -> UserModel:
+        await self.clear_cache(instance.telegram_id)
+        return await self.session.merge(instance)
 
-    async def delete(self, user: UserModel):
-        self.clear_cache(user.telegram_id)
-        await self.session.delete(user)
+    async def delete(self, instance: UserModel):
+        await self.clear_cache(instance.telegram_id)
+        await self.session.delete(instance)
 
     async def clear_cache(self, telegram_id: int):
         await clear_cache(self.get, telegram_id)

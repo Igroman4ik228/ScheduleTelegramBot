@@ -40,21 +40,27 @@ class UoW(LoggerMixin):
             if self._commit and exc_type is None:
                 await self._session.commit()
         except Exception as e:
-            self.logger.error(f"Exeption on commit: {e}", exc_info=True)
+            self.logger.error(f"Exception on commit: {e}", exc_info=True)
             await self._session.rollback()
         finally:
             await self._session.close()
             self._session = None
 
     async def commit(self, *instances: BaseModel):
+        if self._session is None:
+            raise RuntimeError("Session is not initialized.")
         self._session.add_all(instances)
         await self._session.commit()
 
     async def merge(self, *instances: BaseModel):
+        if self._session is None:
+            raise RuntimeError("Session is not initialized.")
         for instance in instances:
             await self._session.merge(instance)
 
     async def delete(self, *instances: BaseModel):
+        if self._session is None:
+            raise RuntimeError("Session is not initialized.")
         for instance in instances:
             await self._session.delete(instance)
         await self._session.commit()
