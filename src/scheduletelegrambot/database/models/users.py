@@ -22,7 +22,6 @@ if TYPE_CHECKING:
 
 
 class UserModel(BaseModel, TimestampMixin):
-    # SQLAlchemy resolves this mapped annotation against module globals at class construction.
     first_name: Mapped[Str128]
     last_name: Mapped[Str128 | None]
     user_name: Mapped[Str128 | None]

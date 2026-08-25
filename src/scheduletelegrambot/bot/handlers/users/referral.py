@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING
-
 from aiogram import Bot, F, Router, html
+from aiogram.types import CallbackQuery  # noqa: TC002 - evaluated by Dishka.
+from dishka.integrations.aiogram import FromDishka, inject
 
+from scheduletelegrambot.services.user import (
+    UserService,  # noqa: TC001 - evaluated by Dishka.
+)
 from scheduletelegrambot.utils.constants import MAX_REFERRAL, CallbackData
-
-if TYPE_CHECKING:
-    from aiogram.types import CallbackQuery
-
-    from scheduletelegrambot.database.repository import Repository
 
 router = Router(name=__name__)
 
@@ -15,7 +13,8 @@ TITLE = "Приветствие"
 
 
 @router.callback_query(F.data == CallbackData.REFERRAL.value)
-async def handle_referral(callback_query: CallbackQuery, bot: Bot, repository: Repository):
+@inject
+async def handle_referral(callback_query: CallbackQuery, bot: Bot, users: FromDishka[UserService]):
     tg_id = callback_query.from_user.id
     bot_name = await bot.get_my_name()
 
@@ -23,7 +22,7 @@ async def handle_referral(callback_query: CallbackQuery, bot: Bot, repository: R
     referral_url = html.code(referral_url)
     result_text = f"{referral_url}\n"
 
-    user = await repository.users.get(tg_id)
+    user = await users.get(tg_id)
     if user is None:
         await callback_query.answer("Профиль не найден", show_alert=True)
         return

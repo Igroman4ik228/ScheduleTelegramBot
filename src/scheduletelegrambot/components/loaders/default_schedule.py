@@ -3,11 +3,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.repositories import DefaultScheduleRepository
+from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
 from scheduletelegrambot.helpers.default_schedule_parser import (
     default_schedule_parse,
 )
 from scheduletelegrambot.helpers.file import get_file_paths, load_from_json
+from scheduletelegrambot.services.default_schedule import DefaultScheduleService
 from scheduletelegrambot.utils.constants import FILE_EXTENSION
 
 if TYPE_CHECKING:
@@ -50,17 +52,16 @@ class DefaultScheduleLoader:
         group_name: str,
         session: AsyncSession,
     ):
-        default_schedule_repo = DefaultScheduleRepository(session)
-        exist_default_schedule = await default_schedule_repo.get_by_group_name(
+        default_schedules = DefaultScheduleService(
+            DefaultScheduleRepository(session), GroupRepository(session)
+        )
+        exist_default_schedule = await default_schedules.get_by_group_name(
             weekday, shift, group_name
         )
         if exist_default_schedule is None:
-            await default_schedule_repo.create_by_group_name(
-                weekday, shift, data_lessons, group_name
-            )
+            await default_schedules.create_by_group_name(weekday, shift, data_lessons, group_name)
         else:
             if exist_default_schedule.data_lessons == data_lessons:
                 return
 
-            exist_default_schedule.data_lessons = data_lessons
-            await default_schedule_repo.update(exist_default_schedule)
+            await default_schedules.update_lessons(exist_default_schedule, data_lessons)

@@ -5,8 +5,11 @@ from logging import getLogger
 from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
+from dishka.integrations.aiogram import CONTAINER_NAME
 
 from scheduletelegrambot.helpers.text import quote_html_range
+from scheduletelegrambot.services.subscribe import SubscribeService
+from scheduletelegrambot.services.user import UserService
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -14,9 +17,9 @@ if TYPE_CHECKING:
 
     from aiogram.types import TelegramObject
     from aiogram.types.user import User as AiogramUser
+    from dishka import AsyncContainer
 
     from scheduletelegrambot.database.models import UserModel
-    from scheduletelegrambot.database.repository import Repository
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -35,30 +38,33 @@ class AuthMiddleware(BaseMiddleware):
             # for chat_join_request and chat_member events.
             return await handler(event, data)
 
-        repository: Repository = data["repository"]
-        existing_user = await repository.users.get_with_all(aiogram_user.id)
+        container: AsyncContainer = data[CONTAINER_NAME]
+        users = await container.get(UserService)
+        existing_user = await users.get_with_all(aiogram_user.id)
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
 
-        data["user"] = await self._create_user(aiogram_user, repository)
+        subscribes = await container.get(SubscribeService)
+        data["user"] = await self._create_user(aiogram_user, users, subscribes)
         return await handler(event, data)
 
     async def _create_user(
         self,
         tg_user: AiogramUser,
-        repository: Repository,
+        users: UserService,
+        subscribes: SubscribeService,
     ) -> UserModel:
-        subscribes = await repository.subscribes.get_many_by_price(0)
-        if not subscribes:
+        available_subscribes = await subscribes.get_all_by_price(0)
+        if not available_subscribes:
             raise ValueError("No free subscribes available for new users")
-        trail_subscribe = subscribes[0]
+        trail_subscribe = available_subscribes[0]
         subscribe_end_time = datetime.now(UTC) + timedelta(days=trail_subscribe.duration_days)
 
         first_name, last_name = quote_html_range([tg_user.first_name, tg_user.last_name])
 
-        new_user = await repository.users.create(
-            first_name=first_name,
+        new_user = await users.create(
+            first_name=first_name or "",
             last_name=last_name,
             user_name=tg_user.username,
             telegram_id=tg_user.id,
@@ -69,7 +75,7 @@ class AuthMiddleware(BaseMiddleware):
         )
 
         # # Get must be called after create to ensure relations are loaded
-        new_user = await repository.users.get_with_all(new_user.telegram_id)
+        new_user = await users.get_with_all(new_user.telegram_id)
 
         if new_user is None:
             raise ValueError("Failed to create new user")

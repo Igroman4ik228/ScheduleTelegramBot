@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING
 
-from scheduletelegrambot.helpers.default_schedule_parser import (
-    generate_default_schedule,
-)
-from scheduletelegrambot.services.formatter_service.schedule import (
+from scheduletelegrambot.components.formatters.schedule import (
     format_header,
     format_lesson,
+)
+from scheduletelegrambot.helpers.default_schedule_parser import (
+    generate_default_schedule,
 )
 from scheduletelegrambot.utils.constants import DAY_NAMES
 

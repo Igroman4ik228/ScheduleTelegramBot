@@ -24,14 +24,19 @@ from scheduletelegrambot.bot.keyboards.admins.inline.user.user_kb import (
 )
 from scheduletelegrambot.bot.views.admin import AdminPanelView, AdminUserListView
 from scheduletelegrambot.bot.views.user import UserListView
-from scheduletelegrambot.database.models import UserModel
-from scheduletelegrambot.database.repository import (
-    Repository,  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.components.sender.sender import (  # noqa: TC001 - evaluated by Dishka.
+    TelegramSender,
 )
 from scheduletelegrambot.helpers.subscribe import calc_subscribe_end_time
 from scheduletelegrambot.helpers.text import split_text_with_wrap
-from scheduletelegrambot.services.sender_service.sender import (  # noqa: TC001 - evaluated by Dishka.
-    SenderService,
+from scheduletelegrambot.services.group import (
+    GroupService,  # noqa: TC001 - evaluated by Dishka.
+)
+from scheduletelegrambot.services.subscribe import (
+    SubscribeService,  # noqa: TC001 - evaluated by Dishka.
+)
+from scheduletelegrambot.services.user import (
+    UserService,  # noqa: TC001 - evaluated by Dishka.
 )
 from scheduletelegrambot.utils.constants import CallbackDataAdmin
 
@@ -57,44 +62,53 @@ async def handle_user(callback_query: CallbackQuery):
 
 # *List users
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
-async def handle_list_users(callback_query: CallbackQuery, repository: Repository):
+@inject
+async def handle_list_users(
+    callback_query: CallbackQuery,
+    groups: FromDishka[GroupService],
+    users: FromDishka[UserService],
+):
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    groups = await repository.groups.get_many()
-    users = await repository.users.get_many()
+    group_models = await groups.get_all()
+    user_models = await users.get_all()
 
-    title = AdminUserListView.title(len(users))
+    title = AdminUserListView.title(len(user_models))
     text = "Выберите группу пользователей"
 
     show_no_group = False
-    for user in users:
+    for user in user_models:
         if user.group_id is None:
             show_no_group = True
             break
     await message.answer(
-        title + text, reply_markup=get_group_kb(groups, show_no_group=show_no_group)
+        title + text, reply_markup=get_group_kb(group_models, show_no_group=show_no_group)
     )
 
 
 @router.callback_query(GroupCallbackFactory.filter())
+@inject
 async def handle_group_list_users(
     callback_query: CallbackQuery,
     callback_data: GroupCallbackFactory,
-    repository: Repository,
+    users: FromDishka[UserService],
     state: FSMContext,
 ):
     message = callback_query.message
     if not isinstance(message, Message):
         return
     group_id = callback_data.group_id
-    users = await repository.users.get_many(UserModel.group_id == group_id)
+    if group_id is None:
+        user_models = await users.get_all_without_group()
+    else:
+        user_models = await users.get_all_by_group_id(group_id)
 
-    if users == []:
+    if user_models == []:
         await message.edit_text("Пользователей в данной группе нет")
         return
 
-    user_list = UserListView.from_models(users)
+    user_list = UserListView.from_models(user_models)
     texts = split_text_with_wrap(str(AdminUserListView(user_list)))
 
     await state.update_data({f"texts_{group_id}": texts})
@@ -167,8 +181,8 @@ async def handle_cancel_ban_unban(message: Message, state: FSMContext):
 @inject
 async def handle_ban_unban(
     message: Message,
-    repository: Repository,
-    sender: FromDishka[SenderService],
+    users: FromDishka[UserService],
+    sender: FromDishka[TelegramSender],
     state: FSMContext,
 ):
     user_input = message.text
@@ -176,13 +190,12 @@ async def handle_ban_unban(
         return
     await state.update_data(tg_user_id=user_input)
 
-    user = await repository.users.get(int(user_input))
+    user = await users.get(int(user_input))
     if user is None:
         await message.answer(html.bold("Данный пользователь отсутствует"))
         return
 
-    user.is_ban = not user.is_ban
-    await repository.users.update(user)
+    user = await users.set_ban(user, is_ban=not user.is_ban)
 
     await ban_unban_notify(is_ban=user.is_ban, tg_id=user.telegram_id, sender=sender)
 
@@ -192,7 +205,7 @@ async def handle_ban_unban(
     await state.clear()
 
 
-async def ban_unban_notify(*, is_ban: bool, tg_id: int, sender: SenderService) -> None:
+async def ban_unban_notify(*, is_ban: bool, tg_id: int, sender: TelegramSender) -> None:
     if is_ban:
         await sender.safe_send_message(tg_id, BanMessage.BAN.value)
         return
@@ -217,16 +230,19 @@ class BanMessage(Enum):
 
 # *Give subscribe
 @router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.GIVE_SUBSCRIPTION.value)
+@inject
 async def handle_request_give_subscribe(
     callback_query: CallbackQuery,
     state: FSMContext,
-    repository: Repository,
+    subscribes: FromDishka[SubscribeService],
 ):
-    subscribes = await repository.subscribes.get_many()
+    subscribe_models = await subscribes.get_all()
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    await message.edit_text("Доступные подписки: ", reply_markup=get_subscribe_list_kb(subscribes))
+    await message.edit_text(
+        "Доступные подписки: ", reply_markup=get_subscribe_list_kb(subscribe_models)
+    )
     await state.set_state(SubscribeStates.tg_user_id)
 
 
@@ -258,8 +274,9 @@ async def handle_subscribe(
 @inject
 async def handle_give_subscribe(
     message: Message,
-    repository: Repository,
-    sender: FromDishka[SenderService],
+    users: FromDishka[UserService],
+    subscribes: FromDishka[SubscribeService],
+    sender: FromDishka[TelegramSender],
     state: FSMContext,
 ):
     tg_user_id = message.text
@@ -272,18 +289,18 @@ async def handle_give_subscribe(
         await state.clear()
         return
 
-    user = await repository.users.get(int(tg_user_id))
+    user = await users.get(int(tg_user_id))
     if user is None:
         await message.answer(html.bold("Данный пользователь отсутствует"))
         return
 
-    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.get_by_id(subscribe_id)
     if subscribe is None:
         await message.answer("Подписка не найдена")
         await state.clear()
         return
 
-    await repository.users.update_subscribe(
+    await users.update_subscribe(
         user, subscribe_id, calc_subscribe_end_time(subscribe.duration_days)
     )
     await message.answer(f"{subscribe.name} успешно выдана пользователю")
@@ -292,7 +309,7 @@ async def handle_give_subscribe(
     await state.clear()
 
 
-async def give_subscribe_notify(tg_id: int, subscribe_name: str, sender: SenderService) -> None:
+async def give_subscribe_notify(tg_id: int, subscribe_name: str, sender: TelegramSender) -> None:
     message = f"Вам была выдана '{subscribe_name}' администратором"
 
     await sender.safe_send_message(tg_id, message)

@@ -5,24 +5,25 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache
-from scheduletelegrambot.database.repository import Repository
-from scheduletelegrambot.utils.constants import IntervalBgServices
+from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.services.user import UserService
+from scheduletelegrambot.utils.constants import BackgroundInterval
 
 if TYPE_CHECKING:
     from cashews import Cache
 
+    from scheduletelegrambot.components.sender.sender import TelegramSender
     from scheduletelegrambot.database.db import DatabaseAlchemy
-    from scheduletelegrambot.services.sender_service.sender import SenderService
 
 
-class SubCheckerService:
+class SubscriptionChecker:
     def __init__(
         self,
         db: DatabaseAlchemy,
-        sender: SenderService,
+        sender: TelegramSender,
         cashews_cache: Cache,
     ) -> None:
-        self.interval = IntervalBgServices.SUB_CHECKER.value
+        self.interval = BackgroundInterval.SUB_CHECKER.value
         self.db = db
         self.sender = sender
         self.cache = cashews_cache
@@ -30,17 +31,15 @@ class SubCheckerService:
     async def do_work(self) -> None:
         today = datetime.now(UTC).date()
         async with self.db.get_session() as session:
-            repository = Repository(session)
-            for user in await repository.users.get_many_with_all():
+            users = UserService(UserRepository(session))
+            for user in await users.get_all_with_subscribe():
                 subscribe = user.subscribe
                 end_time = user.subscribe_end_time
                 if subscribe is None or end_time is None:
                     continue
                 days_left = (end_time.date() - today).days
                 if days_left <= 0:
-                    user.subscribe_id = None
-                    user.subscribe_end_time = None
-                    await repository.users.update(user)
+                    await users.update_subscribe(user, None, None)
                     await self._notify(user.telegram_id, TimeMessage.END, days_left)
                 elif days_left in {1, 5, subscribe.duration_days // 2}:
                     message = {1: TimeMessage.ONE, 5: TimeMessage.FIVE}.get(

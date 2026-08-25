@@ -1,19 +1,24 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from logging import getLogger
 from typing import TYPE_CHECKING
 
+from scheduletelegrambot.components.formatters.schedule import (
+    format_schedule,
+)
 from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.models import DefaultScheduleModel, GroupModel
-from scheduletelegrambot.database.repository import Repository
+from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
 from scheduletelegrambot.helpers.default_schedule_parser import (
     get_default_lessons,
 )
 from scheduletelegrambot.helpers.lesson import Lesson, Schedule
-from scheduletelegrambot.services.formatter_service.schedule import (
-    format_schedule,
-)
+from scheduletelegrambot.services.default_schedule import DefaultScheduleService
+from scheduletelegrambot.services.group import GroupService
 
 if TYPE_CHECKING:
+    from scheduletelegrambot.database.models import DefaultScheduleModel
     from scheduletelegrambot.helpers.week import Week
 
 
@@ -147,17 +152,18 @@ class Builder:
 
     async def _get_default_schedules(self, session) -> list[Schedule]:
         """Получить основное расписание из БД"""
-        default_schedule_rep = Repository(session).default_schedule
+        default_schedules = DefaultScheduleService(
+            DefaultScheduleRepository(session), GroupRepository(session)
+        )
 
-        groups = await Repository(session).groups.get_many(
-            GroupModel.global_shift == self.global_shift
+        groups = await GroupService(GroupRepository(session)).get_all_by_global_shift(
+            self.global_shift
         )
         group_ids = {group.id for group in groups}
 
-        default_schedule_data = await default_schedule_rep.get_many(
-            DefaultScheduleModel.weekday == self.week.weekday,
-            DefaultScheduleModel.shift == self.week.shift,
-            options=(DefaultScheduleModel.group,),
+        default_schedule_data = await default_schedules.get_all_by_weekday_and_shift_with_group(
+            self.week.weekday,
+            self.week.shift,
         )
 
         if default_schedule_data is None:

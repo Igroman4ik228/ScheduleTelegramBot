@@ -17,24 +17,39 @@ from scheduletelegrambot.app.factory_pack.parser_factory import (
     ParserFactoryConfig,
 )
 from scheduletelegrambot.bot.bot import BotManager
+from scheduletelegrambot.components.loaders.default_schedule import (
+    DefaultScheduleLoader,
+)
+from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
+from scheduletelegrambot.components.parsers.parser import (
+    ParserDependencies,
+)
+from scheduletelegrambot.components.requester.request import AdminRequester
+from scheduletelegrambot.components.sender.sender import TelegramSender
+from scheduletelegrambot.components.subscription_checker.sub_checker import (
+    SubscriptionChecker,
+)
 from scheduletelegrambot.database.cache.cashews import cache
 from scheduletelegrambot.database.cache.profile_cache import ProfileCache
 from scheduletelegrambot.database.db import DatabaseAlchemy, EngineOptions
-from scheduletelegrambot.database.repository import Repository
-from scheduletelegrambot.services.loader_service.default_schedule import (
-    DefaultScheduleLoader,
-)
-from scheduletelegrambot.services.notify_service.notify import NotifyService
-from scheduletelegrambot.services.parser_service.parser import (
-    ParserServiceDependencies,
-)
-from scheduletelegrambot.services.request_service.request import RequestService
-from scheduletelegrambot.services.sender_service.sender import SenderService
-from scheduletelegrambot.services.sub_checker_service.sub_checker import (
-    SubCheckerService,
+from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
+from scheduletelegrambot.database.repositories.departments import DepartmentRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.repositories.referrals import ReferralRepository
+from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.database.repositories.subscribes import SubscribeRepository
+from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.services import (
+    DefaultScheduleService,
+    DepartmentService,
+    GroupService,
+    ReferralService,
+    ResultScheduleService,
+    SubscribeService,
+    UserService,
 )
 from scheduletelegrambot.settings import Settings
-from scheduletelegrambot.utils.constants import SCHEDULE_URLS, IntervalBgServices
+from scheduletelegrambot.utils.constants import SCHEDULE_URLS, BackgroundInterval
 
 
 class AppProvider(Provider):
@@ -96,34 +111,34 @@ class AppProvider(Provider):
             await dispatcher.storage.close()
 
     @provide
-    def sender(self, db: DatabaseAlchemy, bot: Bot) -> SenderService:
-        return SenderService(db, bot)
+    def sender(self, db: DatabaseAlchemy, bot: Bot) -> TelegramSender:
+        return TelegramSender(db, bot)
 
     @provide
     def notify(
         self,
         db: DatabaseAlchemy,
-        sender: SenderService,
-    ) -> NotifyService:
-        return NotifyService(db, sender)
+        sender: TelegramSender,
+    ) -> ScheduleNotifier:
+        return ScheduleNotifier(db, sender)
 
     @provide
-    def request(self, settings: Settings, sender: SenderService) -> RequestService:
-        return RequestService(settings.bot.admin_ids, sender)
+    def request(self, settings: Settings, sender: TelegramSender) -> AdminRequester:
+        return AdminRequester(settings.bot.admin_ids, sender)
 
     @provide
     def parser_factory(
         self,
-        request: RequestService,
+        request: AdminRequester,
         db: DatabaseAlchemy,
-        notify: NotifyService,
+        notify: ScheduleNotifier,
     ) -> ParserFactory:
         return ParserFactory(
             config=ParserFactoryConfig(
-                interval=IntervalBgServices.PARSER.value,
+                interval=BackgroundInterval.PARSER.value,
                 urls=SCHEDULE_URLS,
             ),
-            dependencies=ParserServiceDependencies(
+            dependencies=ParserDependencies(
                 request=request,
                 db=db,
                 notify=notify,
@@ -134,10 +149,10 @@ class AppProvider(Provider):
     def sub_checker(
         self,
         db: DatabaseAlchemy,
-        sender: SenderService,
+        sender: TelegramSender,
         cashews_cache: Cache,
-    ) -> SubCheckerService:
-        return SubCheckerService(db, sender, cashews_cache)
+    ) -> SubscriptionChecker:
+        return SubscriptionChecker(db, sender, cashews_cache)
 
     @provide
     def scheduler(self) -> AsyncIOScheduler:
@@ -159,7 +174,7 @@ class AppProvider(Provider):
         bot_manager: BotManager,
         scheduler: AsyncIOScheduler,
         parser_factory: ParserFactory,
-        sub_checker: SubCheckerService,
+        sub_checker: SubscriptionChecker,
         default_schedule_loader: DefaultScheduleLoader,
     ) -> Application:
         return Application(
@@ -183,11 +198,32 @@ class RequestProvider(Provider):
             yield session
 
     @provide
-    def repository(
-        self,
-        session: AsyncSession,
-    ) -> Repository:
-        return Repository(session)
+    def department_service(self, session: AsyncSession) -> DepartmentService:
+        return DepartmentService(DepartmentRepository(session))
+
+    @provide
+    def group_service(self, session: AsyncSession) -> GroupService:
+        return GroupService(GroupRepository(session))
+
+    @provide
+    def default_schedule_service(self, session: AsyncSession) -> DefaultScheduleService:
+        return DefaultScheduleService(DefaultScheduleRepository(session), GroupRepository(session))
+
+    @provide
+    def subscribe_service(self, session: AsyncSession) -> SubscribeService:
+        return SubscribeService(SubscribeRepository(session))
+
+    @provide
+    def referral_service(self, session: AsyncSession) -> ReferralService:
+        return ReferralService(ReferralRepository(session))
+
+    @provide
+    def user_service(self, session: AsyncSession) -> UserService:
+        return UserService(UserRepository(session))
+
+    @provide
+    def result_schedule_service(self, session: AsyncSession) -> ResultScheduleService:
+        return ResultScheduleService(ResultScheduleRepository(session), GroupRepository(session))
 
 
 def create_container():

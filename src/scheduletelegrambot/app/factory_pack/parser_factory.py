@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from scheduletelegrambot.services.parser_service.parser import (
-    ParserService,
-    ParserServiceDependencies,
+from scheduletelegrambot.components.parsers.parser import (
+    ParserDependencies,
+    ScheduleParser,
 )
 
 if TYPE_CHECKING:
@@ -22,18 +22,18 @@ class ParserFactory:
     def __init__(
         self,
         config: ParserFactoryConfig,
-        dependencies: ParserServiceDependencies,
+        dependencies: ParserDependencies,
     ):
-        self._parsers: list[ParserService] | None = None
+        self._parsers: list[ScheduleParser] | None = None
         self.config = config
         self.dependencies = dependencies
 
-    def get(self) -> list[ParserService]:
+    def get(self) -> list[ScheduleParser]:
         if self._parsers is None:
             self._parsers = self._create()
         return self._parsers
 
-    def get_parser(self, global_shift: int) -> ParserService:
+    def get_parser(self, global_shift: int) -> ScheduleParser:
         for parser in self.get():
             if parser.global_shift == global_shift:
                 return parser
@@ -45,9 +45,9 @@ class ParserFactory:
             raise RuntimeError("Schedule parser has not completed its first run")
         return parser.week
 
-    def _create(self) -> list[ParserService]:
+    def _create(self) -> list[ScheduleParser]:
         return [
-            ParserService(
+            ScheduleParser(
                 url=url,
                 global_shift=global_shift,
                 interval=self.config.interval,

@@ -4,34 +4,37 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from scheduletelegrambot.app.observer_pack.models import Publisher
+from scheduletelegrambot.components.parsers.builder import Builder
+from scheduletelegrambot.components.parsers.html_parser import HtmlParser
 from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.repository import Repository
-from scheduletelegrambot.services.parser_service.builder import Builder
-from scheduletelegrambot.services.parser_service.html_parser import HtmlParser
+from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.services.group import GroupService
+from scheduletelegrambot.services.result_schedule import ResultScheduleService
 from scheduletelegrambot.utils.constants import DEBUG
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from scheduletelegrambot.services.notify_service.notify import NotifyService
-    from scheduletelegrambot.services.request_service.request import RequestService
+    from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
+    from scheduletelegrambot.components.requester.request import AdminRequester
 
 
 @dataclass(frozen=True)
-class ParserServiceDependencies:
-    request: RequestService
+class ParserDependencies:
+    request: AdminRequester
     db: DatabaseAlchemy
-    notify: NotifyService
+    notify: ScheduleNotifier
 
 
-class ParserService(Publisher):
+class ScheduleParser(Publisher):
     def __init__(
         self,
         *,
         url: str,
         global_shift: int,
         interval: int,
-        dependencies: ParserServiceDependencies,
+        dependencies: ParserDependencies,
     ):
         Publisher.__init__(self)
 
@@ -62,10 +65,13 @@ class ParserService(Publisher):
 
         is_update = False
         async with self.db.get_session() as session:
-            repository = Repository(session)
+            groups = GroupService(GroupRepository(session))
+            result_schedules = ResultScheduleService(
+                ResultScheduleRepository(session), GroupRepository(session)
+            )
 
             for group, schedule in result_schedule.items():
-                if await self._check_changed_schedule(group, schedule, repository):
+                if await self._check_changed_schedule(group, schedule, groups, result_schedules):
                     is_update = True
                     break
 
@@ -82,21 +88,24 @@ class ParserService(Publisher):
     async def _save_schedule_to_db(
         self, result_schedule: dict[str, str], session: AsyncSession
     ) -> None:
-        result_schedule_repo = Repository(session).result_schedule
+        result_schedules = ResultScheduleService(
+            ResultScheduleRepository(session), GroupRepository(session)
+        )
 
         if self.parser is None or self.parser.week is None:
             raise RuntimeError("Schedule parser is not initialized")
         week = self.parser.week
         for group, schedule in result_schedule.items():
-            await result_schedule_repo.upsert_by_group_name(week.weekday, schedule, group)
+            await result_schedules.upsert_by_group_name(week.weekday, schedule, group)
 
     async def _check_changed_schedule(
         self,
         group_name: str,
         current_result_schedule: str,
-        repository: Repository,
+        groups: GroupService,
+        result_schedules: ResultScheduleService,
     ) -> bool:
-        group = await repository.groups.get_by_name(group_name)
+        group = await groups.get_by_name(group_name)
         if group is None:
             return False
 
@@ -105,7 +114,7 @@ class ParserService(Publisher):
         if self.parser is None or self.parser.week is None:
             raise RuntimeError("Schedule parser is not initialized")
 
-        result_schedule = await repository.result_schedule.get(self.parser.week.weekday, group.id)
+        result_schedule = await result_schedules.get(self.parser.week.weekday, group.id)
 
         return bool(
             result_schedule is None or result_schedule.data_lessons != current_result_schedule

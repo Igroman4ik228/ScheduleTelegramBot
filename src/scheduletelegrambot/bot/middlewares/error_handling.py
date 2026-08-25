@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from aiogram.types import TelegramObject, User
 
-    from scheduletelegrambot.services.sender_service.sender import SenderService
+    from scheduletelegrambot.components.sender.sender import TelegramSender
 
 
 class ErrorHandlingMiddleware(BaseMiddleware):
@@ -32,7 +32,7 @@ class ErrorHandlingMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         user: User = data["event_from_user"]
-        sender: SenderService = data["sender_service"]
+        sender: TelegramSender = data["sender"]
 
         try:
             return await handler(event, data)
@@ -54,16 +54,16 @@ class ErrorHandlingMiddleware(BaseMiddleware):
             self.logger.exception("Unhandled value error")
             await self._send_message_to_admins(f"Unhandled exception: {error}", sender)
 
-    async def _send_bad_request_message(self, chat_id: int, sender: SenderService):
+    async def _send_bad_request_message(self, chat_id: int, sender: TelegramSender):
         text = "Произошла ошибка запроса. Пожалуйста, проверьте корректность введённых данных."
         await sender.safe_send_message(chat_id, text)
         await self._send_message_to_admins(text, sender)
 
-    async def _send_api_error_message(self, chat_id: int, sender: SenderService):
+    async def _send_api_error_message(self, chat_id: int, sender: TelegramSender):
         text = "Произошла ошибка из-за телеграмма. Попробуйте позже."
         await sender.safe_send_message(chat_id, text)
         await self._send_message_to_admins(text, sender)
 
-    async def _send_message_to_admins(self, text: str, sender: SenderService):
+    async def _send_message_to_admins(self, text: str, sender: TelegramSender):
         for admin_id in self.admin_ids:
             await sender.safe_send_message(admin_id, text)

@@ -66,7 +66,7 @@ class CacheTTL(IntEnum):
     DEFAULT = timedelta(hours=24).seconds
 
 
-class IntervalBgServices(IntEnum):
+class BackgroundInterval(IntEnum):
     SUB_CHECKER = timedelta(minutes=10).seconds
     PARSER = timedelta(minutes=1).seconds
 

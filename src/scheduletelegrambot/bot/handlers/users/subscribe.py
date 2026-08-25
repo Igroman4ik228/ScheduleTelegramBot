@@ -20,8 +20,11 @@ from scheduletelegrambot.bot.keyboards.users.inline.subscribe_kb import (
 )
 from scheduletelegrambot.bot.views.subscription import SubscriptionView
 from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
-from scheduletelegrambot.database.repository import (
-    Repository,  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.services.subscribe import (
+    SubscribeService,  # noqa: TC001 - evaluated by Dishka.
+)
+from scheduletelegrambot.services.user import (
+    UserService,  # noqa: TC001 - evaluated by Dishka.
 )
 from scheduletelegrambot.settings import Settings  # noqa: TC001 - evaluated by Dishka.
 from scheduletelegrambot.utils.constants import CallbackData
@@ -30,21 +33,23 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == CallbackData.SUBSCRIBE.value)
-async def handle_subscribe(callback_query: CallbackQuery, repository: Repository):
+@inject
+async def handle_subscribe(callback_query: CallbackQuery, subscribes: FromDishka[SubscribeService]):
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    subscribes = await repository.subscribes.get_many()
+    subscribe_models = await subscribes.get_all()
     await message.edit_text(
-        str(SubscriptionView.catalog()), reply_markup=get_subscribe_kb(subscribes)
+        str(SubscriptionView.catalog()), reply_markup=get_subscribe_kb(subscribe_models)
     )
 
 
 @router.callback_query(F.data.startswith("Subscribe:"))
+@inject
 async def handle_choose_subscribe(
     callback_query: CallbackQuery,
     user: UserModel,
-    repository: Repository,
+    subscribes: FromDishka[SubscribeService],
 ):
     if user.subscribe_id is not None:
         await callback_query.answer("У вас уже есть подписка")
@@ -54,7 +59,7 @@ async def handle_choose_subscribe(
     if callback_query.data is None or not isinstance(message, Message):
         return
     subscribe_id = int(callback_query.data.split(":")[1])
-    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.get_by_id(subscribe_id)
     if subscribe is None:
         await callback_query.answer("Подписка не найдена", show_alert=True)
         return
@@ -68,13 +73,13 @@ async def handle_choose_subscribe(
 async def handle_payment_telegram(
     callback_query: CallbackQuery,
     bot: Bot,
-    repository: Repository,
+    subscribes: FromDishka[SubscribeService],
     settings: FromDishka[Settings],
 ):
     if callback_query.data is None:
         return
     subscribe_id = int(callback_query.data.split(":")[2])
-    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.get_by_id(subscribe_id)
     if subscribe is None:
         await callback_query.answer("Подписка не найдена", show_alert=True)
         return
@@ -103,36 +108,44 @@ async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
 
 
 @router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
-async def handle_successful_payment(message: Message, user: UserModel, repository: Repository):
+@inject
+async def handle_successful_payment(
+    message: Message,
+    user: UserModel,
+    subscribes: FromDishka[SubscribeService],
+    users: FromDishka[UserService],
+):
     if message.successful_payment is None:
         return
     subscribe_id = int(message.successful_payment.invoice_payload)
-    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.get_by_id(subscribe_id)
     if subscribe is None:
         return
 
-    user.subscribe_id = subscribe.id
     end_datetime = datetime.now(UTC) + relativedelta(months=subscribe.duration_days)
-    user.subscribe_end_time = end_datetime
-    await repository.users.update(user)
+    await users.update_subscribe(user, subscribe.id, end_datetime)
 
     await message.answer("Оплата прошла успешно!")
 
 
 @router.message(~SubscribeFilter())
-async def handle_check_subscribe(message: Message, repository: Repository):
-    subscribes = await repository.subscribes.get_many()
+@inject
+async def handle_check_subscribe(message: Message, subscribes: FromDishka[SubscribeService]):
+    subscribe_models = await subscribes.get_all()
     await message.answer(
-        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribes)
+        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribe_models)
     )
 
 
 @router.callback_query(~SubscribeFilter())
-async def handle_check_subscribe_callback(callback_query: CallbackQuery, repository: Repository):
+@inject
+async def handle_check_subscribe_callback(
+    callback_query: CallbackQuery, subscribes: FromDishka[SubscribeService]
+):
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    subscribes = await repository.subscribes.get_many()
+    subscribe_models = await subscribes.get_all()
     await message.answer(
-        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribes)
+        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribe_models)
     )

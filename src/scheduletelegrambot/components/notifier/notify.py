@@ -8,26 +8,32 @@ from aiogram import html
 
 from scheduletelegrambot.app.observer_pack.models import Observer
 from scheduletelegrambot.bot.handlers.users.schedule import get_schedule
-from scheduletelegrambot.database.models import UserModel
-from scheduletelegrambot.database.repository import Repository
-from scheduletelegrambot.services.formatter_service.schedule import (
+from scheduletelegrambot.components.formatters.schedule import (
     add_time_to_schedule,
 )
+from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.services.default_schedule import DefaultScheduleService
+from scheduletelegrambot.services.result_schedule import ResultScheduleService
+from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import SENDER_TIME_SLEEP
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from scheduletelegrambot.components.sender.sender import TelegramSender
     from scheduletelegrambot.database.db import DatabaseAlchemy
+    from scheduletelegrambot.database.models import UserModel
     from scheduletelegrambot.helpers.week import Week
-    from scheduletelegrambot.services.sender_service.sender import SenderService
 
 
-class NotifyService(Observer):
+class ScheduleNotifier(Observer):
     def __init__(
         self,
         db: DatabaseAlchemy,
-        sender: SenderService,
+        sender: TelegramSender,
     ):
         self.logger = getLogger(self.__class__.__name__)
         self.db = db
@@ -49,14 +55,9 @@ class NotifyService(Observer):
         week: Week,
         session: AsyncSession,
     ) -> None:
-        self.logger.info("Start NotifyService: global_shift=%s, week=%s", global_shift, week)
+        self.logger.info("Start ScheduleNotifier: global_shift=%s, week=%s", global_shift, week)
 
-        repository = Repository(session)
-        users = await repository.users.get_many(
-            UserModel.is_notify.is_(True),
-            UserModel.is_ban.is_(False),
-            UserModel.is_bot.is_(False),
-        )
+        users = await UserService(UserRepository(session)).get_notification_recipients()
 
         for user in users:
             if not self._should_notify(user, global_shift):
@@ -64,7 +65,15 @@ class NotifyService(Observer):
             if user.group_id is None:
                 continue
 
-            schedule = await get_schedule(user.group_id, repository, week.weekday, week.shift)
+            schedule = await get_schedule(
+                user.group_id,
+                ResultScheduleService(ResultScheduleRepository(session), GroupRepository(session)),
+                DefaultScheduleService(
+                    DefaultScheduleRepository(session), GroupRepository(session)
+                ),
+                week.weekday,
+                week.shift,
+            )
 
             formatted_schedule = self._format_message(schedule)
             await self.sender.safe_send_message(

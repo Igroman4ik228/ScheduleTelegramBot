@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 from aiogram.exceptions import TelegramAPIError
 
 from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.repository import Repository
+from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import SENDER_TIME_SLEEP
 
 if TYPE_CHECKING:
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from scheduletelegrambot.database.models import UserModel
 
 
-class SenderService:
+class TelegramSender:
     def __init__(
         self,
         db: DatabaseAlchemy,
@@ -34,7 +35,7 @@ class SenderService:
 
     @with_session
     async def safe_send_message(self, tg_id: int, message: str, session: AsyncSession) -> None:
-        user = await Repository(session).users.get(tg_id)
+        user = await UserService(UserRepository(session)).get(tg_id)
 
         if self._is_valid_user(user):
             try:

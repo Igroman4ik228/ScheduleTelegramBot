@@ -14,7 +14,9 @@ from scheduletelegrambot.database.cache.profile_cache import (  # noqa: TC001 - 
     ProfileCache,
 )
 from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
-from scheduletelegrambot.database.repository import Repository  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.services.department import (
+    DepartmentService,  # noqa: TC001 - evaluated by Dishka.
+)
 
 user_locks = {}
 router = Router(name=__name__)
@@ -26,7 +28,7 @@ async def handle_profile(
     message: Message,
     bot: Bot,
     user: UserModel,
-    repository: Repository,
+    departments: FromDishka[DepartmentService],
     profile_cache: FromDishka[ProfileCache],
 ):
     group = user.group
@@ -34,7 +36,7 @@ async def handle_profile(
     if group is None or subscribe is None:
         await message.answer("Сначала заполните профиль")
         return
-    department = await repository.departments.get_by_id(group.department_id)
+    department = await departments.get_by_id(group.department_id)
     if department is None:
         await message.answer("Отделение пользователя не найдено")
         return

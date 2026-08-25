@@ -9,11 +9,11 @@ if TYPE_CHECKING:
 
     from scheduletelegrambot.app.factory_pack.parser_factory import ParserFactory
     from scheduletelegrambot.bot.bot import BotManager
-    from scheduletelegrambot.services.loader_service.default_schedule import (
+    from scheduletelegrambot.components.loaders.default_schedule import (
         DefaultScheduleLoader,
     )
-    from scheduletelegrambot.services.sub_checker_service.sub_checker import (
-        SubCheckerService,
+    from scheduletelegrambot.components.subscription_checker.sub_checker import (
+        SubscriptionChecker,
     )
 
 
@@ -24,7 +24,7 @@ class Application:
         bot_manager: BotManager,
         scheduler: AsyncIOScheduler,
         parser_factory: ParserFactory,
-        sub_checker: SubCheckerService,
+        sub_checker: SubscriptionChecker,
         default_schedule_loader: DefaultScheduleLoader,
     ) -> None:
         self.bot_manager = bot_manager

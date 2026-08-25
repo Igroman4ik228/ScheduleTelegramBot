@@ -7,7 +7,6 @@ from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from .auth import AuthMiddleware
 from .ban import BanMiddleware
 from .bot import BotMiddleware
-from .database import DatabaseMiddleware
 from .logging import LoggingMiddleware
 from .throttling import ThrottlingMiddleware
 
@@ -22,8 +21,6 @@ def register_middlewares(dp: Dispatcher, settings: Settings, cache: Cache) -> No
     dp.update.outer_middleware(ThrottlingMiddleware(cache, settings.bot.rate_limit))
 
     dp.update.outer_middleware(LoggingMiddleware())
-
-    dp.update.outer_middleware(DatabaseMiddleware())
 
     dp.update.outer_middleware(AuthMiddleware())
 

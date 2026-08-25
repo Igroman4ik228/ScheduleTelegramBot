@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
 if TYPE_CHECKING:
-    from scheduletelegrambot.services.sender_service.sender import SenderService
+    from scheduletelegrambot.components.sender.sender import TelegramSender
 
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
 DEFAULT_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
@@ -57,11 +57,11 @@ def retry_request(func):
     return wrapper
 
 
-class RequestService:
+class AdminRequester:
     def __init__(
         self,
         admin_ids: list[int],
-        sender: SenderService,
+        sender: TelegramSender,
         timeout: int = DEFAULT_TIMEOUT,
         retry_delays: list[int] | None = None,
         headers: dict[str, str] | None = None,
