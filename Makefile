@@ -1,36 +1,52 @@
-project_dir := .
-package_dir := src
+UV ?= uv
+ALEMBIC := $(UV) run alembic
 
-.PHONY: run
-run: ## Run bot
-	@uv run python -O $(package_dir)
+.DEFAULT_GOAL := help
 
-.PHONY: migrate-new
-migrate-new: ## Create a new migration
-	@uv run alembic revision --autogenerate \
-	$(if $(filter-out $@,$(MAKECMDGOALS)),--message "$(filter-out $@,$(MAKECMDGOALS))")
+.PHONY: help run migrate migrate-new migrate-upgrade migrate-up migrate-down migrate-to \
+	migrate-current migrate-history migrate-check migrate-heads migrate-stamp
 
-.PHONY: migrate-all
-migrate: ## Apply all migrations
-	@uv run alembic upgrade head
+help: ## Show available commands
+	@$(MAKE) -s --no-print-directory help-internal
 
-.PHONY: migrate-up
+.PHONY: help-internal
+help-internal:
+	@$(MAKE) -qp | awk -F':.*?## ' '/^[a-zA-Z0-9][^$$#\/\t=]*:.*?## / { printf "  %-20s %s\\n", $$1, $$2 }' | sort
+
+run: ## Run the bot
+	@$(UV) run scheduletelegrambot
+
+migrate: migrate-upgrade ## Alias for migrate-upgrade
+
+migrate-new: ## Create a migration: make migrate-new MESSAGE="add user timezone"
+	@test -n "$(MESSAGE)" || (echo 'Usage: make migrate-new MESSAGE="description"' >&2; exit 2)
+	@$(ALEMBIC) revision --autogenerate -m "$(MESSAGE)"
+
+migrate-upgrade: ## Apply all pending migrations
+	@$(ALEMBIC) upgrade head
+
 migrate-up: ## Apply the next migration only
-	@uv run alembic upgrade +1
+	@$(ALEMBIC) upgrade +1
 
-.PHONY: migrate-down
-migrate-down: ## Revert the last migration
-	@uv run alembic downgrade -1
+migrate-down: ## Revert the most recently applied migration
+	@$(ALEMBIC) downgrade -1
 
-.PHONY: migrate-to
-migrate-to: ## Upgrade or downgrade to a specific revision: make migrate-to <revision_id>
-	@uv run alembic upgrade $(filter-out $@,$(MAKECMDGOALS))
+migrate-to: ## Upgrade to revision: make migrate-to REVISION=<revision|head>
+	@test -n "$(REVISION)" || (echo 'Usage: make migrate-to REVISION=<revision|head>' >&2; exit 2)
+	@$(ALEMBIC) upgrade $(REVISION)
 
-.PHONY: migrate-reset
-migrate-reset: ## Reset database: downgrade to base and apply all migrations
-	@uv run alembic downgrade base
-	@uv run alembic upgrade head
+migrate-current: ## Display the database's current revision
+	@$(ALEMBIC) current
 
-# Allow passing arguments after target (e.g. make migrate-to <revision_id>)
-%:
-	@:
+migrate-history: ## Display migration history
+	@$(ALEMBIC) history --verbose
+
+migrate-heads: ## Display repository migration head(s)
+	@$(ALEMBIC) heads
+
+migrate-check: ## Check that models have no ungenerated migration changes
+	@$(ALEMBIC) check
+
+migrate-stamp: ## Mark existing schema without changing it: make migrate-stamp REVISION=head
+	@test -n "$(REVISION)" || (echo 'Usage: make migrate-stamp REVISION=<revision|head>' >&2; exit 2)
+	@$(ALEMBIC) stamp $(REVISION)

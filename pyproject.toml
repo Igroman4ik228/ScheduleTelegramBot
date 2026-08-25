@@ -1,28 +1,77 @@
 [project]
 name = "scheduletelegrambot"
 version = "0.1.0"
-description = ""
-authors = [{ name = "igroman4ik" }]
-requires-python = ">=3.12,<3.13"
+description = "Add your description here"
 readme = "README.md"
+authors = [{ name = "Igroman4ik-pc", email = "ni4000009@gmail.com" }]
+requires-python = ">=3.14,<3.15"
 dependencies = [
     "aiogram>=3.13.0,<4",
     "pydantic-settings>=2.4.0,<3",
     "sqlalchemy>=2.0.34,<3",
     "requests>=2.32.3,<3",
-    "cachetools>=5.5.0,<6",
     "alembic>=1.13.2,<2",
-    "injector>=0.22.0,<0.23",
-    "aiomysql>=0.2.0,<0.3",
-    "cryptography>=43.0.1,<44",
+    "aiomysql>=0.2.0,<0.4",
     "bs4>=0.0.2,<0.0.3",
-    "lxml>=5.3.0,<6",
-    "redis>=5.1.0,<6",
+    "lxml>=6.0.1,<7",
+    "redis>=5.1.0,<9",
     "python-dateutil>=2.9.0.post0,<3",
+    "dishka>=1.10.1",
+    "apscheduler>=3.11.3",
+    "cashews>=7.5.0",
 ]
 
 [dependency-groups]
-dev = ["ruff>=0.12.12,<1"]
+dev = ["pyright>=1.1.411", "ruff>=0.16.4"]
+
+[project.scripts]
+scheduletelegrambot = "scheduletelegrambot:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
 
 [tool.ruff]
-line-length = 80
+line-length = 100
+target-version = "py314"
+force-exclude = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN", # flake8-annotations — принуждает писать аннотации практически везде; лучше вводить постепенно
+    "D",   # pydocstyle — требует docstring; для внутреннего приложения избыточно
+    "EM",  # flake8-errmsg — требования к формату сообщений исключений; мало пользы на старте
+    "FIX", # flake8-fixme — TODO/FIXME не являются ошибками кода
+    "TD",  # flake8-todos — требования к оформлению TODO; излишняя бюрократия
+    "CPY", # copyright — проверка наличия copyright-заголовков; для приложения не нужна
+    "PGH", # pygrep-hooks — дополнительные проверки комментариев/type-ignore; можно подключить позже
+
+    # formatter сам управляет
+    "COM812",
+    "COM819",
+
+    "W191",
+    "E111",
+    "E114",
+    "E117",
+
+    "D203",
+    "D206",
+    "D300",
+
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "Q004",
+
+
+    "RUF001", # Russian user-facing messages
+    "RUF002", # Cyrillic docstrings intentionally contain confusable Unicode letters.
+    "TRY003", # Messages are intentionally localized at the point where validation fails.
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

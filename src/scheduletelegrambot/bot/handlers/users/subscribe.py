@@ -1,0 +1,138 @@
+from datetime import UTC, datetime
+
+from aiogram import Bot, F, Router
+from aiogram.types import (
+    CallbackQuery,
+    ContentType,
+    LabeledPrice,
+    Message,
+    PreCheckoutQuery,
+)
+from dateutil.relativedelta import relativedelta
+from dishka.integrations.aiogram import FromDishka, inject
+
+from scheduletelegrambot.bot.filters.subscribe import SubscribeFilter
+from scheduletelegrambot.bot.keyboards.users.inline.payment_kb import (
+    get_payment_kb,
+)
+from scheduletelegrambot.bot.keyboards.users.inline.subscribe_kb import (
+    get_subscribe_kb,
+)
+from scheduletelegrambot.bot.views.subscription import SubscriptionView
+from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.repository import (
+    Repository,  # noqa: TC001 - evaluated by Dishka.
+)
+from scheduletelegrambot.settings import Settings  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.utils.constants import CallbackData
+
+router = Router(name=__name__)
+
+
+@router.callback_query(F.data == CallbackData.SUBSCRIBE.value)
+async def handle_subscribe(callback_query: CallbackQuery, repository: Repository):
+    message = callback_query.message
+    if not isinstance(message, Message):
+        return
+    subscribes = await repository.subscribes.get_many()
+    await message.edit_text(
+        str(SubscriptionView.catalog()), reply_markup=get_subscribe_kb(subscribes)
+    )
+
+
+@router.callback_query(F.data.startswith("Subscribe:"))
+async def handle_choose_subscribe(
+    callback_query: CallbackQuery,
+    user: UserModel,
+    repository: Repository,
+):
+    if user.subscribe_id is not None:
+        await callback_query.answer("У вас уже есть подписка")
+        return
+
+    message = callback_query.message
+    if callback_query.data is None or not isinstance(message, Message):
+        return
+    subscribe_id = int(callback_query.data.split(":")[1])
+    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    if subscribe is None:
+        await callback_query.answer("Подписка не найдена", show_alert=True)
+        return
+    await message.answer(
+        str(SubscriptionView.selected(subscribe)), reply_markup=get_payment_kb(subscribe)
+    )
+
+
+@router.callback_query(F.data.startswith("Payment:telegram:"))
+@inject
+async def handle_payment_telegram(
+    callback_query: CallbackQuery,
+    bot: Bot,
+    repository: Repository,
+    settings: FromDishka[Settings],
+):
+    if callback_query.data is None:
+        return
+    subscribe_id = int(callback_query.data.split(":")[2])
+    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    if subscribe is None:
+        await callback_query.answer("Подписка не найдена", show_alert=True)
+        return
+
+    description = subscribe.description or "Описание отсутствует"
+    await bot.send_invoice(
+        chat_id=callback_query.from_user.id,
+        title=subscribe.name,
+        description=description,
+        payload=f"{subscribe.id}",
+        provider_token=settings.bot.payment_token.get_secret_value(),
+        start_parameter="start",
+        currency="RUB",
+        prices=[LabeledPrice(label="Цена", amount=subscribe.price * 100)],
+    )
+
+
+@router.callback_query(F.data.startswith("Payment:site:"))
+async def handle_payment_site(callback_query: CallbackQuery):
+    await callback_query.answer("Оплата через сайт пока недоступна", show_alert=True)
+
+
+@router.pre_checkout_query()
+async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
+    await pre_checkout_query.answer(ok=True)
+
+
+@router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
+async def handle_successful_payment(message: Message, user: UserModel, repository: Repository):
+    if message.successful_payment is None:
+        return
+    subscribe_id = int(message.successful_payment.invoice_payload)
+    subscribe = await repository.subscribes.get_by_id(subscribe_id)
+    if subscribe is None:
+        return
+
+    user.subscribe_id = subscribe.id
+    end_datetime = datetime.now(UTC) + relativedelta(months=subscribe.duration_days)
+    user.subscribe_end_time = end_datetime
+    await repository.users.update(user)
+
+    await message.answer("Оплата прошла успешно!")
+
+
+@router.message(~SubscribeFilter())
+async def handle_check_subscribe(message: Message, repository: Repository):
+    subscribes = await repository.subscribes.get_many()
+    await message.answer(
+        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribes)
+    )
+
+
+@router.callback_query(~SubscribeFilter())
+async def handle_check_subscribe_callback(callback_query: CallbackQuery, repository: Repository):
+    message = callback_query.message
+    if not isinstance(message, Message):
+        return
+    subscribes = await repository.subscribes.get_many()
+    await message.answer(
+        str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribes)
+    )
