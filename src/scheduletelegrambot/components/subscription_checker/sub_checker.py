@@ -2,36 +2,29 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from enum import Enum
-from typing import TYPE_CHECKING
 
+from dishka import AsyncContainer
+
+from scheduletelegrambot.components.sender.sender import TelegramSender
 from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache
-from scheduletelegrambot.database.repositories.users import UserRepository
 from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import BackgroundInterval
-
-if TYPE_CHECKING:
-    from cashews import Cache
-
-    from scheduletelegrambot.components.sender.sender import TelegramSender
-    from scheduletelegrambot.database.db import DatabaseAlchemy
 
 
 class SubscriptionChecker:
     def __init__(
         self,
-        db: DatabaseAlchemy,
+        container: AsyncContainer,
         sender: TelegramSender,
-        cashews_cache: Cache,
     ) -> None:
         self.interval = BackgroundInterval.SUB_CHECKER.value
-        self.db = db
+        self.container = container
         self.sender = sender
-        self.cache = cashews_cache
 
     async def do_work(self) -> None:
         today = datetime.now(UTC).date()
-        async with self.db.get_session() as session:
-            users = UserService(UserRepository(session))
+        async with self.container() as request_container:
+            users = await request_container.get(UserService)
             for user in await users.get_all_with_subscribe():
                 subscribe = user.subscribe
                 end_time = user.subscribe_end_time
@@ -46,7 +39,6 @@ class SubscriptionChecker:
                         days_left, TimeMessage.HALF
                     )
                     await self._notify(user.telegram_id, message, days_left)
-            await session.commit()
 
     @cache.locked(
         ttl="10s",
@@ -54,10 +46,10 @@ class SubscriptionChecker:
     )
     async def _notify(self, telegram_id: int, message: TimeMessage, days_left: int) -> None:
         key = f"{CACHE_KEY_PREFIX}:subscription-notification:{telegram_id}:{days_left}"
-        if await self.cache.exists(key):
+        if await cache.exists(key):
             return
         await self.sender.safe_send_message(telegram_id, message.value)
-        await self.cache.set(key, value=True, expire="1d")
+        await cache.set(key, value=True, expire="1d")
 
 
 class TimeMessage(Enum):

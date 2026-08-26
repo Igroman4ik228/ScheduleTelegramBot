@@ -7,18 +7,15 @@ from typing import TYPE_CHECKING
 from scheduletelegrambot.components.formatters.schedule import (
     format_schedule,
 )
-from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
-from scheduletelegrambot.database.repositories.groups import GroupRepository
 from scheduletelegrambot.helpers.default_schedule_parser import (
     get_default_lessons,
 )
 from scheduletelegrambot.helpers.lesson import Lesson, Schedule
+from scheduletelegrambot.schemas.default_schedule import DefaultScheduleWithGroupSchema
 from scheduletelegrambot.services.default_schedule import DefaultScheduleService
 from scheduletelegrambot.services.group import GroupService
 
 if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import DefaultScheduleModel
     from scheduletelegrambot.helpers.week import Week
 
 
@@ -119,22 +116,23 @@ class Builder:
 
     def __init__(
         self,
-        db: DatabaseAlchemy,
         week: Week,
-        global_shift,
+        global_shift: int,
         replacement_schedules: list[Schedule],
-    ):
+        default_schedules: DefaultScheduleService,
+        groups: GroupService,
+    ) -> None:
         self.logger = getLogger(self.__class__.__name__)
-        self.db = db
         self.week = week
         self.global_shift = global_shift
         self.replacement_schedules = replacement_schedules
+        self.default_schedule_service = default_schedules
+        self.group_service = groups
         self.default_schedules: list[Schedule] = []
 
-    @with_session
-    async def initialize(self, session=None) -> None:
+    async def initialize(self) -> None:
         """Инициализация билдера - загрузка основного расписания"""
-        self.default_schedules = await self._get_default_schedules(session)
+        self.default_schedules = await self._get_default_schedules()
 
     async def build(self) -> dict[str, str]:
         """
@@ -150,20 +148,15 @@ class Builder:
         )
         return builder.build()
 
-    async def _get_default_schedules(self, session) -> list[Schedule]:
+    async def _get_default_schedules(self) -> list[Schedule]:
         """Получить основное расписание из БД"""
-        default_schedules = DefaultScheduleService(
-            DefaultScheduleRepository(session), GroupRepository(session)
-        )
-
-        groups = await GroupService(GroupRepository(session)).get_all_by_global_shift(
-            self.global_shift
-        )
+        groups = await self.group_service.get_all_by_global_shift(self.global_shift)
         group_ids = {group.id for group in groups}
 
-        default_schedule_data = await default_schedules.get_all_by_weekday_and_shift_with_group(
-            self.week.weekday,
-            self.week.shift,
+        default_schedule_data = (
+            await self.default_schedule_service.list_for_period(
+                self.week.weekday, self.week.shift
+            )
         )
 
         if default_schedule_data is None:
@@ -184,7 +177,9 @@ class DefaultScheduleCollector:
         self.week = week
         self.schedules_by_group: dict[str, Schedule] = {}
 
-    def collect_schedules(self, schedule_data: list[DefaultScheduleModel]) -> list[Schedule]:
+    def collect_schedules(
+        self, schedule_data: list[DefaultScheduleWithGroupSchema]
+    ) -> list[Schedule]:
         """Собрать расписания из данных БД"""
         for lesson_data in schedule_data:
             self._process_lesson_data(lesson_data)
@@ -192,7 +187,7 @@ class DefaultScheduleCollector:
 
     def _process_lesson_data(self, lesson_data) -> None:
         """Обработать данные урока"""
-        group_name = lesson_data.group.name
+        group_name = lesson_data.group_name
         lessons = get_default_lessons(lesson_data.data_lessons)
 
         if group_name not in self.schedules_by_group:

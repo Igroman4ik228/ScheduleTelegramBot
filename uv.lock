@@ -177,18 +177,6 @@ wheels = [
 ]
 
 [[package]]
-name = "bs4"
-version = "0.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "beautifulsoup4" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/aa/4acaf814ff901145da37332e05bb510452ebed97bc9602695059dd46ef39/bs4-0.0.2.tar.gz", hash = "sha256:a48685c58f50fe127722417bae83fe6badf500d54b55f7e39ffe43b798653925", size = 698, upload-time = "2024-01-17T18:15:47.371Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/51/bb/bf7aab772a159614954d84aa832c129624ba6c32faa559dfb200a534e50b/bs4-0.0.2-py2.py3-none-any.whl", hash = "sha256:abf8742c0805ef7f662dce4b51cca104cffe52b835238afc169142ab9b3fbccc", size = 1189, upload-time = "2024-01-17T18:15:48.613Z" },
-]
-
-[[package]]
 name = "cashews"
 version = "7.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -725,10 +713,11 @@ dependencies = [
     { name = "aiomysql" },
     { name = "alembic" },
     { name = "apscheduler" },
-    { name = "bs4" },
+    { name = "beautifulsoup4" },
     { name = "cashews" },
     { name = "dishka" },
     { name = "lxml" },
+    { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dateutil" },
     { name = "redis" },
@@ -745,13 +734,14 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aiogram", specifier = ">=3.13.0,<4" },
-    { name = "aiomysql", specifier = ">=0.2.0,<0.4" },
+    { name = "aiomysql", specifier = ">=0.2.0,<0.3" },
     { name = "alembic", specifier = ">=1.13.2,<2" },
     { name = "apscheduler", specifier = ">=3.11.3" },
-    { name = "bs4", specifier = ">=0.0.2,<0.0.3" },
-    { name = "cashews", specifier = ">=7.5.0" },
+    { name = "beautifulsoup4", specifier = ">=4.15.0,<5" },
+    { name = "cashews", specifier = ">=7.5.0,<8" },
     { name = "dishka", specifier = ">=1.10.1" },
     { name = "lxml", specifier = ">=6.0.1,<7" },
+    { name = "pydantic", specifier = ">=2.13.4,<3" },
     { name = "pydantic-settings", specifier = ">=2.4.0,<3" },
     { name = "python-dateutil", specifier = ">=2.9.0.post0,<3" },
     { name = "redis", specifier = ">=5.1.0,<9" },

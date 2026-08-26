@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from scheduletelegrambot.database.models import SubscribeModel
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.repositories.subscribes import SubscribeRepository
+from scheduletelegrambot.database.repositories.subscribes import SubscribeRepository
 
 
 class SubscribeService:

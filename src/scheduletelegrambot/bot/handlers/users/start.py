@@ -1,18 +1,18 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
-from aiogram.types import Message  # noqa: TC002 - evaluated by Dishka.
-from dishka.integrations.aiogram import FromDishka, inject
+from aiogram.types import Message
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.keyboards.users.inline.department_kb import (
     get_department_kb,
 )
 from scheduletelegrambot.helpers.command import find_command_argument
 from scheduletelegrambot.helpers.text import quote_html
-from scheduletelegrambot.services.department import (  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.services.department import (
     DepartmentService,
 )
 from scheduletelegrambot.services.referral import (
-    ReferralService,  # noqa: TC001 - evaluated by Dishka.
+    ReferralService,
 )
 from scheduletelegrambot.utils.constants import MAX_REFERRAL
 
@@ -40,7 +40,6 @@ MAX_FULLNAME_LENGTH = 100
 
 
 @router.message(CommandStart())
-@inject
 async def handle_start(
     message: Message,
     departments: FromDishka[DepartmentService],

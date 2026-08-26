@@ -1,6 +1,6 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
-from dishka.integrations.aiogram import FromDishka, inject
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.keyboards.users.inline.setting_kb import (
     get_notification_text,
@@ -8,12 +8,12 @@ from scheduletelegrambot.bot.keyboards.users.inline.setting_kb import (
     get_time_text,
 )
 from scheduletelegrambot.bot.views.profile import ProfileSettingsView, ProfileView
-from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
-from scheduletelegrambot.services.department import (  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.services.department import (
     DepartmentService,
 )
 from scheduletelegrambot.services.user import (
-    UserService,  # noqa: TC001 - evaluated by Dishka.
+    UserService,
 )
 from scheduletelegrambot.utils.constants import CallbackData
 
@@ -21,7 +21,6 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == CallbackData.SETTING.value)
-@inject
 async def handle_setting(
     callback_query: CallbackQuery,
     user: UserModel,
@@ -50,7 +49,6 @@ async def handle_setting(
 
 
 @router.callback_query(F.data == CallbackData.TOGGLE_NOTIFICATION.value)
-@inject
 async def handle_notification(
     callback_query: CallbackQuery, user: UserModel, users: FromDishka[UserService]
 ):
@@ -68,7 +66,6 @@ async def handle_notification(
 
 
 @router.callback_query(F.data == CallbackData.TOGGLE_TIME_DISPLAY.value)
-@inject
 async def handle_time_display(
     callback_query: CallbackQuery, user: UserModel, users: FromDishka[UserService]
 ):

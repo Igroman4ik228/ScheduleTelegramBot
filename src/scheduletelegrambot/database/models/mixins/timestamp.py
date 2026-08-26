@@ -1,4 +1,3 @@
-# ruff: noqa: TC001, TC002
 
 from sqlalchemy.orm import Mapped
 

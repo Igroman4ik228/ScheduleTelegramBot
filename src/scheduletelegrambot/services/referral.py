@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from scheduletelegrambot.database.models import ReferralModel
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.repositories.referrals import ReferralRepository
+from scheduletelegrambot.database.repositories.referrals import ReferralRepository
 
 
 class ReferralService:

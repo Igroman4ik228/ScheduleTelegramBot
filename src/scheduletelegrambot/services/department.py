@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from scheduletelegrambot.database.models import DepartmentModel
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.repositories.departments import DepartmentRepository
+from scheduletelegrambot.database.repositories.departments import DepartmentRepository
 
 
 class DepartmentService:

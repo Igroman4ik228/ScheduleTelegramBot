@@ -1,6 +1,6 @@
 from datetime import time as dt_time
 from datetime import timedelta
-from enum import IntEnum, StrEnum
+from enum import Enum, IntEnum, StrEnum
 from pathlib import Path
 
 DEBUG: bool = False
@@ -60,10 +60,10 @@ class CallbackDataAdmin(StrEnum):
     SUBSCRIBE_LIST_USERS = "SubscribeListUsersAdmin"
 
 
-class CacheTTL(IntEnum):
-    USER = timedelta(minutes=3).seconds
-    RESULT_SCHEDULE = timedelta(hours=6).seconds
-    DEFAULT = timedelta(hours=24).seconds
+class CacheTTL(Enum):
+    USER = timedelta(minutes=3)
+    RESULT_SCHEDULE = timedelta(hours=6)
+    DEFAULT_SCHEDULE = timedelta(hours=24)
 
 
 class BackgroundInterval(IntEnum):

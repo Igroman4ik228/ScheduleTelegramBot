@@ -11,14 +11,15 @@ dependencies = [
     "sqlalchemy>=2.0.34,<3",
     "requests>=2.32.3,<3",
     "alembic>=1.13.2,<2",
-    "aiomysql>=0.2.0,<0.4",
-    "bs4>=0.0.2,<0.0.3",
+    "aiomysql>=0.2.0,<0.3",
     "lxml>=6.0.1,<7",
     "redis>=5.1.0,<9",
     "python-dateutil>=2.9.0.post0,<3",
     "dishka>=1.10.1",
     "apscheduler>=3.11.3",
-    "cashews>=7.5.0",
+    "cashews>=7.5.0,<8",
+    "pydantic>=2.13.4,<3",
+    "beautifulsoup4>=4.15.0,<5",
 ]
 
 [dependency-groups]
@@ -70,6 +71,12 @@ ignore = [
     "RUF001", # Russian user-facing messages
     "RUF002", # Cyrillic docstrings intentionally contain confusable Unicode letters.
     "TRY003", # Messages are intentionally localized at the point where validation fails.
+
+    "PLR0913",
+    "PLR0917",
+    "TC001",
+    "TC002",
+    "TC003",
 ]
 
 [tool.ruff.format]

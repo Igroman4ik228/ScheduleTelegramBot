@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from sqlalchemy.engine import CursorResult
 
 from scheduletelegrambot.database.models import GroupModel
-
-if TYPE_CHECKING:
-    from sqlalchemy.engine import CursorResult
-
-    from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
 
 
 class GroupService:

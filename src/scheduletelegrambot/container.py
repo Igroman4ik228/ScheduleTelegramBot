@@ -1,15 +1,11 @@
-from collections.abc import AsyncIterator  # noqa: TC003 - provider return type is runtime metadata.
+from collections.abc import AsyncIterator
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.redis import RedisStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from cashews import Cache  # noqa: TC002 - provider metadata is resolved by Dishka at runtime.
-from dishka import Provider, Scope, make_async_container, provide
-from dishka.integrations.aiogram import AiogramProvider
-from sqlalchemy.ext.asyncio import (
-    AsyncSession,  # noqa: TC002 - provider return type is runtime metadata.
-)
+from dishka import AsyncContainer, Provider, Scope, make_async_container, provide, provide_all
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from scheduletelegrambot.app.application import Application
 from scheduletelegrambot.app.factory_pack.parser_factory import (
@@ -45,6 +41,7 @@ from scheduletelegrambot.services import (
     GroupService,
     ReferralService,
     ResultScheduleService,
+    ScheduleService,
     SubscribeService,
     UserService,
 )
@@ -54,6 +51,15 @@ from scheduletelegrambot.utils.constants import SCHEDULE_URLS, BackgroundInterva
 
 class AppProvider(Provider):
     scope = Scope.APP
+
+    components = provide_all(
+        ProfileCache,
+        TelegramSender,
+        ScheduleNotifier,
+        SubscriptionChecker,
+        DefaultScheduleLoader,
+        BotManager,
+    )
 
     @provide
     def settings(self) -> Settings:
@@ -77,21 +83,6 @@ class AppProvider(Provider):
             await database.close()
 
     @provide
-    async def cashews_cache(self, settings: Settings) -> AsyncIterator[Cache]:
-        cache_url = settings.cache.url()
-        cache.setup(cache_url, pickle_type="sqlalchemy")
-        cache.setup_tags_backend(cache_url)
-        await cache.init()
-        try:
-            yield cache
-        finally:
-            await cache.close()
-
-    @provide
-    def profile_cache(self, cashews_cache: Cache) -> ProfileCache:
-        return ProfileCache(cashews_cache)
-
-    @provide
     async def bot(self, settings: Settings) -> AsyncIterator[Bot]:
         bot = Bot(
             settings.bot.token.get_secret_value(),
@@ -111,26 +102,14 @@ class AppProvider(Provider):
             await dispatcher.storage.close()
 
     @provide
-    def sender(self, db: DatabaseAlchemy, bot: Bot) -> TelegramSender:
-        return TelegramSender(db, bot)
-
-    @provide
-    def notify(
-        self,
-        db: DatabaseAlchemy,
-        sender: TelegramSender,
-    ) -> ScheduleNotifier:
-        return ScheduleNotifier(db, sender)
-
-    @provide
-    def request(self, settings: Settings, sender: TelegramSender) -> AdminRequester:
+    def requester(self, settings: Settings, sender: TelegramSender) -> AdminRequester:
         return AdminRequester(settings.bot.admin_ids, sender)
 
     @provide
     def parser_factory(
         self,
         request: AdminRequester,
-        db: DatabaseAlchemy,
+        container: AsyncContainer,
         notify: ScheduleNotifier,
     ) -> ParserFactory:
         return ParserFactory(
@@ -140,54 +119,65 @@ class AppProvider(Provider):
             ),
             dependencies=ParserDependencies(
                 request=request,
-                db=db,
+                container=container,
                 notify=notify,
             ),
         )
-
-    @provide
-    def sub_checker(
-        self,
-        db: DatabaseAlchemy,
-        sender: TelegramSender,
-        cashews_cache: Cache,
-    ) -> SubscriptionChecker:
-        return SubscriptionChecker(db, sender, cashews_cache)
 
     @provide
     def scheduler(self) -> AsyncIOScheduler:
         return AsyncIOScheduler(job_defaults={"coalesce": True, "max_instances": 1})
 
     @provide
-    def bot_manager(
-        self, bot: Bot, dispatcher: Dispatcher, settings: Settings, cashews_cache: Cache
-    ) -> BotManager:
-        return BotManager(bot, dispatcher, settings, cashews_cache)
-
-    @provide
-    def default_schedule_loader(self, db: DatabaseAlchemy) -> DefaultScheduleLoader:
-        return DefaultScheduleLoader(db)
-
-    @provide
-    def application(
+    async def application(
         self,
         bot_manager: BotManager,
         scheduler: AsyncIOScheduler,
         parser_factory: ParserFactory,
         sub_checker: SubscriptionChecker,
         default_schedule_loader: DefaultScheduleLoader,
-    ) -> Application:
-        return Application(
-            bot_manager=bot_manager,
-            scheduler=scheduler,
-            parser_factory=parser_factory,
-            sub_checker=sub_checker,
-            default_schedule_loader=default_schedule_loader,
-        )
+        settings: Settings,
+    ) -> AsyncIterator[Application]:
+        cache_url = settings.cache.url()
+        # Cached service results are immutable DTO schemas.
+        cache.setup(cache_url, pickle_type="sqlalchemy")
+        cache.setup_tags_backend(cache_url)
+        await cache.init()
+
+        try:
+            yield Application(
+                bot_manager=bot_manager,
+                scheduler=scheduler,
+                parser_factory=parser_factory,
+                sub_checker=sub_checker,
+                default_schedule_loader=default_schedule_loader,
+            )
+        finally:
+            await cache.close()
 
 
 class RequestProvider(Provider):
     scope = Scope.REQUEST
+
+    repositories = provide_all(
+        DepartmentRepository,
+        GroupRepository,
+        DefaultScheduleRepository,
+        SubscribeRepository,
+        ReferralRepository,
+        UserRepository,
+        ResultScheduleRepository,
+    )
+    services = provide_all(
+        DepartmentService,
+        GroupService,
+        DefaultScheduleService,
+        SubscribeService,
+        ReferralService,
+        UserService,
+        ResultScheduleService,
+        ScheduleService,
+    )
 
     @provide
     async def session(
@@ -197,34 +187,6 @@ class RequestProvider(Provider):
         async with db.sessionmaker.begin() as session:
             yield session
 
-    @provide
-    def department_service(self, session: AsyncSession) -> DepartmentService:
-        return DepartmentService(DepartmentRepository(session))
-
-    @provide
-    def group_service(self, session: AsyncSession) -> GroupService:
-        return GroupService(GroupRepository(session))
-
-    @provide
-    def default_schedule_service(self, session: AsyncSession) -> DefaultScheduleService:
-        return DefaultScheduleService(DefaultScheduleRepository(session), GroupRepository(session))
-
-    @provide
-    def subscribe_service(self, session: AsyncSession) -> SubscribeService:
-        return SubscribeService(SubscribeRepository(session))
-
-    @provide
-    def referral_service(self, session: AsyncSession) -> ReferralService:
-        return ReferralService(ReferralRepository(session))
-
-    @provide
-    def user_service(self, session: AsyncSession) -> UserService:
-        return UserService(UserRepository(session))
-
-    @provide
-    def result_schedule_service(self, session: AsyncSession) -> ResultScheduleService:
-        return ResultScheduleService(ResultScheduleRepository(session), GroupRepository(session))
-
 
 def create_container():
-    return make_async_container(AppProvider(), RequestProvider(), AiogramProvider())
+    return make_async_container(AppProvider(), RequestProvider())

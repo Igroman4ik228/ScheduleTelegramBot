@@ -1,9 +1,9 @@
 from aiogram import Bot, F, Router, html
-from aiogram.types import CallbackQuery  # noqa: TC002 - evaluated by Dishka.
-from dishka.integrations.aiogram import FromDishka, inject
+from aiogram.types import CallbackQuery
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.services.user import (
-    UserService,  # noqa: TC001 - evaluated by Dishka.
+    UserService,
 )
 from scheduletelegrambot.utils.constants import MAX_REFERRAL, CallbackData
 
@@ -13,7 +13,6 @@ TITLE = "Приветствие"
 
 
 @router.callback_query(F.data == CallbackData.REFERRAL.value)
-@inject
 async def handle_referral(callback_query: CallbackQuery, bot: Bot, users: FromDishka[UserService]):
     tg_id = callback_query.from_user.id
     bot_name = await bot.get_my_name()

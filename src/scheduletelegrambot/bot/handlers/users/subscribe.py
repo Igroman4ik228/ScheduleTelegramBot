@@ -9,7 +9,7 @@ from aiogram.types import (
     PreCheckoutQuery,
 )
 from dateutil.relativedelta import relativedelta
-from dishka.integrations.aiogram import FromDishka, inject
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.filters.subscribe import SubscribeFilter
 from scheduletelegrambot.bot.keyboards.users.inline.payment_kb import (
@@ -19,21 +19,20 @@ from scheduletelegrambot.bot.keyboards.users.inline.subscribe_kb import (
     get_subscribe_kb,
 )
 from scheduletelegrambot.bot.views.subscription import SubscriptionView
-from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.models import UserModel
 from scheduletelegrambot.services.subscribe import (
-    SubscribeService,  # noqa: TC001 - evaluated by Dishka.
+    SubscribeService,
 )
 from scheduletelegrambot.services.user import (
-    UserService,  # noqa: TC001 - evaluated by Dishka.
+    UserService,
 )
-from scheduletelegrambot.settings import Settings  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.settings import Settings
 from scheduletelegrambot.utils.constants import CallbackData
 
 router = Router(name=__name__)
 
 
 @router.callback_query(F.data == CallbackData.SUBSCRIBE.value)
-@inject
 async def handle_subscribe(callback_query: CallbackQuery, subscribes: FromDishka[SubscribeService]):
     message = callback_query.message
     if not isinstance(message, Message):
@@ -45,7 +44,6 @@ async def handle_subscribe(callback_query: CallbackQuery, subscribes: FromDishka
 
 
 @router.callback_query(F.data.startswith("Subscribe:"))
-@inject
 async def handle_choose_subscribe(
     callback_query: CallbackQuery,
     user: UserModel,
@@ -69,7 +67,6 @@ async def handle_choose_subscribe(
 
 
 @router.callback_query(F.data.startswith("Payment:telegram:"))
-@inject
 async def handle_payment_telegram(
     callback_query: CallbackQuery,
     bot: Bot,
@@ -108,7 +105,6 @@ async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
 
 
 @router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
-@inject
 async def handle_successful_payment(
     message: Message,
     user: UserModel,
@@ -129,7 +125,6 @@ async def handle_successful_payment(
 
 
 @router.message(~SubscribeFilter())
-@inject
 async def handle_check_subscribe(message: Message, subscribes: FromDishka[SubscribeService]):
     subscribe_models = await subscribes.get_all()
     await message.answer(
@@ -138,7 +133,6 @@ async def handle_check_subscribe(message: Message, subscribes: FromDishka[Subscr
 
 
 @router.callback_query(~SubscribeFilter())
-@inject
 async def handle_check_subscribe_callback(
     callback_query: CallbackQuery, subscribes: FromDishka[SubscribeService]
 ):

@@ -10,10 +10,10 @@ from scheduletelegrambot.helpers.default_schedule_parser import (
 from scheduletelegrambot.utils.constants import DAY_NAMES
 
 if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import DefaultScheduleModel
+    from scheduletelegrambot.schemas.default_schedule import DefaultScheduleBaseSchema
 
 
-def format_default_schedules(default_schedules: list[DefaultScheduleModel], shift: int) -> str:
+def format_default_schedules(default_schedules: list[DefaultScheduleBaseSchema], shift: int) -> str:
     formatted_default_schedules = ""
     for weekday, schedule in enumerate(default_schedules):
         if weekday > len(DAY_NAMES) - 1:
@@ -28,7 +28,7 @@ def format_default_schedules(default_schedules: list[DefaultScheduleModel], shif
     return formatted_default_schedules
 
 
-def format_default_schedule(default_schedule: DefaultScheduleModel) -> str:
+def format_default_schedule(default_schedule: DefaultScheduleBaseSchema) -> str:
     formatted_default_schedule = ""
     for default_lesson in generate_default_schedule(default_schedule.data_lessons):
         formatted_default_schedule += format_lesson(default_lesson)

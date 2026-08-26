@@ -1,30 +1,24 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from aiogram import Bot, Dispatcher
 
 from scheduletelegrambot.bot.handlers import register_routers
 from scheduletelegrambot.bot.middlewares import register_middlewares
-
-if TYPE_CHECKING:
-    from aiogram import Bot, Dispatcher
-    from cashews import Cache
-
-    from scheduletelegrambot.settings import Settings
+from scheduletelegrambot.settings import Settings
 
 
 class BotManager:
-    def __init__(self, bot: Bot, dp: Dispatcher, settings: Settings, cache: Cache) -> None:
+    def __init__(self, bot: Bot, dp: Dispatcher, settings: Settings) -> None:
         self.bot = bot
         self.dp = dp
         self.settings = settings
-        self.cache = cache
         self._configured = False
 
     def configure(self) -> None:
         if self._configured:
             return
 
-        register_middlewares(self.dp, self.settings, self.cache)
+        register_middlewares(self.dp, self.settings)
         register_routers(self.dp, self.settings)
 
         self._configured = True

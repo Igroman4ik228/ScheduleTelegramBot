@@ -1,29 +1,24 @@
 import asyncio
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+
+from dishka import AsyncContainer
 
 from scheduletelegrambot.app.observer_pack.models import Publisher
+from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
 from scheduletelegrambot.components.parsers.builder import Builder
 from scheduletelegrambot.components.parsers.html_parser import HtmlParser
-from scheduletelegrambot.database.db import DatabaseAlchemy, with_session
-from scheduletelegrambot.database.repositories.groups import GroupRepository
-from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.components.requester.request import AdminRequester
+from scheduletelegrambot.services.default_schedule import DefaultScheduleService
 from scheduletelegrambot.services.group import GroupService
 from scheduletelegrambot.services.result_schedule import ResultScheduleService
 from scheduletelegrambot.utils.constants import DEBUG
-
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
-    from scheduletelegrambot.components.requester.request import AdminRequester
 
 
 @dataclass(frozen=True)
 class ParserDependencies:
     request: AdminRequester
-    db: DatabaseAlchemy
+    container: AsyncContainer
     notify: ScheduleNotifier
 
 
@@ -44,7 +39,7 @@ class ScheduleParser(Publisher):
         self.global_shift = global_shift
         self.interval = interval
         self.request = dependencies.request
-        self.db = dependencies.db
+        self.container = dependencies.container
 
         self.attach(dependencies.notify)
 
@@ -59,24 +54,30 @@ class ScheduleParser(Publisher):
 
         replacement_schedules = self.parser.extract_replacement_schedules()
 
-        builder = Builder(self.db, week, self.global_shift, replacement_schedules)
-        await builder.initialize()
-        result_schedule = await builder.build()
-
-        is_update = False
-        async with self.db.get_session() as session:
-            groups = GroupService(GroupRepository(session))
-            result_schedules = ResultScheduleService(
-                ResultScheduleRepository(session), GroupRepository(session)
+        async with self.container() as request_container:
+            groups = await request_container.get(GroupService)
+            result_schedules = await request_container.get(ResultScheduleService)
+            default_schedules = await request_container.get(DefaultScheduleService)
+            builder = Builder(
+                week,
+                self.global_shift,
+                replacement_schedules,
+                default_schedules,
+                groups,
             )
+            await builder.initialize()
+            result_schedule = await builder.build()
 
+            is_update = False
             for group, schedule in result_schedule.items():
                 if await self._check_changed_schedule(group, schedule, groups, result_schedules):
                     is_update = True
                     break
 
+            if is_update:
+                await self._save_schedule_to_db(result_schedule, result_schedules)
+
         if is_update:
-            await self._save_schedule_to_db(result_schedule)
             await self.notify(global_shift=self.global_shift, week=week)
 
     async def _get_response_text(self) -> str:
@@ -84,14 +85,11 @@ class ScheduleParser(Publisher):
             return await asyncio.to_thread(Path("test.html").read_text, encoding="utf-8")
         return await self.request.fetch(self.url)
 
-    @with_session
     async def _save_schedule_to_db(
-        self, result_schedule: dict[str, str], session: AsyncSession
+        self,
+        result_schedule: dict[str, str],
+        result_schedules: ResultScheduleService,
     ) -> None:
-        result_schedules = ResultScheduleService(
-            ResultScheduleRepository(session), GroupRepository(session)
-        )
-
         if self.parser is None or self.parser.week is None:
             raise RuntimeError("Schedule parser is not initialized")
         week = self.parser.week

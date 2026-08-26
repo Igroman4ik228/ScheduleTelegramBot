@@ -1,17 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import datetime
 
 from cashews import NOT_NONE
 
 from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache, invalidate_tags
 from scheduletelegrambot.database.models import UserModel
 from scheduletelegrambot.database.repositories.base import DEFAULT_LIMIT
-
-if TYPE_CHECKING:
-    from datetime import datetime
-
-    from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.database.repositories.users import UserRepository
 
 
 class UserService:
@@ -77,7 +73,6 @@ class UserService:
             limit=limit,
         )
 
-    # ruff: noqa: PLR0913
     async def create(
         self,
         *,

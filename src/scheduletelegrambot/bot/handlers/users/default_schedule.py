@@ -1,6 +1,6 @@
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
-from dishka.integrations.aiogram import FromDishka, inject
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.keyboards.users.inline.default_schedule_kb import (
     get_default_schedule_kb,
@@ -9,9 +9,9 @@ from scheduletelegrambot.bot.views.schedule import DefaultScheduleView
 from scheduletelegrambot.components.formatters.message import (
     format_default_schedules,
 )
-from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.models import UserModel
 from scheduletelegrambot.helpers.algorithm import get_key
-from scheduletelegrambot.services.default_schedule import (  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.services.default_schedule import (
     DefaultScheduleService,
 )
 from scheduletelegrambot.utils.constants import (
@@ -34,7 +34,6 @@ async def handle_default_schedule(callback_query: CallbackQuery):
 
 
 @router.callback_query(F.data == CallbackData.WRITE_DEFAULT_NUMERATOR_SCHEDULE.value)
-@inject
 async def handle_default_numerator_schedule(
     callback_query: CallbackQuery,
     user: UserModel,
@@ -48,7 +47,6 @@ async def handle_default_numerator_schedule(
 
 
 @router.callback_query(F.data == CallbackData.WRITE_DEFAULT_DENOMINATOR_SCHEDULE.value)
-@inject
 async def handle_default_denominator_schedule(
     callback_query: CallbackQuery,
     user: UserModel,
@@ -64,7 +62,7 @@ async def handle_default_denominator_schedule(
 async def get_default_schedule(
     group_id: int, default_schedules: DefaultScheduleService, shift: int
 ) -> str:
-    default_schedule_data = await default_schedules.get_all_by_group_and_shift(group_id, shift)
+    default_schedule_data = await default_schedules.list_for_group(group_id, shift)
     shift_name = get_key(WEEK_SCHEDULE_MAPPING, shift)
     default_schedule = format_default_schedules(default_schedule_data, shift)
 

@@ -3,19 +3,19 @@ from contextlib import suppress
 
 from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import Message  # noqa: TC002 - evaluated by Dishka.
-from dishka.integrations.aiogram import FromDishka, inject
+from aiogram.types import Message
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.keyboards.users.inline.profile_kb import (
     get_profile_kb,
 )
 from scheduletelegrambot.bot.views.profile import ProfileView, UserProfileView
-from scheduletelegrambot.database.cache.profile_cache import (  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.cache.profile_cache import (
     ProfileCache,
 )
-from scheduletelegrambot.database.models import UserModel  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.database.models import UserModel
 from scheduletelegrambot.services.department import (
-    DepartmentService,  # noqa: TC001 - evaluated by Dishka.
+    DepartmentService,
 )
 
 user_locks = {}
@@ -23,7 +23,6 @@ router = Router(name=__name__)
 
 
 @router.message(F.text.lower().contains("профиль"))
-@inject
 async def handle_profile(
     message: Message,
     bot: Bot,

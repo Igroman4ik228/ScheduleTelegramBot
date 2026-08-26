@@ -2,10 +2,10 @@ from enum import Enum
 
 from aiogram import F, Router, html
 from aiogram.filters import StateFilter
-from aiogram.fsm.context import FSMContext  # noqa: TC002 - evaluated by Dishka.
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
-from dishka.integrations.aiogram import FromDishka, inject
+from dishka.integrations.aiogram import FromDishka
 
 from scheduletelegrambot.bot.keyboards.admins.inline.user.group_list_users_kb import (
     GroupCallbackFactory,
@@ -24,19 +24,19 @@ from scheduletelegrambot.bot.keyboards.admins.inline.user.user_kb import (
 )
 from scheduletelegrambot.bot.views.admin import AdminPanelView, AdminUserListView
 from scheduletelegrambot.bot.views.user import UserListView
-from scheduletelegrambot.components.sender.sender import (  # noqa: TC001 - evaluated by Dishka.
+from scheduletelegrambot.components.sender.sender import (
     TelegramSender,
 )
 from scheduletelegrambot.helpers.subscribe import calc_subscribe_end_time
 from scheduletelegrambot.helpers.text import split_text_with_wrap
 from scheduletelegrambot.services.group import (
-    GroupService,  # noqa: TC001 - evaluated by Dishka.
+    GroupService,
 )
 from scheduletelegrambot.services.subscribe import (
-    SubscribeService,  # noqa: TC001 - evaluated by Dishka.
+    SubscribeService,
 )
 from scheduletelegrambot.services.user import (
-    UserService,  # noqa: TC001 - evaluated by Dishka.
+    UserService,
 )
 from scheduletelegrambot.utils.constants import CallbackDataAdmin
 
@@ -62,7 +62,6 @@ async def handle_user(callback_query: CallbackQuery):
 
 # *List users
 @router.callback_query(F.data == CallbackDataAdmin.LIST_USERS.value)
-@inject
 async def handle_list_users(
     callback_query: CallbackQuery,
     groups: FromDishka[GroupService],
@@ -88,7 +87,6 @@ async def handle_list_users(
 
 
 @router.callback_query(GroupCallbackFactory.filter())
-@inject
 async def handle_group_list_users(
     callback_query: CallbackQuery,
     callback_data: GroupCallbackFactory,
@@ -178,7 +176,6 @@ async def handle_cancel_ban_unban(message: Message, state: FSMContext):
 
 
 @router.message(BanUnbanStates.tg_user_id, F.text.isdigit())
-@inject
 async def handle_ban_unban(
     message: Message,
     users: FromDishka[UserService],
@@ -230,7 +227,6 @@ class BanMessage(Enum):
 
 # *Give subscribe
 @router.callback_query(StateFilter(None), F.data == CallbackDataAdmin.GIVE_SUBSCRIPTION.value)
-@inject
 async def handle_request_give_subscribe(
     callback_query: CallbackQuery,
     state: FSMContext,
@@ -271,7 +267,6 @@ async def handle_subscribe(
 
 
 @router.message(SubscribeStates.tg_user_id, F.text.isdigit())
-@inject
 async def handle_give_subscribe(
     message: Message,
     users: FromDishka[UserService],

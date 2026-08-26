@@ -5,26 +5,16 @@ from logging import getLogger
 from typing import TYPE_CHECKING
 
 from aiogram import html
+from dishka import AsyncContainer
 
 from scheduletelegrambot.app.observer_pack.models import Observer
-from scheduletelegrambot.bot.handlers.users.schedule import get_schedule
-from scheduletelegrambot.components.formatters.schedule import (
-    add_time_to_schedule,
-)
-from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
-from scheduletelegrambot.database.repositories.groups import GroupRepository
-from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
-from scheduletelegrambot.database.repositories.users import UserRepository
-from scheduletelegrambot.services.default_schedule import DefaultScheduleService
-from scheduletelegrambot.services.result_schedule import ResultScheduleService
+from scheduletelegrambot.components.formatters.schedule import add_time_to_schedule
+from scheduletelegrambot.components.sender.sender import TelegramSender
+from scheduletelegrambot.services.schedule import ScheduleService
 from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import SENDER_TIME_SLEEP
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    from scheduletelegrambot.components.sender.sender import TelegramSender
-    from scheduletelegrambot.database.db import DatabaseAlchemy
     from scheduletelegrambot.database.models import UserModel
     from scheduletelegrambot.helpers.week import Week
 
@@ -32,11 +22,11 @@ if TYPE_CHECKING:
 class ScheduleNotifier(Observer):
     def __init__(
         self,
-        db: DatabaseAlchemy,
+        container: AsyncContainer,
         sender: TelegramSender,
-    ):
+    ) -> None:
         self.logger = getLogger(self.__class__.__name__)
-        self.db = db
+        self.container = container
         self.sender = sender
 
     async def update(
@@ -45,40 +35,38 @@ class ScheduleNotifier(Observer):
         global_shift: int,
         week: Week,
     ) -> None:
-        async with self.db.get_session() as session:
-            await self._update(global_shift=global_shift, week=week, session=session)
+        async with self.container() as request_container:
+            users = await request_container.get(UserService)
+            schedules = await request_container.get(ScheduleService)
+            await self._update(
+                global_shift=global_shift,
+                week=week,
+                users=users,
+                schedules=schedules,
+            )
 
     async def _update(
         self,
         *,
         global_shift: int,
         week: Week,
-        session: AsyncSession,
+        users: UserService,
+        schedules: ScheduleService,
     ) -> None:
         self.logger.info("Start ScheduleNotifier: global_shift=%s, week=%s", global_shift, week)
 
-        users = await UserService(UserRepository(session)).get_notification_recipients()
+        notification_recipients = await users.get_notification_recipients()
 
-        for user in users:
+        for user in notification_recipients:
             if not self._should_notify(user, global_shift):
                 continue
             if user.group_id is None:
                 continue
 
-            schedule = await get_schedule(
-                user.group_id,
-                ResultScheduleService(ResultScheduleRepository(session), GroupRepository(session)),
-                DefaultScheduleService(
-                    DefaultScheduleRepository(session), GroupRepository(session)
-                ),
-                week.weekday,
-                week.shift,
-            )
+            schedule = await schedules.get(user.group_id, week.weekday, week.shift)
 
             formatted_schedule = self._format_message(schedule)
-            await self.sender.safe_send_message(
-                user.telegram_id, formatted_schedule, session=session
-            )
+            await self.sender.safe_send_message(user.telegram_id, formatted_schedule)
             self.logger.info("Notify sent to %s", user)
 
         await asyncio.sleep(SENDER_TIME_SLEEP)

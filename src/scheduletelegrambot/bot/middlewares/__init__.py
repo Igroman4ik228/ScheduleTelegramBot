@@ -10,22 +10,23 @@ from .bot import BotMiddleware
 from .logging import LoggingMiddleware
 from .throttling import ThrottlingMiddleware
 
+__all__ = ("register_middlewares",)
+
 if TYPE_CHECKING:
     from aiogram import Dispatcher
-    from cashews import Cache
 
     from scheduletelegrambot.settings import Settings
 
 
-def register_middlewares(dp: Dispatcher, settings: Settings, cache: Cache) -> None:
-    dp.update.outer_middleware(ThrottlingMiddleware(cache, settings.bot.rate_limit))
+def register_middlewares(
+    dp: Dispatcher,
+    settings: Settings,
+) -> None:
+    dp.update.outer_middleware(ThrottlingMiddleware(settings.bot.rate_limit))
 
     dp.update.outer_middleware(LoggingMiddleware())
-
     dp.update.outer_middleware(AuthMiddleware())
-
     dp.update.outer_middleware(BanMiddleware())
-
     dp.update.outer_middleware(BotMiddleware())
 
     dp.callback_query.middleware(CallbackAnswerMiddleware())

@@ -2,12 +2,10 @@ import asyncio
 from datetime import timedelta
 from functools import wraps
 from logging import getLogger
-from typing import TYPE_CHECKING
 
 from aiohttp import ClientError, ClientResponseError, ClientSession
 
-if TYPE_CHECKING:
-    from scheduletelegrambot.components.sender.sender import TelegramSender
+from scheduletelegrambot.components.sender.sender import TelegramSender
 
 DEFAULT_TIMEOUT = timedelta(seconds=10).seconds
 DEFAULT_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}

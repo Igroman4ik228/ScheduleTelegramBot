@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from cashews import NOT_NONE
 
 from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache, invalidate_tags
 from scheduletelegrambot.database.models import GroupModel, ResultScheduleModel
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.repositories.groups import GroupRepository
-    from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
 
 
 class ResultScheduleService:
