@@ -9,8 +9,11 @@ from scheduletelegrambot.application import Application
 from scheduletelegrambot.bot import BotManager
 from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.cache.profile_cache import ProfileCache
-from scheduletelegrambot.components.loaders.default_schedule import (
+from scheduletelegrambot.components.loaders import (
     DefaultScheduleLoader,
+    GroupLoader,
+    InitialDataLoader,
+    SubscribeLoader,
 )
 from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
 from scheduletelegrambot.components.parsers.parser import (
@@ -56,7 +59,6 @@ class AppProvider(Provider):
         TelegramSender,
         ScheduleNotifier,
         SubscriptionChecker,
-        DefaultScheduleLoader,
         BotManager,
     )
 
@@ -119,7 +121,7 @@ class AppProvider(Provider):
         scheduler: AsyncIOScheduler,
         parser_factory: ParserFactory,
         sub_checker: SubscriptionChecker,
-        default_schedule_loader: DefaultScheduleLoader,
+        container: AsyncContainer,
         settings: Settings,
     ) -> AsyncIterator[Application]:
         cache_url = settings.cache.url()
@@ -135,7 +137,7 @@ class AppProvider(Provider):
                 scheduler=scheduler,
                 parser_factory=parser_factory,
                 sub_checker=sub_checker,
-                default_schedule_loader=default_schedule_loader,
+                container=container,
             )
         finally:
             await cache.close()
@@ -143,6 +145,13 @@ class AppProvider(Provider):
 
 class RequestProvider(Provider):
     scope = Scope.REQUEST
+
+    components = provide_all(
+        DefaultScheduleLoader,
+        GroupLoader,
+        InitialDataLoader,
+        SubscribeLoader,
+    )
 
     repositories = provide_all(
         DefaultScheduleRepository,

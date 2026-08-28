@@ -1,8 +1,21 @@
 {
-    "groups": [
+  "departments": [
+    {
+      "name": "ОИТ",
+      "groups": [
         {
-            "name": "ИС1-31",
-            "department_id": 1
+          "name": "ИС1-23"
+        },
+        {
+          "name": "ИС1-31"
+        },
+        {
+          "name": "ИС1-41"
+        },
+        {
+          "name": "ИС1-44"
         }
-    ]
+      ]
+    }
+  ]
 }

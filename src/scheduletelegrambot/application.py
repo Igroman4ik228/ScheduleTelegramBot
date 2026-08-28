@@ -1,16 +1,14 @@
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from dishka import AsyncContainer
 from dishka.integrations.aiogram import setup_dishka
 
 from scheduletelegrambot.bot import BotManager
-from scheduletelegrambot.components.loaders.default_schedule import DefaultScheduleLoader
+from scheduletelegrambot.components.loaders import InitialDataLoader
 from scheduletelegrambot.components.parsers.parser_factory import ParserFactory
 from scheduletelegrambot.components.subscription_checker.sub_checker import SubscriptionChecker
-
-if TYPE_CHECKING:
-    from dishka import AsyncContainer
 
 
 class Application:
@@ -21,13 +19,13 @@ class Application:
         scheduler: AsyncIOScheduler,
         parser_factory: ParserFactory,
         sub_checker: SubscriptionChecker,
-        default_schedule_loader: DefaultScheduleLoader,
+        container: AsyncContainer,
     ) -> None:
         self.bot_manager = bot_manager
         self.scheduler = scheduler
         self.parser_factory = parser_factory
         self.sub_checker = sub_checker
-        self.default_schedule_loader = default_schedule_loader
+        self.container = container
         self._configured = False
 
     def configure(self, container: AsyncContainer) -> None:
@@ -41,7 +39,9 @@ class Application:
         self._configured = True
 
     async def __aenter__(self) -> Self:
-        await self.default_schedule_loader.process_all_files()
+        async with self.container() as request_container:
+            initial_data_loader = await request_container.get(InitialDataLoader)
+            await initial_data_loader.load()
 
         self.scheduler.start()
 
