@@ -1,29 +1,79 @@
 from __future__ import annotations
 
-from sqlalchemy.engine import CursorResult
+from cashews import NOT_NONE, noself
 
-from scheduletelegrambot.database.models import GroupModel
+from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.schemas.group import GroupBaseSchema
+
+_CACHE_TAG = "groups"
 
 
 class GroupService:
-    def __init__(self, repository: GroupRepository) -> None:
-        self.repository = repository
+    def __init__(self, group_repository: GroupRepository, uow: UoW) -> None:
+        self.group_repository = group_repository
+        self.uow = uow
 
-    async def get_by_id(self, group_id: int) -> GroupModel | None:
-        return await self.repository.get_by_id(group_id)
+    @noself(cache.early)(
+        ttl="24h",
+        early_ttl="12h",
+        tags=(_CACHE_TAG,),
+        condition=NOT_NONE,
+    )
+    async def find_by_id(self, group_id: int) -> GroupBaseSchema | None:
+        model = await self.group_repository.get_by_id(group_id)
+        if not model:
+            return None
 
-    async def get_by_name(self, name: str) -> GroupModel | None:
-        return await self.repository.get_one(GroupModel.name == name)
+        return GroupBaseSchema.model_validate(model)
 
-    async def get_all(self) -> list[GroupModel]:
-        return await self.repository.get_many()
+    @noself(cache.early)(
+        ttl="24h",
+        early_ttl="12h",
+        tags=(_CACHE_TAG,),
+        condition=NOT_NONE,
+    )
+    async def find_by_name(self, name: str) -> GroupBaseSchema | None:
+        model = await self.group_repository.get_by_name(name)
+        if not model:
+            return None
 
-    async def get_all_by_department(self, department_id: int) -> list[GroupModel]:
-        return await self.repository.get_many(GroupModel.department_id == department_id)
+        return GroupBaseSchema.model_validate(model)
 
-    async def get_all_by_global_shift(self, global_shift: int) -> list[GroupModel]:
-        return await self.repository.get_many(GroupModel.global_shift == global_shift)
+    @noself(cache.early)(
+        ttl="24h",
+        early_ttl="12h",
+        tags=(_CACHE_TAG,),
+    )
+    async def list_all(self) -> list[GroupBaseSchema]:
+        models = await self.group_repository.list_all()
+        return [GroupBaseSchema.model_validate(model) for model in models]
 
-    async def delete_by_name(self, name: str) -> CursorResult[object]:
-        return await self.repository.execute_delete(GroupModel.name == name)
+    @noself(cache.early)(
+        ttl="24h",
+        early_ttl="12h",
+        tags=(_CACHE_TAG,),
+    )
+    async def list_all_by_department(self, department_id: int) -> list[GroupBaseSchema]:
+        models = await self.group_repository.list_by_department(department_id)
+        return [GroupBaseSchema.model_validate(model) for model in models]
+
+    @noself(cache.early)(
+        ttl="24h",
+        early_ttl="12h",
+        tags=(_CACHE_TAG,),
+    )
+    async def list_all_by_global_shift(self, global_shift: int) -> list[GroupBaseSchema]:
+        models = await self.group_repository.list_by_global_shift(global_shift)
+        return [GroupBaseSchema.model_validate(model) for model in models]
+
+    async def delete_by_name(self, name: str) -> bool:
+        result = await self.group_repository.execute_delete_by_name(name)
+        deleted = result.rowcount > 0
+
+        if deleted:
+            await self.uow.commit()
+            await cache.delete_tags(_CACHE_TAG)
+
+        return deleted

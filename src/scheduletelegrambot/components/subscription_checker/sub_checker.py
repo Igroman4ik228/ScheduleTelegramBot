@@ -5,8 +5,8 @@ from enum import Enum
 
 from dishka import AsyncContainer
 
+from scheduletelegrambot.cache.cashews import CACHE_KEY_PREFIX, cache
 from scheduletelegrambot.components.sender.sender import TelegramSender
-from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache
 from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import BackgroundInterval
 
@@ -25,14 +25,14 @@ class SubscriptionChecker:
         today = datetime.now(UTC).date()
         async with self.container() as request_container:
             users = await request_container.get(UserService)
-            for user in await users.get_all_with_subscribe():
+            for user in await users.list_all_with_subscribe():
                 subscribe = user.subscribe
                 end_time = user.subscribe_end_time
                 if subscribe is None or end_time is None:
                     continue
                 days_left = (end_time.date() - today).days
                 if days_left <= 0:
-                    await users.update_subscribe(user, None, None)
+                    await users.update_subscribe(user.telegram_id, None, None)
                     await self._notify(user.telegram_id, TimeMessage.END, days_left)
                 elif days_left in {1, 5, subscribe.duration_days // 2}:
                     message = {1: TimeMessage.ONE, 5: TimeMessage.FIVE}.get(

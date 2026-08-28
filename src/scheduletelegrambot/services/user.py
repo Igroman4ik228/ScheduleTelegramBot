@@ -2,76 +2,81 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from cashews import NOT_NONE
+from cashews import NOT_NONE, noself
 
-from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache, invalidate_tags
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.database.repositories.base import DEFAULT_LIMIT
 from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.schemas.user import (
+    UserBaseSchema,
+    UserWithAllSchema,
+    UserWithGroupSchema,
+)
+
+_CACHE_TAG = "users"
 
 
 class UserService:
-    def __init__(self, repository: UserRepository) -> None:
-        self.repository = repository
+    def __init__(self, user_repository: UserRepository, uow: UoW) -> None:
+        self.user_repository = user_repository
+        self.uow = uow
 
-    @cache(
+    @noself(cache.early)(
         ttl="3m",
-        key=f"{CACHE_KEY_PREFIX}:user:{{telegram_id}}",
-        tags=("users", "user:{telegram_id}"),
+        early_ttl="2m",
+        tags=(_CACHE_TAG, "user:{telegram_id}"),
         condition=NOT_NONE,
-        lock=True,
     )
-    async def get(self, telegram_id: int) -> UserModel | None:
-        return await self.repository.get_one(UserModel.telegram_id == telegram_id)
+    async def find(self, telegram_id: int) -> UserBaseSchema | None:
+        model = await self.user_repository.get_by_telegram_id(telegram_id)
+        if not model:
+            return None
+        return UserBaseSchema.model_validate(model)
 
-    @cache(
+    @noself(cache.early)(
         ttl="3m",
-        key=f"{CACHE_KEY_PREFIX}:user:{{telegram_id}}:group",
-        tags=("users", "user:{telegram_id}"),
+        early_ttl="2m",
+        tags=(_CACHE_TAG, "user:{telegram_id}"),
         condition=NOT_NONE,
-        lock=True,
     )
-    async def get_with_group(self, telegram_id: int) -> UserModel | None:
-        return await self.repository.get_one(
-            UserModel.telegram_id == telegram_id,
-            options=(UserModel.group,),
-        )
+    async def find_with_group(self, telegram_id: int) -> UserWithGroupSchema | None:
+        model = await self.user_repository.get_with_group(telegram_id)
+        if not model:
+            return None
+        return UserWithGroupSchema.model_validate(model)
 
-    @cache(
+    @noself(cache.early)(
         ttl="3m",
-        key=f"{CACHE_KEY_PREFIX}:user:{{telegram_id}}:full",
-        tags=("users", "user:{telegram_id}"),
+        early_ttl="2m",
+        tags=(_CACHE_TAG, "user:{telegram_id}"),
         condition=NOT_NONE,
-        lock=True,
     )
-    async def get_with_all(self, telegram_id: int) -> UserModel | None:
-        return await self.repository.get_one(
-            UserModel.telegram_id == telegram_id,
-            options=(UserModel.group, UserModel.subscribe),
-        )
+    async def find_with_all(self, telegram_id: int) -> UserWithAllSchema | None:
+        model = await self.user_repository.get_with_all(telegram_id)
+        if not model:
+            return None
+        return UserWithAllSchema.model_validate(model)
 
-    async def get_all(self) -> list[UserModel]:
-        return await self.repository.get_many()
+    async def list_all(self) -> list[UserBaseSchema]:
+        models = await self.user_repository.list_all()
+        return [UserBaseSchema.model_validate(model) for model in models]
 
-    async def get_all_by_group_id(self, group_id: int) -> list[UserModel]:
-        return await self.repository.get_many(UserModel.group_id == group_id)
+    async def list_all_by_group_id(self, group_id: int) -> list[UserBaseSchema]:
+        models = await self.user_repository.list_by_group_id(group_id)
+        return [UserBaseSchema.model_validate(model) for model in models]
 
-    async def get_all_without_group(self) -> list[UserModel]:
-        return await self.repository.get_many(UserModel.group_id.is_(None))
+    async def list_all_without_group(self) -> list[UserBaseSchema]:
+        models = await self.user_repository.list_without_group()
+        return [UserBaseSchema.model_validate(model) for model in models]
 
-    async def get_notification_recipients(self) -> list[UserModel]:
-        return await self.repository.get_many(
-            UserModel.is_notify.is_(True),
-            UserModel.is_ban.is_(False),
-            UserModel.is_bot.is_(False),
-            options=(UserModel.group,),
-        )
+    async def list_notification_recipients(self) -> list[UserWithGroupSchema]:
+        models = await self.user_repository.list_notification_recipients()
+        return [UserWithGroupSchema.model_validate(model) for model in models]
 
-    async def get_all_with_subscribe(self, limit: int = DEFAULT_LIMIT) -> list[UserModel]:
-        return await self.repository.get_many(
-            options=(UserModel.subscribe,),
-            limit=limit,
-        )
+    async def list_all_with_subscribe(self, limit: int = DEFAULT_LIMIT) -> list[UserWithAllSchema]:
+        models = await self.user_repository.list_with_subscribe(limit)
+        return [UserWithAllSchema.model_validate(model) for model in models]
 
     async def create(
         self,
@@ -84,8 +89,8 @@ class UserService:
         is_premium: bool | None,
         subscribe_id: int,
         subscribe_end_time: datetime,
-    ) -> UserModel:
-        instance = await self.repository.create(
+    ) -> UserBaseSchema:
+        model = await self.user_repository.create(
             first_name=first_name,
             last_name=last_name,
             user_name=user_name,
@@ -95,36 +100,49 @@ class UserService:
             subscribe_id=subscribe_id,
             subscribe_end_time=subscribe_end_time,
         )
-        await self._invalidate_user(instance.telegram_id)
-        return instance
 
-    async def set_group(self, user: UserModel, group_id: int) -> UserModel:
-        user.group_id = group_id
-        return await self._update(user)
+        await self.uow.commit()
 
-    async def set_ban(self, user: UserModel, *, is_ban: bool) -> UserModel:
-        user.is_ban = is_ban
-        return await self._update(user)
+        await cache.delete_tags(f"user:{telegram_id}")
 
-    async def set_notify(self, user: UserModel, *, is_notify: bool) -> UserModel:
-        user.is_notify = is_notify
-        return await self._update(user)
+        return UserBaseSchema.model_validate(model)
 
-    async def set_time_shown(self, user: UserModel, *, is_time_shown: bool) -> UserModel:
-        user.is_time_shown = is_time_shown
-        return await self._update(user)
-
-    async def update_subscribe(
-        self, user: UserModel, subscribe_id: int | None, subscribe_end_time: datetime | None
-    ) -> UserModel:
-        user.subscribe_id = subscribe_id
-        user.subscribe_end_time = subscribe_end_time
-        return await self._update(user)
-
-    async def _update(self, user: UserModel) -> UserModel:
-        updated = await self.repository.update(user)
-        await self._invalidate_user(updated.telegram_id)
+    async def update_group(self, telegram_id: int, group_id: int) -> bool:
+        updated = await self.user_repository.execute_update_group(telegram_id, group_id)
+        if updated:
+            await self.uow.commit()
+            await cache.delete_tags(f"user:{telegram_id}")
         return updated
 
-    async def _invalidate_user(self, telegram_id: int) -> None:
-        await invalidate_tags(self.repository.session, f"user:{telegram_id}")
+    async def update_ban(self, telegram_id: int, *, is_ban: bool) -> bool:
+        updated = await self.user_repository.execute_update_ban(telegram_id, is_ban)
+        if updated:
+            await self.uow.commit()
+            await cache.delete_tags(f"user:{telegram_id}")
+        return updated
+
+    async def update_notify(self, telegram_id: int, *, is_notify: bool) -> bool:
+        updated = await self.user_repository.execute_update_notify(telegram_id, is_notify)
+        if updated:
+            await self.uow.commit()
+            await cache.delete_tags(f"user:{telegram_id}")
+        return updated
+
+    async def update_time_shown(self, telegram_id: int, *, is_time_shown: bool) -> bool:
+        updated = await self.user_repository.execute_update_time_shown(telegram_id, is_time_shown)
+        if updated:
+            await self.uow.commit()
+            await cache.delete_tags(f"user:{telegram_id}")
+        return updated
+
+    async def update_subscribe(
+        self, telegram_id: int, subscribe_id: int | None, subscribe_end_time: datetime | None
+    ) -> bool:
+        updated = await self.user_repository.execute_update_subscribe(
+            telegram_id, subscribe_id, subscribe_end_time
+        )
+        if updated:
+            await self.uow.commit()
+
+            await cache.delete_tags(f"user:{telegram_id}")
+        return updated

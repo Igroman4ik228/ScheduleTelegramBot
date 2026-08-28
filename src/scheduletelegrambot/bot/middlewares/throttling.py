@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from aiogram import BaseMiddleware
 
-from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache
+from scheduletelegrambot.cache.cashews import CACHE_KEY_PREFIX, cache
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

@@ -5,7 +5,7 @@ from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
 from dishka import AsyncContainer
 
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserBaseSchema
 from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import SENDER_TIME_SLEEP
 
@@ -30,7 +30,7 @@ class TelegramSender:
     async def safe_send_message(self, tg_id: int, message: str) -> None:
         async with self.container() as request_container:
             users = await request_container.get(UserService)
-            user = await users.get(tg_id)
+            user = await users.find(tg_id)
 
         if self._is_valid_user(user):
             try:
@@ -40,7 +40,7 @@ class TelegramSender:
         else:
             self.logger.debug("Message skipped for inactive user %s", user)
 
-    def _is_valid_user(self, user: UserModel | None) -> bool:
+    def _is_valid_user(self, user: UserBaseSchema | None) -> bool:
         if user is None:
             return False
 

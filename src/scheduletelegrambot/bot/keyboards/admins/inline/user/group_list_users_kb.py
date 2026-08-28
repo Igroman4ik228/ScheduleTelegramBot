@@ -1,20 +1,18 @@
-from typing import TYPE_CHECKING
-
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from scheduletelegrambot.schemas.group import GroupBaseSchema
 from scheduletelegrambot.utils.constants import CallbackDataAdmin
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import GroupModel
 
 
 class GroupCallbackFactory(CallbackData, prefix=CallbackDataAdmin.GROUP_LIST_USERS.value):
     group_id: int | None = None
 
 
-def get_group_kb(groups: list[GroupModel], *, show_no_group: bool = False) -> InlineKeyboardMarkup:
+def get_group_kb(
+    groups: list[GroupBaseSchema], *, show_no_group: bool = False
+) -> InlineKeyboardMarkup:
     group_builder = InlineKeyboardBuilder()
 
     for group in groups:
@@ -24,8 +22,10 @@ def get_group_kb(groups: list[GroupModel], *, show_no_group: bool = False) -> In
                 callback_data=GroupCallbackFactory(group_id=group.id).pack(),
             )
         )
+
     if show_no_group:
         group_builder.add(
             InlineKeyboardButton(text="Без группы", callback_data=GroupCallbackFactory().pack())
         )
+
     return group_builder.as_markup()

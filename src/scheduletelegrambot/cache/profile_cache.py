@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache
+from scheduletelegrambot.cache.cashews import CACHE_KEY_PREFIX, cache
 
 
 class ProfileCache:

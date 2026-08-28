@@ -61,7 +61,7 @@ async def handle_start(
 
     await message.answer(welcome_message.strip())
 
-    departments_data = await departments.get_all()
+    departments_data = await departments.list_all()
     await message.answer(
         "Выберите отделение пожалуйста",
         reply_markup=get_department_kb(departments_data),
@@ -85,7 +85,7 @@ async def register_referral(
     user_id: int,
     referrals: ReferralService,
 ) -> None:
-    owner_referrals = await referrals.get_all_by_owner(owner_id)
+    owner_referrals = await referrals.list_all_by_owner(owner_id)
     if len(owner_referrals) > MAX_REFERRAL:
         raise MaxReferralExceededError(f"Достигнут лимит количество рефералов ({MAX_REFERRAL})")
 

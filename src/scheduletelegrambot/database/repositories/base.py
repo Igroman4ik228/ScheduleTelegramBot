@@ -25,6 +25,7 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
     async def create(self, **values: Any) -> TModel:
         instance = self.model_cls(**values)
         self.session.add(instance)
+
         await self.session.flush()
         return instance
 
@@ -33,6 +34,7 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
 
     async def update(self, instance: TModel) -> TModel:
         merged = await self.session.merge(instance)
+
         await self.session.flush()
         return merged
 
@@ -45,29 +47,19 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         *conditions: ColumnExpressionArgument[bool],
         values: Mapping[InstrumentedAttribute[Any], Any],
     ) -> CursorResult[Any]:
-        """Update rows without loading entity instances"""
         if not values:
             raise ValueError("execute_update requires at least one value")
 
         connection = await self.session.connection()
 
-        return await connection.execute(
-            update(self.model_cls)
-            .where(*conditions)
-            .values(values)
-            .execution_options(synchronize_session="false")
-        )
+        return await connection.execute(update(self.model_cls).where(*conditions).values(values))
 
     async def execute_delete(
         self, *conditions: ColumnExpressionArgument[bool]
     ) -> CursorResult[Any]:
-        """Delete rows without loading entity instances"""
-
         connection = await self.session.connection()
 
-        return await connection.execute(
-            delete(self.model_cls).where(*conditions).execution_options(synchronize_session="false")
-        )
+        return await connection.execute(delete(self.model_cls).where(*conditions))
 
     async def get_one(
         self,
@@ -75,8 +67,10 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         options: tuple[QueryableAttribute[Any], ...] = (),
     ) -> TModel | None:
         query = self._build_get_query(*conditions, limit=1)
+
         for option in options:
             query = query.options(joinedload(option))
+
         return await self.session.scalar(query)
 
     async def get_many(
@@ -86,8 +80,10 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         limit: int | None = DEFAULT_LIMIT,
     ) -> list[TModel]:
         query = self._build_get_query(*conditions, limit=limit)
+
         for option in options:
             query = query.options(selectinload(option))
+
         return list(await self.session.scalars(query))
 
     @final

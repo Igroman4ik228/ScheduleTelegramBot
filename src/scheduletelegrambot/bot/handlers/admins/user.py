@@ -70,8 +70,8 @@ async def handle_list_users(
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    group_models = await groups.get_all()
-    user_models = await users.get_all()
+    group_models = await groups.list_all()
+    user_models = await users.list_all()
 
     title = AdminUserListView.title(len(user_models))
     text = "Выберите группу пользователей"
@@ -98,9 +98,9 @@ async def handle_group_list_users(
         return
     group_id = callback_data.group_id
     if group_id is None:
-        user_models = await users.get_all_without_group()
+        user_models = await users.list_all_without_group()
     else:
-        user_models = await users.get_all_by_group_id(group_id)
+        user_models = await users.list_all_by_group_id(group_id)
 
     if user_models == []:
         await message.edit_text("Пользователей в данной группе нет")
@@ -187,16 +187,17 @@ async def handle_ban_unban(
         return
     await state.update_data(tg_user_id=user_input)
 
-    user = await users.get(int(user_input))
+    user = await users.find(int(user_input))
     if user is None:
         await message.answer(html.bold("Данный пользователь отсутствует"))
         return
 
-    user = await users.set_ban(user, is_ban=not user.is_ban)
+    new_ban_state = not user.is_ban
+    await users.update_ban(user.telegram_id, is_ban=new_ban_state)
 
-    await ban_unban_notify(is_ban=user.is_ban, tg_id=user.telegram_id, sender=sender)
+    await ban_unban_notify(is_ban=new_ban_state, tg_id=user.telegram_id, sender=sender)
 
-    ban_text = "забанен" if user.is_ban else "разбанен"
+    ban_text = "забанен" if new_ban_state else "разбанен"
     await message.answer(html.bold(f"Пользователь успешно {ban_text} и уведомлен об этом"))
 
     await state.clear()
@@ -232,7 +233,7 @@ async def handle_request_give_subscribe(
     state: FSMContext,
     subscribes: FromDishka[SubscribeService],
 ):
-    subscribe_models = await subscribes.get_all()
+    subscribe_models = await subscribes.list_all()
     message = callback_query.message
     if not isinstance(message, Message):
         return
@@ -284,19 +285,19 @@ async def handle_give_subscribe(
         await state.clear()
         return
 
-    user = await users.get(int(tg_user_id))
+    user = await users.find(int(tg_user_id))
     if user is None:
         await message.answer(html.bold("Данный пользователь отсутствует"))
         return
 
-    subscribe = await subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.find_by_id(subscribe_id)
     if subscribe is None:
         await message.answer("Подписка не найдена")
         await state.clear()
         return
 
     await users.update_subscribe(
-        user, subscribe_id, calc_subscribe_end_time(subscribe.duration_days)
+        user.telegram_id, subscribe_id, calc_subscribe_end_time(subscribe.duration_days)
     )
     await message.answer(f"{subscribe.name} успешно выдана пользователю")
 

@@ -23,4 +23,5 @@ class BotMiddleware(BaseMiddleware):
         user: UserModel = data["user"]
         if user.is_bot:
             return None
+
         return await handler(event, data)

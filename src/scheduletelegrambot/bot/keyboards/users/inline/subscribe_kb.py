@@ -1,15 +1,12 @@
-from typing import TYPE_CHECKING
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from scheduletelegrambot.schemas.subscribe import SubscribeBaseSchema
 from scheduletelegrambot.utils.constants import CallbackData
 
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import SubscribeModel
 
-
-def get_subscribe_kb(subscribes: list[SubscribeModel]) -> InlineKeyboardMarkup:
+def get_subscribe_kb(subscribes: list[SubscribeBaseSchema]) -> InlineKeyboardMarkup:
     subscribe_builder = InlineKeyboardBuilder()
 
     subscribe_builder.row(

@@ -26,6 +26,7 @@ class DatabaseAlchemy:
             pool_size=options.pool_size,
             max_overflow=options.max_overflow,
         )
+
         self.sessionmaker = async_sessionmaker(
             bind=self._engine,
             autoflush=False,

@@ -103,7 +103,7 @@ class ScheduleParser(Publisher):
         groups: GroupService,
         result_schedules: ResultScheduleService,
     ) -> bool:
-        group = await groups.get_by_name(group_name)
+        group = await groups.find_by_name(group_name)
         if group is None:
             return False
 
@@ -112,7 +112,7 @@ class ScheduleParser(Publisher):
         if self.parser is None or self.parser.week is None:
             raise RuntimeError("Schedule parser is not initialized")
 
-        result_schedule = await result_schedules.get(self.parser.week.weekday, group.id)
+        result_schedule = await result_schedules.find(self.parser.week.weekday, group.id)
 
         return bool(
             result_schedule is None or result_schedule.data_lessons != current_result_schedule

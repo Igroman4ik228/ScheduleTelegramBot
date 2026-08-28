@@ -1,20 +1,10 @@
-from scheduletelegrambot.database.repositories.default_schedule import (
-    DefaultScheduleRepository,
-)
-from scheduletelegrambot.database.repositories.departments import (
-    DepartmentRepository,
-)
-from scheduletelegrambot.database.repositories.groups import GroupRepository
-from scheduletelegrambot.database.repositories.referrals import (
-    ReferralRepository,
-)
-from scheduletelegrambot.database.repositories.result_schedule import (
-    ResultScheduleRepository,
-)
-from scheduletelegrambot.database.repositories.subscribes import (
-    SubscribeRepository,
-)
-from scheduletelegrambot.database.repositories.users import UserRepository
+from .default_schedule import DefaultScheduleRepository
+from .departments import DepartmentRepository
+from .groups import GroupRepository
+from .referrals import ReferralRepository
+from .result_schedule import ResultScheduleRepository
+from .subscribes import SubscribeRepository
+from .users import UserRepository
 
 __all__ = (
     "DefaultScheduleRepository",

@@ -19,7 +19,7 @@ from scheduletelegrambot.bot.keyboards.users.inline.subscribe_kb import (
     get_subscribe_kb,
 )
 from scheduletelegrambot.bot.views.subscription import SubscriptionView
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.subscribe import (
     SubscribeService,
 )
@@ -37,7 +37,7 @@ async def handle_subscribe(callback_query: CallbackQuery, subscribes: FromDishka
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    subscribe_models = await subscribes.get_all()
+    subscribe_models = await subscribes.list_all()
     await message.edit_text(
         str(SubscriptionView.catalog()), reply_markup=get_subscribe_kb(subscribe_models)
     )
@@ -46,7 +46,7 @@ async def handle_subscribe(callback_query: CallbackQuery, subscribes: FromDishka
 @router.callback_query(F.data.startswith("Subscribe:"))
 async def handle_choose_subscribe(
     callback_query: CallbackQuery,
-    user: UserModel,
+    user: UserWithAllSchema,
     subscribes: FromDishka[SubscribeService],
 ):
     if user.subscribe_id is not None:
@@ -57,7 +57,7 @@ async def handle_choose_subscribe(
     if callback_query.data is None or not isinstance(message, Message):
         return
     subscribe_id = int(callback_query.data.split(":")[1])
-    subscribe = await subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.find_by_id(subscribe_id)
     if subscribe is None:
         await callback_query.answer("Подписка не найдена", show_alert=True)
         return
@@ -76,7 +76,7 @@ async def handle_payment_telegram(
     if callback_query.data is None:
         return
     subscribe_id = int(callback_query.data.split(":")[2])
-    subscribe = await subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.find_by_id(subscribe_id)
     if subscribe is None:
         await callback_query.answer("Подписка не найдена", show_alert=True)
         return
@@ -107,26 +107,26 @@ async def handle_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
 @router.message(F.content_type == ContentType.SUCCESSFUL_PAYMENT)
 async def handle_successful_payment(
     message: Message,
-    user: UserModel,
+    user: UserWithAllSchema,
     subscribes: FromDishka[SubscribeService],
     users: FromDishka[UserService],
 ):
     if message.successful_payment is None:
         return
     subscribe_id = int(message.successful_payment.invoice_payload)
-    subscribe = await subscribes.get_by_id(subscribe_id)
+    subscribe = await subscribes.find_by_id(subscribe_id)
     if subscribe is None:
         return
 
     end_datetime = datetime.now(UTC) + relativedelta(months=subscribe.duration_days)
-    await users.update_subscribe(user, subscribe.id, end_datetime)
+    await users.update_subscribe(user.telegram_id, subscribe.id, end_datetime)
 
     await message.answer("Оплата прошла успешно!")
 
 
 @router.message(~SubscribeFilter())
 async def handle_check_subscribe(message: Message, subscribes: FromDishka[SubscribeService]):
-    subscribe_models = await subscribes.get_all()
+    subscribe_models = await subscribes.list_all()
     await message.answer(
         str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribe_models)
     )
@@ -139,7 +139,7 @@ async def handle_check_subscribe_callback(
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    subscribe_models = await subscribes.get_all()
+    subscribe_models = await subscribes.list_all()
     await message.answer(
         str(SubscriptionView.purchase_required()), reply_markup=get_subscribe_kb(subscribe_models)
     )

@@ -21,7 +21,7 @@ async def handle_referral(callback_query: CallbackQuery, bot: Bot, users: FromDi
     referral_url = html.code(referral_url)
     result_text = f"{referral_url}\n"
 
-    user = await users.get(tg_id)
+    user = await users.find(tg_id)
     if user is None:
         await callback_query.answer("Профиль не найден", show_alert=True)
         return

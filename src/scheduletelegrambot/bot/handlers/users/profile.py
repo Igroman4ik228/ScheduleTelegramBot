@@ -10,10 +10,10 @@ from scheduletelegrambot.bot.keyboards.users.inline.profile_kb import (
     get_profile_kb,
 )
 from scheduletelegrambot.bot.views.profile import ProfileView, UserProfileView
-from scheduletelegrambot.database.cache.profile_cache import (
+from scheduletelegrambot.cache.profile_cache import (
     ProfileCache,
 )
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.department import (
     DepartmentService,
 )
@@ -26,7 +26,7 @@ router = Router(name=__name__)
 async def handle_profile(
     message: Message,
     bot: Bot,
-    user: UserModel,
+    user: UserWithAllSchema,
     departments: FromDishka[DepartmentService],
     profile_cache: FromDishka[ProfileCache],
 ):
@@ -35,7 +35,7 @@ async def handle_profile(
     if group is None or subscribe is None:
         await message.answer("Сначала заполните профиль")
         return
-    department = await departments.get_by_id(group.department_id)
+    department = await departments.find_by_id(group.department_id)
     if department is None:
         await message.answer("Отделение пользователя не найдено")
         return

@@ -73,8 +73,6 @@ class DefaultScheduleLoader:
             if exist_default_schedule.data_lessons == data_lessons:
                 return
 
-            await default_schedules.execute_update_lessons(
-                DefaultScheduleUpdateSchema(
-                    id=exist_default_schedule.id, data_lessons=data_lessons
-                )
+            await default_schedules.update_lessons(
+                DefaultScheduleUpdateSchema(id=exist_default_schedule.id, data_lessons=data_lessons)
             )

@@ -10,21 +10,23 @@ from scheduletelegrambot.services.result_schedule import ResultScheduleService
 class ScheduleService:
     def __init__(
         self,
-        result_schedules: ResultScheduleService,
-        default_schedules: DefaultScheduleService,
+        result_schedules_service: ResultScheduleService,
+        default_schedules_service: DefaultScheduleService,
     ) -> None:
-        self.result_schedules = result_schedules
-        self.default_schedules = default_schedules
+        self.result_schedules_service = result_schedules_service
+        self.default_schedules_service = default_schedules_service
 
     async def get(self, group_id: int, weekday: int, shift: int) -> str:
-        result_schedule = await self.result_schedules.get(weekday, group_id)
+        result_schedule = await self.result_schedules_service.find(weekday, group_id)
         if result_schedule is not None and result_schedule.data_lessons:
             return str(ScheduleView.verified(f"{result_schedule.data_lessons}\n"))
 
         return await self.get_default(group_id, weekday, shift)
 
     async def get_default(self, group_id: int, weekday: int, shift: int) -> str:
-        default_schedule = await self.default_schedules.find_for_group(weekday, shift, group_id)
+        default_schedule = await self.default_schedules_service.find_for_group(
+            weekday, shift, group_id
+        )
         if default_schedule is None or not default_schedule.data_lessons:
             return str(ScheduleView.missing())
 

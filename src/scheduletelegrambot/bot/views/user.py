@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from aiogram import html
 
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserBaseSchema
 
 MAX_FIRST_NAME_LENGTH = 13
 MAX_LAST_NAME_LENGTH = 13
@@ -40,7 +38,7 @@ class UserView:
         return result
 
     @classmethod
-    def from_model(cls, user: UserModel) -> UserView:
+    def from_model(cls, user: UserBaseSchema) -> UserView:
         first_name = user.first_name[:MAX_FIRST_NAME_LENGTH]
         last_name = user.last_name[:MAX_LAST_NAME_LENGTH] if user.last_name is not None else None
         user_name = user.user_name[:MAX_USERNAME_LENGTH] if user.user_name is not None else None
@@ -62,5 +60,5 @@ class UserListView:
         return "\n".join(map(str, self.users))
 
     @classmethod
-    def from_models(cls, users: list[UserModel]) -> UserListView:
+    def from_models(cls, users: list[UserBaseSchema]) -> UserListView:
         return cls([UserView.from_model(user) for user in users])

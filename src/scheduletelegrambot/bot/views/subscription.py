@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from aiogram import html
 
-if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import SubscribeModel
+from scheduletelegrambot.schemas.subscribe import SubscribeBaseSchema
 
 
 @dataclass
@@ -19,7 +17,7 @@ class SubscriptionView:
         return cls(html.blockquote("Подписка") + "Приобретая подписку вы получаете:\n")
 
     @classmethod
-    def selected(cls, subscribe: SubscribeModel) -> SubscriptionView:
+    def selected(cls, subscribe: SubscribeBaseSchema) -> SubscriptionView:
         return cls(
             f"Вы выбрали: {subscribe.name}\nСтоимость: {subscribe.price}\nВыберите способ оплаты:"
         )

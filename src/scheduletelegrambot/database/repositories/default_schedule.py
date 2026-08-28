@@ -17,6 +17,7 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
         )
         if group_id is None:
             return None
+
         return await self.create(
             weekday=weekday,
             shift=shift,
@@ -59,15 +60,15 @@ class DefaultScheduleRepository(BaseRepositoryAlchemy[DefaultScheduleModel]):
             options=(DefaultScheduleModel.group,),
         )
 
-    async def execute_update_lessons(
-        self, schedule_id: int, data_lessons: str
-    ) -> bool:
+    async def execute_update_lessons(self, schedule_id: int, data_lessons: str) -> bool:
         result = await self.execute_update(
             DefaultScheduleModel.id == schedule_id,
             values={DefaultScheduleModel.data_lessons: data_lessons},
         )
-        return bool(result.rowcount and result.rowcount > 0)
+
+        return result.rowcount > 0
 
     async def execute_delete_by_id(self, schedule_id: int) -> bool:
         result = await self.execute_delete(DefaultScheduleModel.id == schedule_id)
-        return bool(result.rowcount and result.rowcount > 0)
+
+        return result.rowcount > 0

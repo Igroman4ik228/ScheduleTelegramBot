@@ -1,67 +1,64 @@
 from __future__ import annotations
 
-from cashews import NOT_NONE
+from cashews import NOT_NONE, noself
 
-from scheduletelegrambot.database.cache.cashews import CACHE_KEY_PREFIX, cache, invalidate_tags
-from scheduletelegrambot.database.models import GroupModel, ResultScheduleModel
-from scheduletelegrambot.database.repositories.groups import GroupRepository
+from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
+from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.schemas.result_schedule import (
+    ResultScheduleBaseSchema,
+    ResultScheduleWithGroupSchema,
+)
+
+_CACHE_TAG = "result-schedules"
 
 
 class ResultScheduleService:
-    def __init__(
-        self, repository: ResultScheduleRepository, group_repository: GroupRepository
-    ) -> None:
-        self.repository = repository
-        self.group_repository = group_repository
+    def __init__(self, result_schedule_repository: ResultScheduleRepository, uow: UoW) -> None:
+        self.result_schedule_repository = result_schedule_repository
+        self.uow = uow
 
-    @cache.early(
+    @noself(cache.early)(
         ttl="6h",
         early_ttl="4h",
-        key=f"{CACHE_KEY_PREFIX}:result-schedule:{{weekday}}:{{group_id}}",
-        tags=("result-schedules", "result-schedule:{weekday}:{group_id}"),
+        tags=(_CACHE_TAG, "result-schedule:{weekday}:{group_id}"),
         condition=NOT_NONE,
     )
-    async def get(self, weekday: int, group_id: int) -> ResultScheduleModel | None:
-        return await self.repository.get_one(
-            ResultScheduleModel.weekday == weekday,
-            ResultScheduleModel.group_id == group_id,
-        )
+    async def find(self, weekday: int, group_id: int) -> ResultScheduleBaseSchema | None:
+        model = await self.result_schedule_repository.get_by_period_and_group(weekday, group_id)
+        if not model:
+            return None
 
-    @cache.early(
+        return ResultScheduleBaseSchema.model_validate(model)
+
+    @noself(cache.early)(
         ttl="6h",
         early_ttl="4h",
-        key=f"{CACHE_KEY_PREFIX}:result-schedule:{{weekday}}:{{group_id}}:group",
-        tags=("result-schedules", "result-schedule:{weekday}:{group_id}"),
+        tags=(_CACHE_TAG, "result-schedule:{weekday}:{group_id}"),
         condition=NOT_NONE,
     )
-    async def get_with_group(self, weekday: int, group_id: int) -> ResultScheduleModel | None:
-        return await self.repository.get_one(
-            ResultScheduleModel.weekday == weekday,
-            ResultScheduleModel.group_id == group_id,
-            options=(ResultScheduleModel.group,),
+    async def find_with_group(
+        self, weekday: int, group_id: int
+    ) -> ResultScheduleWithGroupSchema | None:
+        model = await self.result_schedule_repository.get_by_period_and_group_with_group(
+            weekday, group_id
         )
+        if not model:
+            return None
+
+        return ResultScheduleWithGroupSchema.model_validate(model)
 
     async def upsert_by_group_name(
         self, weekday: int, data_lessons: str, group_name: str
-    ) -> ResultScheduleModel | None:
-        group = await self.group_repository.get_one(GroupModel.name == group_name)
-        if group is None:
+    ) -> ResultScheduleBaseSchema | None:
+        model = await self.result_schedule_repository.create_or_update_by_group_name(
+            weekday, data_lessons, group_name
+        )
+
+        if not model:
             return None
 
-        instance = await self.get(weekday, group.id)
-        if instance is None:
-            instance = await self.repository.create(
-                weekday=weekday,
-                data_lessons=data_lessons,
-                group_id=group.id,
-            )
-        else:
-            instance.data_lessons = data_lessons
-            instance = await self.repository.update(instance)
+        await self.uow.commit()
+        await cache.delete_tags(f"result-schedule:{weekday}:{model.group_id}")
 
-        await self._invalidate(instance.weekday, instance.group_id)
-        return instance
-
-    async def _invalidate(self, weekday: int, group_id: int) -> None:
-        await invalidate_tags(self.repository.session, f"result-schedule:{weekday}:{group_id}")
+        return ResultScheduleBaseSchema.model_validate(model)

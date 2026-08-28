@@ -1,11 +1,11 @@
-from scheduletelegrambot.services.default_schedule import DefaultScheduleService
-from scheduletelegrambot.services.department import DepartmentService
-from scheduletelegrambot.services.group import GroupService
-from scheduletelegrambot.services.referral import ReferralService
-from scheduletelegrambot.services.result_schedule import ResultScheduleService
-from scheduletelegrambot.services.schedule import ScheduleService
-from scheduletelegrambot.services.subscribe import SubscribeService
-from scheduletelegrambot.services.user import UserService
+from .default_schedule import DefaultScheduleService
+from .department import DepartmentService
+from .group import GroupService
+from .referral import ReferralService
+from .result_schedule import ResultScheduleService
+from .schedule import ScheduleService
+from .subscribe import SubscribeService
+from .user import UserService
 
 __all__ = (
     "DefaultScheduleService",

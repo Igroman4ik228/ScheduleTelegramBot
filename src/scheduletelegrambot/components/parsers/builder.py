@@ -150,7 +150,7 @@ class Builder:
 
     async def _get_default_schedules(self) -> list[Schedule]:
         """Получить основное расписание из БД"""
-        groups = await self.group_service.get_all_by_global_shift(self.global_shift)
+        groups = await self.group_service.list_all_by_global_shift(self.global_shift)
         group_ids = {group.id for group in groups}
 
         default_schedule_data = (
@@ -185,10 +185,10 @@ class DefaultScheduleCollector:
             self._process_lesson_data(lesson_data)
         return list(self.schedules_by_group.values())
 
-    def _process_lesson_data(self, lesson_data) -> None:
+    def _process_lesson_data(self, lesson_data: DefaultScheduleWithGroupSchema) -> None:
         """Обработать данные урока"""
         group_name = lesson_data.group_name
-        lessons = get_default_lessons(lesson_data.data_lessons)
+        lessons = list(get_default_lessons(lesson_data.data_lessons))
 
         if group_name not in self.schedules_by_group:
             self.schedules_by_group[group_name] = Schedule(

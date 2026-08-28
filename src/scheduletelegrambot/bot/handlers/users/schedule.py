@@ -9,7 +9,7 @@ from scheduletelegrambot.app.factory_pack.parser_factory import (
 )
 from scheduletelegrambot.bot.keyboards.users.reply.main_kb import get_main_kb
 from scheduletelegrambot.components.formatters.schedule import add_time_to_schedule
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.schedule import (
     ScheduleService,
 )
@@ -22,7 +22,7 @@ router = Router(name=__name__)
 async def handle_schedule(
     message: Message,
     parser_factory: FromDishka[ParserFactory],
-    user: UserModel,
+    user: UserWithAllSchema,
     schedules: FromDishka[ScheduleService],
     settings: FromDishka[Settings],
 ):
@@ -30,6 +30,7 @@ async def handle_schedule(
     if group is None or user.group_id is None:
         await message.answer("Сначала выберите группу")
         return
+
     week = parser_factory.get_week(group.global_shift)
 
     schedule = await schedules.get(user.group_id, week.weekday, week.shift)
@@ -46,7 +47,7 @@ async def handle_schedule(
 async def handle_previous_schedule(
     message: Message,
     parser_factory: FromDishka[ParserFactory],
-    user: UserModel,
+    user: UserWithAllSchema,
     schedules: FromDishka[ScheduleService],
     settings: FromDishka[Settings],
 ):
@@ -73,7 +74,7 @@ async def handle_previous_schedule(
 async def handle_next_schedule(
     message: Message,
     parser_factory: FromDishka[ParserFactory],
-    user: UserModel,
+    user: UserWithAllSchema,
     schedules: FromDishka[ScheduleService],
     settings: FromDishka[Settings],
 ):

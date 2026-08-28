@@ -103,6 +103,7 @@ START_LESSONS_TIME = [
     dt_time(15, 5),
     dt_time(17, 5),
     dt_time(18, 45),
+    dt_time(19, 45),
 ]
 END_LESSONS_TIME = [
     dt_time(9, 10),
@@ -112,4 +113,5 @@ END_LESSONS_TIME = [
     dt_time(16, 35),
     dt_time(18, 35),
     dt_time(19, 55),
+    dt_time(20, 55),
 ]

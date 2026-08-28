@@ -10,12 +10,12 @@ from dishka import AsyncContainer
 from scheduletelegrambot.app.observer_pack.models import Observer
 from scheduletelegrambot.components.formatters.schedule import add_time_to_schedule
 from scheduletelegrambot.components.sender.sender import TelegramSender
+from scheduletelegrambot.schemas.user import UserWithGroupSchema
 from scheduletelegrambot.services.schedule import ScheduleService
 from scheduletelegrambot.services.user import UserService
 from scheduletelegrambot.utils.constants import SENDER_TIME_SLEEP
 
 if TYPE_CHECKING:
-    from scheduletelegrambot.database.models import UserModel
     from scheduletelegrambot.helpers.week import Week
 
 
@@ -55,7 +55,7 @@ class ScheduleNotifier(Observer):
     ) -> None:
         self.logger.info("Start ScheduleNotifier: global_shift=%s, week=%s", global_shift, week)
 
-        notification_recipients = await users.get_notification_recipients()
+        notification_recipients = await users.list_notification_recipients()
 
         for user in notification_recipients:
             if not self._should_notify(user, global_shift):
@@ -71,7 +71,7 @@ class ScheduleNotifier(Observer):
 
         await asyncio.sleep(SENDER_TIME_SLEEP)
 
-    def _should_notify(self, user: UserModel, global_shift: int) -> bool:
+    def _should_notify(self, user: UserWithGroupSchema, global_shift: int) -> bool:
         if user.subscribe_id is None:
             return False
         return user.group is not None and user.group.global_shift == global_shift

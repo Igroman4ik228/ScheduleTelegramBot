@@ -21,9 +21,7 @@ class DefaultScheduleCreateSchema(BaseSchema):
 
 
 class DefaultScheduleWithGroupSchema(DefaultScheduleBaseSchema):
-    group_name: str = Field(
-        validation_alias=AliasChoices("group_name", AliasPath("group", "name"))
-    )
+    group_name: str = Field(validation_alias=AliasChoices("group_name", AliasPath("group", "name")))
 
 
 class DefaultScheduleUpdateSchema(BaseSchema):

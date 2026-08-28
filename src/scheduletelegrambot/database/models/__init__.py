@@ -1,14 +1,10 @@
-from scheduletelegrambot.database.models.default_schedule import (
-    DefaultScheduleModel,
-)
-from scheduletelegrambot.database.models.departments import DepartmentModel
-from scheduletelegrambot.database.models.groups import GroupModel
-from scheduletelegrambot.database.models.referrals import ReferralModel
-from scheduletelegrambot.database.models.result_schedule import (
-    ResultScheduleModel,
-)
-from scheduletelegrambot.database.models.subscribe import SubscribeModel
-from scheduletelegrambot.database.models.users import UserModel
+from .default_schedule import DefaultScheduleModel
+from .departments import DepartmentModel
+from .groups import GroupModel
+from .referrals import ReferralModel
+from .result_schedule import ResultScheduleModel
+from .subscribe import SubscribeModel
+from .users import UserModel
 
 __all__ = (
     "DefaultScheduleModel",

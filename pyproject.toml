@@ -20,6 +20,7 @@ dependencies = [
     "cashews>=7.5.0,<8",
     "pydantic>=2.13.4,<3",
     "beautifulsoup4>=4.15.0,<5",
+    "cryptography>=50.0.1",
 ]
 
 [dependency-groups]
@@ -77,6 +78,8 @@ ignore = [
     "TC001",
     "TC002",
     "TC003",
+
+    "FBT001",
 ]
 
 [tool.ruff.format]

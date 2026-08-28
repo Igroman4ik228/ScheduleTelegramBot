@@ -8,6 +8,7 @@ from aiogram import BaseMiddleware
 from dishka.integrations.aiogram import CONTAINER_NAME
 
 from scheduletelegrambot.helpers.text import quote_html_range
+from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.subscribe import SubscribeService
 from scheduletelegrambot.services.user import UserService
 
@@ -18,8 +19,6 @@ if TYPE_CHECKING:
     from aiogram.types import TelegramObject
     from aiogram.types.user import User as AiogramUser
     from dishka import AsyncContainer
-
-    from scheduletelegrambot.database.models import UserModel
 
 
 class AuthMiddleware(BaseMiddleware):
@@ -33,14 +32,13 @@ class AuthMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         aiogram_user: AiogramUser | None = data.get("event_from_user")
-        if aiogram_user is None or aiogram_user.is_bot:
-            # Prevents the bot itself from being added to the database
-            # for chat_join_request and chat_member events.
+        if aiogram_user is None:
             return await handler(event, data)
 
         container: AsyncContainer = data[CONTAINER_NAME]
         users = await container.get(UserService)
-        existing_user = await users.get_with_all(aiogram_user.id)
+        existing_user = await users.find_with_all(aiogram_user.id)
+
         if existing_user:
             data["user"] = existing_user
             return await handler(event, data)
@@ -54,10 +52,11 @@ class AuthMiddleware(BaseMiddleware):
         tg_user: AiogramUser,
         users: UserService,
         subscribes: SubscribeService,
-    ) -> UserModel:
-        available_subscribes = await subscribes.get_all_by_price(0)
+    ) -> UserWithAllSchema:
+        available_subscribes = await subscribes.list_all_by_price(0)
         if not available_subscribes:
             raise ValueError("No free subscribes available for new users")
+
         trail_subscribe = available_subscribes[0]
         subscribe_end_time = datetime.now(UTC) + timedelta(days=trail_subscribe.duration_days)
 
@@ -74,8 +73,8 @@ class AuthMiddleware(BaseMiddleware):
             subscribe_end_time=subscribe_end_time,
         )
 
-        # # Get must be called after create to ensure relations are loaded
-        new_user = await users.get_with_all(new_user.telegram_id)
+        # Get must be called after create to ensure relations are loaded
+        new_user = await users.find_with_all(new_user.telegram_id)
 
         if new_user is None:
             raise ValueError("Failed to create new user")

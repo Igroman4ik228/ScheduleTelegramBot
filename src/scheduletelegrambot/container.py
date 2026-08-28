@@ -13,6 +13,8 @@ from scheduletelegrambot.app.factory_pack.parser_factory import (
     ParserFactoryConfig,
 )
 from scheduletelegrambot.bot.bot import BotManager
+from scheduletelegrambot.cache.cashews import cache
+from scheduletelegrambot.cache.profile_cache import ProfileCache
 from scheduletelegrambot.components.loaders.default_schedule import (
     DefaultScheduleLoader,
 )
@@ -25,8 +27,6 @@ from scheduletelegrambot.components.sender.sender import TelegramSender
 from scheduletelegrambot.components.subscription_checker.sub_checker import (
     SubscriptionChecker,
 )
-from scheduletelegrambot.database.cache.cashews import cache
-from scheduletelegrambot.database.cache.profile_cache import ProfileCache
 from scheduletelegrambot.database.db import DatabaseAlchemy, EngineOptions
 from scheduletelegrambot.database.repositories.default_schedule import DefaultScheduleRepository
 from scheduletelegrambot.database.repositories.departments import DepartmentRepository
@@ -35,6 +35,7 @@ from scheduletelegrambot.database.repositories.referrals import ReferralReposito
 from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
 from scheduletelegrambot.database.repositories.subscribes import SubscribeRepository
 from scheduletelegrambot.database.repositories.users import UserRepository
+from scheduletelegrambot.database.uow import UoW
 from scheduletelegrambot.services import (
     DefaultScheduleService,
     DepartmentService,
@@ -139,9 +140,10 @@ class AppProvider(Provider):
         settings: Settings,
     ) -> AsyncIterator[Application]:
         cache_url = settings.cache.url()
-        # Cached service results are immutable DTO schemas.
-        cache.setup(cache_url, pickle_type="sqlalchemy")
+
+        cache.setup(cache_url)
         cache.setup_tags_backend(cache_url)
+
         await cache.init()
 
         try:
@@ -160,18 +162,19 @@ class RequestProvider(Provider):
     scope = Scope.REQUEST
 
     repositories = provide_all(
+        DefaultScheduleRepository,
         DepartmentRepository,
         GroupRepository,
-        DefaultScheduleRepository,
         SubscribeRepository,
         ReferralRepository,
         UserRepository,
         ResultScheduleRepository,
     )
+
     services = provide_all(
+        DefaultScheduleService,
         DepartmentService,
         GroupService,
-        DefaultScheduleService,
         SubscribeService,
         ReferralService,
         UserService,
@@ -184,8 +187,15 @@ class RequestProvider(Provider):
         self,
         db: DatabaseAlchemy,
     ) -> AsyncIterator[AsyncSession]:
-        async with db.sessionmaker.begin() as session:
+        async with db.sessionmaker() as session:
             yield session
+
+    @provide
+    def uow(
+        self,
+        session: AsyncSession,
+    ) -> UoW:
+        return UoW(session)
 
 
 def create_container():

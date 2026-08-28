@@ -42,7 +42,10 @@ class Application:
         self._configured = True
 
     async def __aenter__(self) -> Self:
+        await self.default_schedule_loader.process_all_files()
+
         self.scheduler.start()
+
         return self
 
     async def __aexit__(self, *_: object) -> None:

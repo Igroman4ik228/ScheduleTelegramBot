@@ -8,7 +8,7 @@ from scheduletelegrambot.bot.keyboards.users.inline.setting_kb import (
     get_time_text,
 )
 from scheduletelegrambot.bot.views.profile import ProfileSettingsView, ProfileView
-from scheduletelegrambot.database.models import UserModel
+from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.department import (
     DepartmentService,
 )
@@ -23,18 +23,19 @@ router = Router(name=__name__)
 @router.callback_query(F.data == CallbackData.SETTING.value)
 async def handle_setting(
     callback_query: CallbackQuery,
-    user: UserModel,
+    user: UserWithAllSchema,
     departments: FromDishka[DepartmentService],
 ):
     message = callback_query.message
     if not isinstance(message, Message):
         return
+
     group = user.group
     subscribe = user.subscribe
     if group is None or subscribe is None:
         await callback_query.answer("Сначала заполните профиль", show_alert=True)
         return
-    department = await departments.get_by_id(group.department_id)
+    department = await departments.find_by_id(group.department_id)
     if department is None:
         return
     profile = ProfileView.from_profile_data(
@@ -50,33 +51,37 @@ async def handle_setting(
 
 @router.callback_query(F.data == CallbackData.TOGGLE_NOTIFICATION.value)
 async def handle_notification(
-    callback_query: CallbackQuery, user: UserModel, users: FromDishka[UserService]
+    callback_query: CallbackQuery, user: UserWithAllSchema, users: FromDishka[UserService]
 ):
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    user = await users.set_notify(user, is_notify=not user.is_notify)
 
-    await callback_query.answer(get_notification_text(notify_status=user.is_notify))
+    new_notify = not user.is_notify
+    await users.update_notify(user.telegram_id, is_notify=new_notify)
+
+    await callback_query.answer(get_notification_text(notify_status=new_notify))
     await message.edit_reply_markup(
         reply_markup=get_setting_kb(
-            notify_status=user.is_notify, time_display_status=user.is_time_shown
+            notify_status=new_notify, time_display_status=user.is_time_shown
         )
     )
 
 
 @router.callback_query(F.data == CallbackData.TOGGLE_TIME_DISPLAY.value)
 async def handle_time_display(
-    callback_query: CallbackQuery, user: UserModel, users: FromDishka[UserService]
+    callback_query: CallbackQuery, user: UserWithAllSchema, users: FromDishka[UserService]
 ):
     message = callback_query.message
     if not isinstance(message, Message):
         return
-    user = await users.set_time_shown(user, is_time_shown=not user.is_time_shown)
 
-    await callback_query.answer(get_time_text(time_display_status=user.is_time_shown))
+    new_time_shown = not user.is_time_shown
+    await users.update_time_shown(user.telegram_id, is_time_shown=new_time_shown)
+
+    await callback_query.answer(get_time_text(time_display_status=new_time_shown))
     await message.edit_reply_markup(
         reply_markup=get_setting_kb(
-            notify_status=user.is_notify, time_display_status=user.is_time_shown
+            notify_status=user.is_notify, time_display_status=new_time_shown
         )
     )
