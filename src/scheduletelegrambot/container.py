@@ -1,18 +1,12 @@
 from collections.abc import AsyncIterator
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.fsm.storage.redis import RedisStorage
+from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dishka import AsyncContainer, Provider, Scope, make_async_container, provide, provide_all
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from scheduletelegrambot.app.application import Application
-from scheduletelegrambot.app.factory_pack.parser_factory import (
-    ParserFactory,
-    ParserFactoryConfig,
-)
-from scheduletelegrambot.bot.bot import BotManager
+from scheduletelegrambot.application import Application
+from scheduletelegrambot.bot import BotManager
 from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.cache.profile_cache import ProfileCache
 from scheduletelegrambot.components.loaders.default_schedule import (
@@ -21,6 +15,10 @@ from scheduletelegrambot.components.loaders.default_schedule import (
 from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
 from scheduletelegrambot.components.parsers.parser import (
     ParserDependencies,
+)
+from scheduletelegrambot.components.parsers.parser_factory import (
+    ParserFactory,
+    ParserFactoryConfig,
 )
 from scheduletelegrambot.components.requester.request import AdminRequester
 from scheduletelegrambot.components.sender.sender import TelegramSender
@@ -67,6 +65,10 @@ class AppProvider(Provider):
         return Settings()
 
     @provide
+    def bot(self, bot_manager: BotManager) -> Bot:
+        return bot_manager.bot
+
+    @provide
     async def database(self, settings: Settings) -> AsyncIterator[DatabaseAlchemy]:
         database = DatabaseAlchemy(
             url=settings.db.url,
@@ -82,25 +84,6 @@ class AppProvider(Provider):
             yield database
         finally:
             await database.close()
-
-    @provide
-    async def bot(self, settings: Settings) -> AsyncIterator[Bot]:
-        bot = Bot(
-            settings.bot.token.get_secret_value(),
-            default=DefaultBotProperties(parse_mode="HTML"),
-        )
-        try:
-            yield bot
-        finally:
-            await bot.session.close()
-
-    @provide
-    async def dispatcher(self, settings: Settings) -> AsyncIterator[Dispatcher]:
-        dispatcher = Dispatcher(storage=RedisStorage.from_url(settings.cache.url(db=1)))
-        try:
-            yield dispatcher
-        finally:
-            await dispatcher.storage.close()
 
     @provide
     def requester(self, settings: Settings, sender: TelegramSender) -> AdminRequester:

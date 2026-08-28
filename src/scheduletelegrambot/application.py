@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Self
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from dishka.integrations.aiogram import setup_dishka
 
-from scheduletelegrambot.app.factory_pack.parser_factory import ParserFactory
-from scheduletelegrambot.bot.bot import BotManager
+from scheduletelegrambot.bot import BotManager
 from scheduletelegrambot.components.loaders.default_schedule import DefaultScheduleLoader
+from scheduletelegrambot.components.parsers.parser_factory import ParserFactory
 from scheduletelegrambot.components.subscription_checker.sub_checker import SubscriptionChecker
 
 if TYPE_CHECKING:
@@ -34,9 +34,8 @@ class Application:
         if self._configured:
             return
 
-        setup_dishka(container=container, router=self.bot_manager.dp, auto_inject=True)
+        setup_dishka(container=container, router=self.bot_manager.dispatcher, auto_inject=True)
 
-        self.bot_manager.configure()
         self._configure_jobs()
 
         self._configured = True
@@ -52,7 +51,7 @@ class Application:
         self.stop()
 
     async def start(self) -> None:
-        await self.bot_manager.start()
+        await self.bot_manager.start_polling()
 
     def stop(self) -> None:
         if self.scheduler.running:

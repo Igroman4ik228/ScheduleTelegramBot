@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import suppress
 
-from scheduletelegrambot.app.application import Application
+from scheduletelegrambot.application import Application
 from scheduletelegrambot.container import create_container
 from scheduletelegrambot.utils.logger import LOGGER_CONFIG, logger_configure
 

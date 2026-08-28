@@ -4,7 +4,7 @@ from pathlib import Path
 
 from dishka import AsyncContainer
 
-from scheduletelegrambot.app.observer_pack.models import Publisher
+from scheduletelegrambot.abstraction.observer.models import Publisher
 from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
 from scheduletelegrambot.components.parsers.builder import Builder
 from scheduletelegrambot.components.parsers.html_parser import HtmlParser

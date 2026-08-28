@@ -4,11 +4,11 @@ from aiogram import F, Router
 from aiogram.types import Message
 from dishka.integrations.aiogram import FromDishka
 
-from scheduletelegrambot.app.factory_pack.parser_factory import (
-    ParserFactory,
-)
 from scheduletelegrambot.bot.keyboards.users.reply.main_kb import get_main_kb
 from scheduletelegrambot.components.formatters.schedule import add_time_to_schedule
+from scheduletelegrambot.components.parsers.parser_factory import (
+    ParserFactory,
+)
 from scheduletelegrambot.schemas.user import UserWithAllSchema
 from scheduletelegrambot.services.schedule import (
     ScheduleService,

@@ -29,6 +29,8 @@ class ThrottlingMiddleware(BaseMiddleware):
         attempts = await cache.incr(
             f"{CACHE_KEY_PREFIX}:throttle:{user_id}", expire=self.rate_limit
         )
+
         if attempts > 1:
             return None
+
         return await handler(event, data)

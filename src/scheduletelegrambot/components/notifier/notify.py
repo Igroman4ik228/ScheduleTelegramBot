@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from aiogram import html
 from dishka import AsyncContainer
 
-from scheduletelegrambot.app.observer_pack.models import Observer
+from scheduletelegrambot.abstraction.observer.models import Observer
 from scheduletelegrambot.components.formatters.schedule import add_time_to_schedule
 from scheduletelegrambot.components.sender.sender import TelegramSender
 from scheduletelegrambot.schemas.user import UserWithGroupSchema

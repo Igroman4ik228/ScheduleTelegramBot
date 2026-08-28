@@ -23,4 +23,5 @@ class BanMiddleware(BaseMiddleware):
         user: UserModel = data["user"]
         if user.is_ban:
             return None
+
         return await handler(event, data)

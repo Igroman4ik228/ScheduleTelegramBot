@@ -1,7 +1,7 @@
 {
     "name": "Пробная подписка",
     "description": "Пробная подписка для всех пользователей, которые впервые пользуются сервисом",
-    "duration_days": 7,
+    "duration_days": 999,
     "price": 0,
     "can_referral": true,
     "discount": null
