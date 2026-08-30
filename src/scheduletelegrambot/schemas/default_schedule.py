@@ -1,29 +1,50 @@
 from __future__ import annotations
 
-from pydantic import AliasChoices, AliasPath, Field
-
+from scheduletelegrambot.enums import Weekday, WeekType
 from scheduletelegrambot.schemas.base import BaseSchema
+from scheduletelegrambot.schemas.group import GroupBaseSchema
+
+
+class TeacherSchema(BaseSchema):
+    id: int
+    name: str
+
+
+class SubjectSchema(BaseSchema):
+    id: int
+    name: str
+
+
+class ClassroomSchema(BaseSchema):
+    id: int
+    name: str
+
+
+class TeachingAssignmentClassroomSchema(BaseSchema):
+    id: int
+    classroom: ClassroomSchema
+
+
+class TeachingAssignmentSchema(BaseSchema):
+    id: int
+    teacher: TeacherSchema
+    classrooms: list[TeachingAssignmentClassroomSchema]
+
+
+class DefaultScheduleLessonSchema(BaseSchema):
+    id: int
+    number: int
+    subject: SubjectSchema
+    teaching_assignments: list[TeachingAssignmentSchema]
 
 
 class DefaultScheduleBaseSchema(BaseSchema):
     id: int
-    weekday: int
-    shift: int
-    data_lessons: str
+    weekday: Weekday
+    week_type: WeekType
     group_id: int
-
-
-class DefaultScheduleCreateSchema(BaseSchema):
-    weekday: int
-    shift: int
-    data_lessons: str
-    group_name: str
+    lessons: list[DefaultScheduleLessonSchema]
 
 
 class DefaultScheduleWithGroupSchema(DefaultScheduleBaseSchema):
-    group_name: str = Field(validation_alias=AliasChoices("group_name", AliasPath("group", "name")))
-
-
-class DefaultScheduleUpdateSchema(BaseSchema):
-    id: int
-    data_lessons: str
+    group: GroupBaseSchema

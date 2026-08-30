@@ -1,0 +1,13 @@
+{
+  "department_name": "ОИТ",
+  "groups": [
+    {
+      "name": "ИС1-33",
+      "study_shift": "2"
+    },
+    {
+      "name": "ИС1-34",
+      "study_shift": "2"
+    }
+  ]
+}

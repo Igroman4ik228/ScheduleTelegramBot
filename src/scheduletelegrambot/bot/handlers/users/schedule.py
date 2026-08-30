@@ -31,9 +31,9 @@ async def handle_schedule(
         await message.answer("Сначала выберите группу")
         return
 
-    week = parser_factory.get_week(group.global_shift)
+    week = parser_factory.get_week(group.study_shift)
 
-    schedule = await schedules.get(user.group_id, week.weekday, week.shift)
+    schedule = await schedules.get(user.group_id, week.weekday, week.week_type)
     if user.is_time_shown:
         schedule = add_time_to_schedule(schedule)
 
@@ -55,12 +55,12 @@ async def handle_previous_schedule(
     if group is None or user.group_id is None:
         await message.answer("Сначала выберите группу")
         return
-    week = parser_factory.get_week(group.global_shift)
+    week = parser_factory.get_week(group.study_shift)
 
     previous_weekday = week.get_previous_weekday()
-    previous_shift = week.get_previous_shift()
+    previous_week_type = week.get_previous_week_type()
 
-    schedule = await schedules.get(user.group_id, previous_weekday, previous_shift)
+    schedule = await schedules.get(user.group_id, previous_weekday, previous_week_type)
     if user.is_time_shown:
         schedule = add_time_to_schedule(schedule)
 
@@ -82,12 +82,12 @@ async def handle_next_schedule(
     if group is None or user.group_id is None:
         await message.answer("Сначала выберите группу")
         return
-    week = parser_factory.get_week(group.global_shift)
+    week = parser_factory.get_week(group.study_shift)
 
     next_weekday = week.get_next_weekday()
-    next_shift = week.get_next_shift()
+    next_week_type = week.get_next_week_type()
 
-    schedule = await schedules.get_default(user.group_id, next_weekday, next_shift)
+    schedule = await schedules.get_default(user.group_id, next_weekday, next_week_type)
     if user.is_time_shown:
         schedule = add_time_to_schedule(schedule)
 

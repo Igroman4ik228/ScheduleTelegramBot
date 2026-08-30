@@ -5,6 +5,7 @@ from scheduletelegrambot.database.models import GroupModel, ResultScheduleModel
 from scheduletelegrambot.database.repositories.base import (
     BaseRepositoryAlchemy,
 )
+from scheduletelegrambot.enums import Weekday
 
 
 class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
@@ -12,7 +13,7 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
         super().__init__(session, ResultScheduleModel)
 
     async def get_by_period_and_group(
-        self, weekday: int, group_id: int
+        self, weekday: Weekday, group_id: int
     ) -> ResultScheduleModel | None:
         return await self.get_one(
             ResultScheduleModel.weekday == weekday,
@@ -20,7 +21,7 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
         )
 
     async def get_by_period_and_group_with_group(
-        self, weekday: int, group_id: int
+        self, weekday: Weekday, group_id: int
     ) -> ResultScheduleModel | None:
         return await self.get_one(
             ResultScheduleModel.weekday == weekday,
@@ -29,9 +30,9 @@ class ResultScheduleRepository(BaseRepositoryAlchemy[ResultScheduleModel]):
         )
 
     async def create_or_update_by_group_name(
-        self, weekday: int, data_lessons: str, group_name: str
+        self, weekday: Weekday, data_lessons: str, group_name: str
     ) -> ResultScheduleModel | None:
-        group_id = await self.session.scalar(
+        group_id = await self._session.scalar(
             select(GroupModel.id).where(GroupModel.name == group_name)
         )
         if group_id is None:

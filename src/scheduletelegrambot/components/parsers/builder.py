@@ -7,10 +7,8 @@ from typing import TYPE_CHECKING
 from scheduletelegrambot.components.formatters.schedule import (
     format_schedule,
 )
-from scheduletelegrambot.helpers.default_schedule_parser import (
-    get_default_lessons,
-)
-from scheduletelegrambot.helpers.lesson import Lesson, Schedule
+from scheduletelegrambot.enums import StudyShift
+from scheduletelegrambot.helpers.lesson import Lesson, Schedule, TeachingAssignment
 from scheduletelegrambot.schemas.default_schedule import DefaultScheduleWithGroupSchema
 from scheduletelegrambot.services.default_schedule import DefaultScheduleService
 from scheduletelegrambot.services.group import GroupService
@@ -42,7 +40,9 @@ class ScheduleBuilder:
     def _format_schedules(self, schedules: list[Schedule]) -> dict[str, str]:
         """Форматировать расписания для вывода"""
         return {
-            schedule.group: format_schedule(schedule.lessons, self.week.weekday, self.week.shift)
+            schedule.group: format_schedule(
+                schedule.lessons, self.week.weekday, self.week.week_type
+            )
             for schedule in schedules
         }
 
@@ -103,7 +103,7 @@ class LessonMerger:
         existing_lesson.is_replacement = True
         existing_lesson.time = replacement_lesson.time
         existing_lesson.subject = replacement_lesson.subject
-        existing_lesson.classroom = replacement_lesson.classroom
+        existing_lesson.teaching_assignments = replacement_lesson.teaching_assignments
 
     def _add_new_lesson(self, lesson: Lesson) -> None:
         """Добавить новый урок"""
@@ -117,14 +117,14 @@ class Builder:
     def __init__(
         self,
         week: Week,
-        global_shift: int,
+        study_shift: StudyShift,
         replacement_schedules: list[Schedule],
         default_schedules: DefaultScheduleService,
         groups: GroupService,
     ) -> None:
         self.logger = getLogger(self.__class__.__name__)
         self.week = week
-        self.global_shift = global_shift
+        self.study_shift = study_shift
         self.replacement_schedules = replacement_schedules
         self.default_schedule_service = default_schedules
         self.group_service = groups
@@ -150,24 +150,15 @@ class Builder:
 
     async def _get_default_schedules(self) -> list[Schedule]:
         """Получить основное расписание из БД"""
-        groups = await self.group_service.list_all_by_global_shift(self.global_shift)
-        group_ids = {group.id for group in groups}
-
-        default_schedule_data = (
-            await self.default_schedule_service.list_for_period(
-                self.week.weekday, self.week.shift
-            )
+        default_schedule_data = await self.default_schedule_service.list_for_period_and_study_shift(
+            self.week.weekday, self.week.week_type, self.study_shift
         )
 
         if default_schedule_data is None:
             return []
 
-        filtered_schedule_data = [
-            schedule for schedule in default_schedule_data if schedule.group_id in group_ids
-        ]
-
         schedule_collector = DefaultScheduleCollector(self.week)
-        return schedule_collector.collect_schedules(filtered_schedule_data)
+        return schedule_collector.collect_schedules(default_schedule_data)
 
 
 class DefaultScheduleCollector:
@@ -187,8 +178,24 @@ class DefaultScheduleCollector:
 
     def _process_lesson_data(self, lesson_data: DefaultScheduleWithGroupSchema) -> None:
         """Обработать данные урока"""
-        group_name = lesson_data.group_name
-        lessons = list(get_default_lessons(lesson_data.data_lessons))
+        group_name = lesson_data.group.name
+        lessons = [
+            Lesson(
+                number=lesson.number,
+                time=None,
+                subject=lesson.subject.name,
+                teaching_assignments=[
+                    TeachingAssignment(
+                        teacher=assignment.teacher.name,
+                        classrooms=tuple(
+                            classroom.classroom.name for classroom in assignment.classrooms
+                        ),
+                    )
+                    for assignment in lesson.teaching_assignments
+                ],
+            )
+            for lesson in lesson_data.lessons
+        ]
 
         if group_name not in self.schedules_by_group:
             self.schedules_by_group[group_name] = Schedule(

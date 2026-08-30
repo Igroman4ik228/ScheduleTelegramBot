@@ -1,59 +1,56 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from scheduletelegrambot.database.repositories.departments import DepartmentRepository
 from scheduletelegrambot.database.repositories.groups import GroupRepository
-from scheduletelegrambot.database.uow import UoW
-from scheduletelegrambot.helpers.file import load_from_json
+from scheduletelegrambot.enums import StudyShift
+from scheduletelegrambot.helpers.file import get_file_paths, load_from_json
+from scheduletelegrambot.utils.constants import FILE_EXTENSION
 
-from .paths import GROUPS_FILE_PATH
+from .paths import DEPARTMENTS_DIR
 
 
 class InitialGroup(BaseModel):
-    name: str
-    global_shift: int = Field(default=1, ge=1)
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1)
+    study_shift: StudyShift
 
 
 class InitialDepartment(BaseModel):
-    name: str
-    groups: list[InitialGroup]
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-
-class InitialGroupsData(BaseModel):
-    departments: list[InitialDepartment]
+    department_name: str = Field(min_length=1)
+    groups: list[InitialGroup] = Field(min_length=1)
 
 
 class GroupLoader:
-    def __init__(
-        self,
-        departments: DepartmentRepository,
-        groups: GroupRepository,
-        uow: UoW,
-    ) -> None:
+    def __init__(self, departments: DepartmentRepository, groups: GroupRepository) -> None:
         self.departments = departments
         self.groups = groups
-        self.uow = uow
 
-    async def load(self) -> None:
-        data = InitialGroupsData.model_validate(await load_from_json(str(GROUPS_FILE_PATH)))
-        is_changed = False
+    async def read(self) -> list[InitialDepartment]:
+        departments = [
+            InitialDepartment.model_validate(await load_from_json(str(path)))
+            for path in get_file_paths(DEPARTMENTS_DIR, FILE_EXTENSION)
+        ]
+        if not departments:
+            raise ValueError("Не найдены файлы отделений")
+        group_names = [group.name for department in departments for group in department.groups]
+        if len(group_names) != len(set(group_names)):
+            raise ValueError("Группы в данных отделений должны быть уникальны")
+        return departments
 
-        for department_data in data.departments:
-            department = await self.departments.get_by_name(department_data.name)
+    async def load(self, departments_data: list[InitialDepartment]) -> bool:
+        if await self.groups.count():
+            return False
+        for department_data in departments_data:
+            department = await self.departments.get_by_name(department_data.department_name)
             if department is None:
-                department = await self.departments.create(name=department_data.name)
-                is_changed = True
-
+                department = await self.departments.create(name=department_data.department_name)
             for group_data in department_data.groups:
-                group = await self.groups.get_by_name(group_data.name)
-                if group is not None:
-                    continue
-
                 await self.groups.create(
                     name=group_data.name,
                     department_id=department.id,
-                    global_shift=group_data.global_shift,
+                    study_shift=group_data.study_shift,
                 )
-                is_changed = True
-
-        if is_changed:
-            await self.uow.commit()
+        return True

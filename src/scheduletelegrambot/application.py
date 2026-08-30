@@ -64,7 +64,7 @@ class Application:
                 parser.do_work,
                 "interval",
                 seconds=parser.interval,
-                id=f"schedule-parser-{parser.global_shift}",
+                id=f"schedule-parser-{parser.study_shift.value}",
                 next_run_time=now,
                 replace_existing=True,
             )

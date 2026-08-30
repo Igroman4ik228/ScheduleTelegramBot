@@ -9,6 +9,7 @@ class ReferralBaseSchema(BaseSchema):
     owner_id: int
     user_id: int
 
+
 class ReferralWithUsersSchema(ReferralBaseSchema):
     owner: UserBaseSchema
     user: UserBaseSchema

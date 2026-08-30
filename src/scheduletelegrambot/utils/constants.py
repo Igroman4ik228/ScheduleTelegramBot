@@ -3,6 +3,8 @@ from datetime import timedelta
 from enum import Enum, IntEnum, StrEnum
 from pathlib import Path
 
+from scheduletelegrambot.enums import Weekday, WeekType
+
 DEBUG: bool = False
 
 ROOT_DIR = Path().absolute()
@@ -79,14 +81,17 @@ SENDER_TIME_SLEEP = timedelta(milliseconds=500).seconds
 FILE_EXTENSION = "json"
 
 # Dictionaries
-WEEK_SCHEDULE_MAPPING = {"числитель": 1, "знаменатель": 2}
+WEEK_TYPE_NAMES = {
+    WeekType.NUMERATOR: "числитель",
+    WeekType.DENOMINATOR: "знаменатель",
+}
 DAY_NAMES = {
-    0: "понедельник",
-    1: "вторник",
-    2: "среда",
-    3: "четверг",
-    4: "пятница",
-    5: "суббота",
+    Weekday.MONDAY: "понедельник",
+    Weekday.TUESDAY: "вторник",
+    Weekday.WEDNESDAY: "среда",
+    Weekday.THURSDAY: "четверг",
+    Weekday.FRIDAY: "пятница",
+    Weekday.SATURDAY: "суббота",
 }
 DAY_NAME_CASES = {
     "среда": "среду",

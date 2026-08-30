@@ -1,9 +1,13 @@
 from .base import BaseSchema
 from .default_schedule import (
+    ClassroomSchema,
     DefaultScheduleBaseSchema,
-    DefaultScheduleCreateSchema,
-    DefaultScheduleUpdateSchema,
+    DefaultScheduleLessonSchema,
     DefaultScheduleWithGroupSchema,
+    SubjectSchema,
+    TeacherSchema,
+    TeachingAssignmentClassroomSchema,
+    TeachingAssignmentSchema,
 )
 from .department import DepartmentBaseSchema, DepartmentCreateSchema
 from .group import GroupBaseSchema, GroupWithDepartmentSchema
@@ -14,9 +18,9 @@ from .user import UserBaseSchema, UserWithAllSchema, UserWithGroupSchema
 
 __all__ = (
     "BaseSchema",
+    "ClassroomSchema",
     "DefaultScheduleBaseSchema",
-    "DefaultScheduleCreateSchema",
-    "DefaultScheduleUpdateSchema",
+    "DefaultScheduleLessonSchema",
     "DefaultScheduleWithGroupSchema",
     "DepartmentBaseSchema",
     "DepartmentCreateSchema",
@@ -26,7 +30,11 @@ __all__ = (
     "ReferralWithUsersSchema",
     "ResultScheduleBaseSchema",
     "ResultScheduleWithGroupSchema",
+    "SubjectSchema",
     "SubscribeBaseSchema",
+    "TeacherSchema",
+    "TeachingAssignmentClassroomSchema",
+    "TeachingAssignmentSchema",
     "UserBaseSchema",
     "UserWithAllSchema",
     "UserWithGroupSchema",

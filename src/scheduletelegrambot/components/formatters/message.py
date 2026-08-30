@@ -1,36 +1,35 @@
-from typing import TYPE_CHECKING
-
-from scheduletelegrambot.components.formatters.schedule import (
-    format_header,
-    format_lesson,
-)
-from scheduletelegrambot.helpers.default_schedule_parser import (
-    generate_default_schedule,
-)
-from scheduletelegrambot.utils.constants import DAY_NAMES
-
-if TYPE_CHECKING:
-    from scheduletelegrambot.schemas.default_schedule import DefaultScheduleBaseSchema
+from scheduletelegrambot.components.formatters.schedule import format_header, format_lesson
+from scheduletelegrambot.enums import WeekType
+from scheduletelegrambot.helpers.lesson import Lesson, TeachingAssignment
+from scheduletelegrambot.schemas.default_schedule import DefaultScheduleBaseSchema
 
 
-def format_default_schedules(default_schedules: list[DefaultScheduleBaseSchema], shift: int) -> str:
-    formatted_default_schedules = ""
-    for weekday, schedule in enumerate(default_schedules):
-        if weekday > len(DAY_NAMES) - 1:
-            raise IndexError("Неверный индекс дня недели")
-
-        formatted_default_schedules += format_header(weekday, shift, is_default_schedule=True)
-        formatted_default_schedules += format_default_schedule(schedule)
-
-        if weekday != len(DAY_NAMES) - 1:
-            formatted_default_schedules += "\n"
-
-    return formatted_default_schedules
+def format_default_schedules(
+    default_schedules: list[DefaultScheduleBaseSchema], week_type: WeekType
+) -> str:
+    return "\n".join(
+        format_header(schedule.weekday, week_type, is_default_schedule=True)
+        + format_default_schedule(schedule)
+        for schedule in default_schedules
+    )
 
 
 def format_default_schedule(default_schedule: DefaultScheduleBaseSchema) -> str:
-    formatted_default_schedule = ""
-    for default_lesson in generate_default_schedule(default_schedule.data_lessons):
-        formatted_default_schedule += format_lesson(default_lesson)
-
-    return formatted_default_schedule
+    lessons = (
+        Lesson(
+            number=lesson.number,
+            time=None,
+            subject=lesson.subject.name,
+            teaching_assignments=[
+                TeachingAssignment(
+                    teacher=assignment.teacher.name,
+                    classrooms=tuple(
+                        classroom.classroom.name for classroom in assignment.classrooms
+                    ),
+                )
+                for assignment in lesson.teaching_assignments
+            ],
+        )
+        for lesson in sorted(default_schedule.lessons, key=lambda item: item.number)
+    )
+    return "".join(format_lesson(lesson) for lesson in lessons)

@@ -7,6 +7,7 @@ from scheduletelegrambot.components.parsers.parser import (
     ParserDependencies,
     ScheduleParser,
 )
+from scheduletelegrambot.enums import StudyShift
 
 if TYPE_CHECKING:
     from scheduletelegrambot.helpers.week import Week
@@ -33,25 +34,27 @@ class ParserFactory:
             self._parsers = self._create()
         return self._parsers
 
-    def get_parser(self, global_shift: int) -> ScheduleParser:
+    def get_parser(self, study_shift: StudyShift) -> ScheduleParser:
         for parser in self.get():
-            if parser.global_shift == global_shift:
+            if parser.study_shift == study_shift:
                 return parser
-        raise LookupError(f"Parser for global shift {global_shift} was not found")
+        raise LookupError(f"Parser for study shift {study_shift.value} was not found")
 
-    def get_week(self, global_shift: int) -> Week:
-        parser = self.get_parser(global_shift).parser
+    def get_week(self, study_shift: StudyShift) -> Week:
+        parser = self.get_parser(study_shift).parser
         if parser is None or parser.week is None:
             raise RuntimeError("Schedule parser has not completed its first run")
         return parser.week
 
     def _create(self) -> list[ScheduleParser]:
+        if len(self.config.urls) != len(StudyShift):
+            raise ValueError("Exactly one URL is required for every study shift")
         return [
             ScheduleParser(
                 url=url,
-                global_shift=global_shift,
+                study_shift=study_shift,
                 interval=self.config.interval,
                 dependencies=self.dependencies,
             )
-            for global_shift, url in enumerate(self.config.urls, 1)
+            for study_shift, url in zip(StudyShift, self.config.urls, strict=True)
         ]

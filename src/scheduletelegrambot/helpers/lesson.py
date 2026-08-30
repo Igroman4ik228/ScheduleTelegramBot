@@ -1,14 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import time as dt_time
-from typing import TYPE_CHECKING
 
-from scheduletelegrambot.utils.constants import (
-    END_LESSONS_TIME,
-    START_LESSONS_TIME,
-)
+from scheduletelegrambot.helpers.week import Week
+from scheduletelegrambot.utils.constants import END_LESSONS_TIME, START_LESSONS_TIME
 
-if TYPE_CHECKING:
-    from scheduletelegrambot.helpers.week import Week
+
+@dataclass(frozen=True)
+class TeachingAssignment:
+    teacher: str
+    classrooms: tuple[str, ...]
 
 
 @dataclass
@@ -16,38 +16,14 @@ class Lesson:
     number: int
     time: dt_time | None
     subject: str
-    classroom: str
+    teaching_assignments: list[TeachingAssignment] = field(default_factory=list)
     is_replacement: bool = False
-
-    def to_dict(self):
-        return {
-            "numbers": self.number,
-            "time": self.time.strftime("%H:%M") if self.time else None,
-            "subject": self.subject,
-            "classroom": self.classroom,
-            "is_replacement": self.is_replacement,
-        }
-
-    @staticmethod
-    def from_dict(data: dict):
-        time_value = dt_time.fromisoformat(data["time"]) if data["time"] else None
-
-        return Lesson(
-            number=int(data["number"]),
-            time=time_value,
-            subject=data["subject"],
-            classroom=data["classroom"],
-            is_replacement=data.get("is_replacement", False),
-        )
 
     @staticmethod
     def get_lesson_number(time: dt_time) -> int:
-        lesson_times = list(START_LESSONS_TIME)
-
-        for i, lesson_time in enumerate(lesson_times):
+        for number, lesson_time in enumerate(START_LESSONS_TIME):
             if time <= lesson_time:
-                return i
-
+                return number
         return len(START_LESSONS_TIME)
 
     @staticmethod

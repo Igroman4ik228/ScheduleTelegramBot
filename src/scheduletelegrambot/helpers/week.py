@@ -1,36 +1,32 @@
 from dataclasses import dataclass
 
-from scheduletelegrambot.helpers.algorithm import get_key
-from scheduletelegrambot.utils.constants import DAY_NAMES, WEEK_SCHEDULE_MAPPING
-
-LAST_WEEKDAY = 5
+from scheduletelegrambot.enums import Weekday, WeekType
+from scheduletelegrambot.utils.constants import DAY_NAMES, WEEK_TYPE_NAMES
 
 
-@dataclass
+@dataclass(frozen=True)
 class Week:
-    weekday: int
-    shift: int
+    weekday: Weekday
+    week_type: WeekType
 
-    def get_previous_weekday(self) -> int:
-        return self.weekday - 1 if self.weekday != 0 else 5
+    def get_previous_weekday(self) -> Weekday:
+        weekdays = list(Weekday)
+        return weekdays[(weekdays.index(self.weekday) - 1) % len(weekdays)]
 
-    def get_next_weekday(self) -> int:
-        return self.weekday + 1 if self.weekday != LAST_WEEKDAY else 0
+    def get_next_weekday(self) -> Weekday:
+        weekdays = list(Weekday)
+        return weekdays[(weekdays.index(self.weekday) + 1) % len(weekdays)]
 
-    def get_previous_shift(self) -> int:
-        if self.weekday == 0:
-            return 2 if self.shift == 1 else 1
-        return self.shift
+    def get_previous_week_type(self) -> WeekType:
+        return WeekType.DENOMINATOR if self.weekday is Weekday.MONDAY else self.week_type
 
-    def get_next_shift(self) -> int:
-        if self.weekday == LAST_WEEKDAY:
-            return 2 if self.shift == 1 else 1
-        return self.shift
+    def get_next_week_type(self) -> WeekType:
+        return WeekType.NUMERATOR if self.weekday is Weekday.SATURDAY else self.week_type
 
     @staticmethod
-    def get_weekday_name_by_weekday(weekday: int) -> str:
-        return DAY_NAMES.get(weekday, "Неизвестный день")
+    def get_weekday_name(weekday: Weekday) -> str:
+        return DAY_NAMES[weekday]
 
     @staticmethod
-    def get_shift_name_by_shift(shift: int) -> str:
-        return get_key(WEEK_SCHEDULE_MAPPING, shift) or "Неизвестная смена"
+    def get_week_type_name(week_type: WeekType) -> str:
+        return WEEK_TYPE_NAMES[week_type]

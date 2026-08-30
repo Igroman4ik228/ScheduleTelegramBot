@@ -1,10 +1,7 @@
-from pathlib import Path
-from typing import Any
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from pydantic import BaseModel
-
-from scheduletelegrambot.database.repositories.subscribes import SubscribeRepository
-from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.database.models import SubscribeModel
 from scheduletelegrambot.helpers.file import get_file_paths, load_from_json
 from scheduletelegrambot.utils.constants import FILE_EXTENSION
 
@@ -12,6 +9,8 @@ from .paths import SUBSCRIPTIONS_DIR
 
 
 class InitialSubscription(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: str
     description: str | None = None
     duration_days: int
@@ -21,30 +20,22 @@ class InitialSubscription(BaseModel):
 
 
 class SubscribeLoader:
-    def __init__(self, subscriptions: SubscribeRepository, uow: UoW) -> None:
-        self.subscriptions = subscriptions
-        self.uow = uow
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
 
-    async def load(self) -> None:
-        file_paths = get_file_paths(SUBSCRIPTIONS_DIR, FILE_EXTENSION)
-        subscriptions = await self._read_subscriptions(file_paths)
-        is_changed = False
-
-        for subscription in subscriptions:
-            if await self.subscriptions.get_by_name(subscription.name) is not None:
-                continue
-
-            await self.subscriptions.create(**subscription.model_dump())
-            is_changed = True
-
-        if is_changed:
-            await self.uow.commit()
-
-    async def _read_subscriptions(self, file_paths: list[Path]) -> list[InitialSubscription]:
-        subscriptions = []
-        for file_path in file_paths:
-            data: Any = await load_from_json(str(file_path))
+    async def read(self) -> list[InitialSubscription]:
+        subscriptions: list[InitialSubscription] = []
+        for path in get_file_paths(SUBSCRIPTIONS_DIR, FILE_EXTENSION):
+            data = await load_from_json(str(path))
             records = data if isinstance(data, list) else [data]
             subscriptions.extend(InitialSubscription.model_validate(record) for record in records)
-
         return subscriptions
+
+    async def load(self, subscriptions: list[InitialSubscription]) -> bool:
+        if await self.session.scalar(SubscribeModel.__table__.select().limit(1)) is not None:
+            return False
+        self.session.add_all(
+            SubscribeModel(**subscription.model_dump()) for subscription in subscriptions
+        )
+        await self.session.flush()
+        return bool(subscriptions)

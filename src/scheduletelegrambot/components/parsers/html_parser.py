@@ -3,8 +3,8 @@ from datetime import time as dt_time
 from bs4 import BeautifulSoup, Tag
 
 import scheduletelegrambot.utils.constants as const
-from scheduletelegrambot.helpers.algorithm import get_key
-from scheduletelegrambot.helpers.lesson import Lesson, Schedule
+from scheduletelegrambot.enums import Weekday, WeekType
+from scheduletelegrambot.helpers.lesson import Lesson, Schedule, TeachingAssignment
 from scheduletelegrambot.helpers.week import Week
 
 
@@ -37,24 +37,28 @@ class HtmlParser:
     def initialize_week(self):
         """Инициализация значения Week (Singleton)"""
         weekday = self._get_weekday()
-        shift = self._get_shift()
-        self.week = Week(weekday, shift)
+        week_type = self._get_week_type()
+        self.week = Week(weekday, week_type)
 
-    def _get_weekday(self) -> int:
+    def _get_weekday(self) -> Weekday:
         """Извлекает день недели из HTML"""
         weekday_name = self.get_text_from_div(index=2).strip().lower()
-        weekday = get_key(const.DAY_NAMES, weekday_name)
+        weekday = next(
+            (value for value, name in const.DAY_NAMES.items() if name == weekday_name), None
+        )
         if weekday is None:
             raise ValueError(f"Не удалось определить день недели: {weekday_name}")
         return weekday
 
-    def _get_shift(self) -> int:
+    def _get_week_type(self) -> WeekType:
         """Извлекает информацию о смене (числитель/знаменатель) из HTML"""
         shift_name = self.get_text_from_div(index=3, word_index=0).strip("()").lower()
-        shift = const.WEEK_SCHEDULE_MAPPING.get(shift_name)
-        if shift is None:
+        week_type = next(
+            (value for value, name in const.WEEK_TYPE_NAMES.items() if name == shift_name), None
+        )
+        if week_type is None:
             raise ValueError(f"Не удалось определить числитель/знаменатель. Значение: {shift_name}")
-        return shift
+        return week_type
 
     def extract_replacement_schedules(self) -> list[Schedule]:
         """Парсинг расписания замены"""
@@ -102,7 +106,13 @@ class HtmlParser:
         classrooms = cells[5].text.strip()
 
         return [
-            Lesson(lesson_number, time, subject, classrooms, is_replacement=True)
+            Lesson(
+                lesson_number,
+                time,
+                subject,
+                [TeachingAssignment("", (classrooms,))],
+                is_replacement=True,
+            )
             for lesson_number in lesson_numbers
         ]
 

@@ -19,28 +19,28 @@ DEFAULT_LIMIT = 10_000
 
 class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
     def __init__(self, session: AsyncSession, model_cls: type[TModel]) -> None:
-        self.session = session
+        self._session = session
         self.model_cls = model_cls
 
     async def create(self, **values: Any) -> TModel:
         instance = self.model_cls(**values)
-        self.session.add(instance)
+        self._session.add(instance)
 
-        await self.session.flush()
+        await self._session.flush()
         return instance
 
     async def get_by_id(self, object_id: int) -> TModel | None:
-        return await self.session.get(self.model_cls, object_id)
+        return await self._session.get(self.model_cls, object_id)
 
     async def update(self, instance: TModel) -> TModel:
-        merged = await self.session.merge(instance)
+        merged = await self._session.merge(instance)
 
-        await self.session.flush()
+        await self._session.flush()
         return merged
 
     async def delete(self, instance: TModel) -> None:
-        await self.session.delete(instance)
-        await self.session.flush()
+        await self._session.delete(instance)
+        await self._session.flush()
 
     async def execute_update(
         self,
@@ -50,14 +50,14 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         if not values:
             raise ValueError("execute_update requires at least one value")
 
-        connection = await self.session.connection()
+        connection = await self._session.connection()
 
         return await connection.execute(update(self.model_cls).where(*conditions).values(values))
 
     async def execute_delete(
         self, *conditions: ColumnExpressionArgument[bool]
     ) -> CursorResult[Any]:
-        connection = await self.session.connection()
+        connection = await self._session.connection()
 
         return await connection.execute(delete(self.model_cls).where(*conditions))
 
@@ -71,7 +71,7 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         for option in options:
             query = query.options(joinedload(option))
 
-        return await self.session.scalar(query)
+        return await self._session.scalar(query)
 
     async def get_many(
         self,
@@ -84,7 +84,7 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
         for option in options:
             query = query.options(selectinload(option))
 
-        return list(await self.session.scalars(query))
+        return list(await self._session.scalars(query))
 
     @final
     def _build_get_query(
@@ -97,5 +97,5 @@ class BaseRepositoryAlchemy[TModel: BaseModel](LoggerMixin):
 
     @final
     async def count(self, *conditions: ColumnExpressionArgument[bool]) -> int:
-        result = await self.session.scalar(select(count(self.model_cls.id)).where(*conditions))
+        result = await self._session.scalar(select(count(self.model_cls.id)).where(*conditions))
         return result or 0

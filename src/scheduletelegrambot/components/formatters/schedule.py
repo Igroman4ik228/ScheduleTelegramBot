@@ -2,88 +2,83 @@ import re
 
 from aiogram import html
 
-from scheduletelegrambot.helpers.lesson import Lesson
+from scheduletelegrambot.enums import Weekday, WeekType
+from scheduletelegrambot.helpers.lesson import Lesson, TeachingAssignment
 from scheduletelegrambot.helpers.week import Week
 from scheduletelegrambot.utils.constants import DAY_NAME_CASES
 
 REPLACEMENT_TEXT = "(❗️ замена)"
 
 
-def format_schedule(lessons: list[Lesson], weekday: int, shift: int) -> str:
-    return format_header(weekday, shift) + format_lessons(lessons)
+def format_schedule(lessons: list[Lesson], weekday: Weekday, week_type: WeekType) -> str:
+    return format_header(weekday, week_type) + format_lessons(lessons)
 
 
-def format_header(weekday: int, shift: int, *, is_default_schedule: bool = False) -> str:
-    weekday_name = Week.get_weekday_name_by_weekday(weekday)
-    weekday_name = DAY_NAME_CASES.get(weekday_name, weekday_name)
-    weekday_name = html.bold(weekday_name)
-
-    if not is_default_schedule:
-        shift_name = Week.get_shift_name_by_shift(shift)
-        header = html.blockquote(f"Расписание на {weekday_name} ({shift_name})") + "\n"
-    else:
-        header = f"Расписание на {weekday_name}\n"
-    return header
+def format_header(
+    weekday: Weekday, week_type: WeekType, *, is_default_schedule: bool = False
+) -> str:
+    weekday_name = Week.get_weekday_name(weekday)
+    weekday_name = html.bold(DAY_NAME_CASES.get(weekday_name, weekday_name))
+    if is_default_schedule:
+        return f"Расписание на {weekday_name}\n"
+    week_type_name = Week.get_week_type_name(week_type)
+    return html.blockquote(f"Расписание на {weekday_name} ({week_type_name})") + "\n"
 
 
 def format_lessons(lessons: list[Lesson]) -> str:
-    lessons = sort_lessons(lessons)
-    formatted_lessons = ""
-    for lesson in lessons:
-        formatted_lessons += format_lesson(lesson)
-
-    return formatted_lessons
-
-
-def sort_lessons(lessons: list[Lesson]) -> list[Lesson]:
-    return sorted(lessons, key=lambda lesson: lesson.number)
+    sorted_lessons = sorted(lessons, key=lambda lesson: lesson.number)
+    return "".join(format_lesson(lesson) for lesson in sorted_lessons)
 
 
 def format_lesson(lesson: Lesson) -> str:
     formatted_lesson = html.link(f"{lesson.number}. ", "https://ygk.edu.yar.ru")
-
     if lesson.time is not None:
         formatted_lesson += html.italic(lesson.time.strftime("%H:%M"))
-
-    formatted_lesson += f"{lesson.subject}"
-
-    if lesson.classroom != "":
-        classroom = html.bold(lesson.classroom)
-        formatted_lesson += f" [{classroom}]"
-
+    formatted_lesson += lesson.subject
+    assignments = _merge_assignments(lesson.teaching_assignments)
+    if assignments:
+        if assignments[0].teacher:
+            formatted_lesson += "\n↳ " + "; ".join(_format_assignment(item) for item in assignments)
+        else:
+            formatted_lesson += f" [{html.bold(', '.join(assignments[0].classrooms))}]"
     if lesson.is_replacement:
         formatted_lesson += " " + REPLACEMENT_TEXT
-    formatted_lesson += "\n"
+    return formatted_lesson + "\n"
 
-    return formatted_lesson
+
+def _merge_assignments(assignments: list[TeachingAssignment]) -> list[TeachingAssignment]:
+    merged: dict[str, list[str]] = {}
+    for assignment in assignments:
+        classrooms = merged.setdefault(assignment.teacher, [])
+        for classroom in assignment.classrooms:
+            if classroom not in classrooms:
+                classrooms.append(classroom)
+    return [
+        TeachingAssignment(teacher, tuple(classrooms)) for teacher, classrooms in merged.items()
+    ]
+
+
+def _format_assignment(assignment: TeachingAssignment) -> str:
+    return f"{assignment.teacher} — {html.bold(', '.join(assignment.classrooms))}"
 
 
 def add_time_to_schedule(schedule: str, skip_lines: int = 1) -> str:
-    result_lessons: list[str] = []
-
+    result_lines: list[str] = []
     lines = schedule.split("\n")
-    lessons = lines[skip_lines:]
-    for lesson in lessons:
-        if not lesson:
-            result_lessons.append(lesson)
-            continue
-
-        lesson_number = get_lesson_number(lesson)
+    for line in lines[skip_lines:]:
+        lesson_number = get_lesson_number(line)
         if lesson_number is None:
-            result_lessons.append(lesson)
+            result_lines.append(line)
             continue
-
-        full_time = Lesson.get_full_time(lesson_number)
-        result_lesson = f"{lesson} <i>{full_time}</i>"
-
-        result_lessons.append(result_lesson)
-
-    header_schedule = lines[0]
-    result_lessons_str = "\n".join(result_lessons)
-
-    return f"{header_schedule}\n{result_lessons_str}"
+        try:
+            full_time = Lesson.get_full_time(lesson_number)
+        except ValueError:
+            result_lines.append(line)
+            continue
+        result_lines.append(f"{line} <i>{full_time}</i>")
+    return f"{lines[0]}\n{'\n'.join(result_lines)}"
 
 
 def get_lesson_number(lesson: str) -> int | None:
-    match = re.search(r"\d+", lesson)
-    return int(match.group()) if match else None
+    match = re.match(r'<a href="https://ygk\.edu\.yar\.ru">(\d+)\. </a>', lesson)
+    return int(match.group(1)) if match else None

@@ -5,6 +5,7 @@ from scheduletelegrambot.database.models import GroupModel
 from scheduletelegrambot.database.repositories.base import (
     BaseRepositoryAlchemy,
 )
+from scheduletelegrambot.enums import StudyShift
 
 
 class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
@@ -20,8 +21,8 @@ class GroupRepository(BaseRepositoryAlchemy[GroupModel]):
     async def list_by_department(self, department_id: int) -> list[GroupModel]:
         return await self.get_many(GroupModel.department_id == department_id)
 
-    async def list_by_global_shift(self, global_shift: int) -> list[GroupModel]:
-        return await self.get_many(GroupModel.global_shift == global_shift)
+    async def list_by_study_shift(self, study_shift: StudyShift) -> list[GroupModel]:
+        return await self.get_many(GroupModel.study_shift == study_shift)
 
     async def execute_delete_by_name(self, name: str) -> CursorResult[object]:
         return await self.execute_delete(GroupModel.name == name)

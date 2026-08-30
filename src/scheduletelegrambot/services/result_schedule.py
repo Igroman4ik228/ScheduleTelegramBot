@@ -5,6 +5,7 @@ from cashews import NOT_NONE, noself
 from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.database.repositories.result_schedule import ResultScheduleRepository
 from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.enums import Weekday
 from scheduletelegrambot.schemas.result_schedule import (
     ResultScheduleBaseSchema,
     ResultScheduleWithGroupSchema,
@@ -24,7 +25,7 @@ class ResultScheduleService:
         tags=(_CACHE_TAG, "result-schedule:{weekday}:{group_id}"),
         condition=NOT_NONE,
     )
-    async def find(self, weekday: int, group_id: int) -> ResultScheduleBaseSchema | None:
+    async def find(self, weekday: Weekday, group_id: int) -> ResultScheduleBaseSchema | None:
         model = await self.result_schedule_repository.get_by_period_and_group(weekday, group_id)
         if not model:
             return None
@@ -38,7 +39,7 @@ class ResultScheduleService:
         condition=NOT_NONE,
     )
     async def find_with_group(
-        self, weekday: int, group_id: int
+        self, weekday: Weekday, group_id: int
     ) -> ResultScheduleWithGroupSchema | None:
         model = await self.result_schedule_repository.get_by_period_and_group_with_group(
             weekday, group_id
@@ -49,7 +50,7 @@ class ResultScheduleService:
         return ResultScheduleWithGroupSchema.model_validate(model)
 
     async def upsert_by_group_name(
-        self, weekday: int, data_lessons: str, group_name: str
+        self, weekday: Weekday, data_lessons: str, group_name: str
     ) -> ResultScheduleBaseSchema | None:
         model = await self.result_schedule_repository.create_or_update_by_group_name(
             weekday, data_lessons, group_name

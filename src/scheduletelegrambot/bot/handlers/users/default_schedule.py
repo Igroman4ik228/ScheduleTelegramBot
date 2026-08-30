@@ -10,14 +10,11 @@ from scheduletelegrambot.components.formatters.message import (
     format_default_schedules,
 )
 from scheduletelegrambot.database.models import UserModel
-from scheduletelegrambot.helpers.algorithm import get_key
+from scheduletelegrambot.enums import WeekType
 from scheduletelegrambot.services.default_schedule import (
     DefaultScheduleService,
 )
-from scheduletelegrambot.utils.constants import (
-    WEEK_SCHEDULE_MAPPING,
-    CallbackData,
-)
+from scheduletelegrambot.utils.constants import CallbackData
 
 router = Router(name=__name__)
 
@@ -42,7 +39,9 @@ async def handle_default_numerator_schedule(
     message = callback_query.message
     if not isinstance(message, Message) or user.group_id is None:
         return
-    default_schedule_text = await get_default_schedule(user.group_id, default_schedules, shift=1)
+    default_schedule_text = await get_default_schedule(
+        user.group_id, default_schedules, WeekType.NUMERATOR
+    )
     await message.answer(default_schedule_text)
 
 
@@ -55,15 +54,16 @@ async def handle_default_denominator_schedule(
     message = callback_query.message
     if not isinstance(message, Message) or user.group_id is None:
         return
-    default_schedule_text = await get_default_schedule(user.group_id, default_schedules, shift=2)
+    default_schedule_text = await get_default_schedule(
+        user.group_id, default_schedules, WeekType.DENOMINATOR
+    )
     await message.answer(default_schedule_text)
 
 
 async def get_default_schedule(
-    group_id: int, default_schedules: DefaultScheduleService, shift: int
+    group_id: int, default_schedules: DefaultScheduleService, week_type: WeekType
 ) -> str:
-    default_schedule_data = await default_schedules.list_for_group(group_id, shift)
-    shift_name = get_key(WEEK_SCHEDULE_MAPPING, shift)
-    default_schedule = format_default_schedules(default_schedule_data, shift)
+    default_schedule_data = await default_schedules.list_for_group(group_id, week_type)
+    default_schedule = format_default_schedules(default_schedule_data, week_type)
 
-    return str(DefaultScheduleView(shift_name, default_schedule))
+    return str(DefaultScheduleView(week_type.value, default_schedule))

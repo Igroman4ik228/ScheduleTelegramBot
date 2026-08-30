@@ -5,6 +5,7 @@ from cashews import NOT_NONE, noself
 from scheduletelegrambot.cache.cashews import cache
 from scheduletelegrambot.database.repositories.groups import GroupRepository
 from scheduletelegrambot.database.uow import UoW
+from scheduletelegrambot.enums import StudyShift
 from scheduletelegrambot.schemas.group import GroupBaseSchema
 
 _CACHE_TAG = "groups"
@@ -64,8 +65,8 @@ class GroupService:
         early_ttl="12h",
         tags=(_CACHE_TAG,),
     )
-    async def list_all_by_global_shift(self, global_shift: int) -> list[GroupBaseSchema]:
-        models = await self.group_repository.list_by_global_shift(global_shift)
+    async def list_all_by_study_shift(self, study_shift: StudyShift) -> list[GroupBaseSchema]:
+        models = await self.group_repository.list_by_study_shift(study_shift)
         return [GroupBaseSchema.model_validate(model) for model in models]
 
     async def delete_by_name(self, name: str) -> bool:

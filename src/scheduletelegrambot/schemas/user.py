@@ -29,8 +29,10 @@ class UserBaseSchema(BaseSchema):
             return self.first_name
         return f"{self.first_name} {self.last_name}"
 
+
 class UserWithGroupSchema(UserBaseSchema):
     group: GroupBaseSchema | None
+
 
 class UserWithAllSchema(UserWithGroupSchema):
     subscribe: SubscribeBaseSchema | None

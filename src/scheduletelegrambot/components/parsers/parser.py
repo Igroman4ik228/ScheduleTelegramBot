@@ -9,6 +9,7 @@ from scheduletelegrambot.components.notifier.notify import ScheduleNotifier
 from scheduletelegrambot.components.parsers.builder import Builder
 from scheduletelegrambot.components.parsers.html_parser import HtmlParser
 from scheduletelegrambot.components.requester.request import AdminRequester
+from scheduletelegrambot.enums import StudyShift
 from scheduletelegrambot.services.default_schedule import DefaultScheduleService
 from scheduletelegrambot.services.group import GroupService
 from scheduletelegrambot.services.result_schedule import ResultScheduleService
@@ -27,7 +28,7 @@ class ScheduleParser(Publisher):
         self,
         *,
         url: str,
-        global_shift: int,
+        study_shift: StudyShift,
         interval: int,
         dependencies: ParserDependencies,
     ):
@@ -36,7 +37,7 @@ class ScheduleParser(Publisher):
         self.parser: HtmlParser | None = None
 
         self.url = url
-        self.global_shift = global_shift
+        self.study_shift = study_shift
         self.interval = interval
         self.request = dependencies.request
         self.container = dependencies.container
@@ -60,7 +61,7 @@ class ScheduleParser(Publisher):
             default_schedules = await request_container.get(DefaultScheduleService)
             builder = Builder(
                 week,
-                self.global_shift,
+                self.study_shift,
                 replacement_schedules,
                 default_schedules,
                 groups,
@@ -78,7 +79,7 @@ class ScheduleParser(Publisher):
                 await self._save_schedule_to_db(result_schedule, result_schedules)
 
         if is_update:
-            await self.notify(global_shift=self.global_shift, week=week)
+            await self.notify(study_shift=self.study_shift, week=week)
 
     async def _get_response_text(self) -> str:
         if DEBUG:
@@ -107,7 +108,7 @@ class ScheduleParser(Publisher):
         if group is None:
             return False
 
-        if group.global_shift != self.global_shift:
+        if group.study_shift != self.study_shift:
             return False
         if self.parser is None or self.parser.week is None:
             raise RuntimeError("Schedule parser is not initialized")

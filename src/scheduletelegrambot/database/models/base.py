@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Annotated, Any, ClassVar
 
@@ -53,7 +54,7 @@ class BaseModel(DeclarativeBase):
     # Tables name
     @declared_attr.directive
     def __tablename__(self) -> str:
-        return self.__name__[:-5].lower() + "s"
+        return re.sub(r"(?<!^)(?=[A-Z])", "_", self.__name__[:-5]).lower() + "s"
 
     repr_cols_num: int = 4  # print first columns (don't count id)
     repr_cols: tuple[str, ...] = ()  # extra printed columns

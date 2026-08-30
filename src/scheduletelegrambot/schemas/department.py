@@ -7,5 +7,6 @@ class DepartmentBaseSchema(BaseSchema):
     id: int
     name: str
 
+
 class DepartmentCreateSchema(BaseSchema):
     name: str

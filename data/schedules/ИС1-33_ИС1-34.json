@@ -1,0 +1,612 @@
+{
+  "groups": [
+    "ИС1-33",
+    "ИС1-34"
+  ],
+  "weeks": {
+    "numerator": {
+      "monday": [
+        {
+          "number": 4,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Панасюк А.Д.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Серова А.М.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "subject": "УП 08 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Серова А.М.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б305"
+              ]
+            }
+          ]
+        }
+      ],
+      "tuesday": [
+        {
+          "number": 2,
+          "subject": "Менеджмент в профессиональной деятельности",
+          "teaching_assignments": [
+            {
+              "teacher": "Малашкевич Д.А.",
+              "classrooms": [
+                "М207"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "МДК 03.01 Моделирование и анализ программного обеспечения",
+          "teaching_assignments": [
+            {
+              "teacher": "Пронина Л.Ю.",
+              "classrooms": [
+                "А401"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "МДК 09.02 Оптимизация веб-приложений КП",
+          "teaching_assignments": [
+            {
+              "teacher": "Гудкова А.Л.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Неделяева Н.А.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        }
+      ],
+      "wednesday": [
+        {
+          "number": 3,
+          "subject": "Безопасность жизнедеятельности",
+          "teaching_assignments": [
+            {
+              "teacher": "Корсаков С.В.",
+              "classrooms": [
+                "В102"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "МДК 03.01 Моделирование и анализ программного обеспечения",
+          "teaching_assignments": [
+            {
+              "teacher": "Пронина Л.Ю.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Байдина Ю.А.",
+              "classrooms": [
+                "Б204"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "МДК 09.01 Проектирование и разработка веб-приложений",
+          "teaching_assignments": [
+            {
+              "teacher": "Неделяева Н.А.",
+              "classrooms": [
+                "Б302"
+              ]
+            },
+            {
+              "teacher": "Королева П.Д.",
+              "classrooms": [
+                "Б301"
+              ]
+            }
+          ]
+        }
+      ],
+      "thursday": [
+        {
+          "number": 2,
+          "subject": "МДК 05.03 Тестирование информационных систем",
+          "teaching_assignments": [
+            {
+              "teacher": "Байдина Ю.А.",
+              "classrooms": [
+                "Б501"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "МДК 05.02 Разработка кода ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б101"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "МДК 05.03 Тестирование информационных систем",
+          "teaching_assignments": [
+            {
+              "teacher": "Байдина Ю.А.",
+              "classrooms": [
+                "Б304"
+              ]
+            },
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б305"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "МДК 05.01 Проектирование и дизайн ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б502"
+              ]
+            }
+          ]
+        }
+      ],
+      "friday": [
+        {
+          "number": 5,
+          "subject": "МДК 05.01 Проектирование и дизайн ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б309"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "subject": "МДК 05.01 Проектирование и дизайн ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б309"
+              ]
+            }
+          ]
+        }
+      ],
+      "saturday": [
+        {
+          "number": 2,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            },
+            {
+              "teacher": "Панасюк А.Д.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "МДК 05.02 Разработка кода ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            },
+            {
+              "teacher": "Вакансия",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "Основы философии",
+          "teaching_assignments": [
+            {
+              "teacher": "Свободина Н.В.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "denominator": {
+      "monday": [
+        {
+          "number": 3,
+          "subject": "Физическая культура",
+          "teaching_assignments": [
+            {
+              "teacher": "Куликова А.А.",
+              "classrooms": [
+                "Сп.зал"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Панасюк А.Д.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Серова А.М.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        }
+      ],
+      "tuesday": [
+        {
+          "number": 2,
+          "subject": "Менеджмент в профессиональной деятельности",
+          "teaching_assignments": [
+            {
+              "teacher": "Малашкевич Д.А.",
+              "classrooms": [
+                "М207"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "МДК 06.04 Интеллектуальные системы и технологии",
+          "teaching_assignments": [
+            {
+              "teacher": "Байдина Ю.А.",
+              "classrooms": [
+                "А401"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "МДК 09.02 Оптимизация веб-приложений КП",
+          "teaching_assignments": [
+            {
+              "teacher": "Гудкова А.Л.",
+              "classrooms": [
+                "Б301"
+              ]
+            },
+            {
+              "teacher": "Неделяева Н.А.",
+              "classrooms": [
+                "Б302"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "Иностранный язык в профессиональной деятельности п/гр.",
+          "teaching_assignments": [
+            {
+              "teacher": "Загородних Е.С.",
+              "classrooms": [
+                "А404-3"
+              ]
+            }
+          ]
+        }
+      ],
+      "wednesday": [
+        {
+          "number": 4,
+          "subject": "МДК 06.04 Интеллектуальные системы и технологии",
+          "teaching_assignments": [
+            {
+              "teacher": "Пронина Л.Ю.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Байдина Ю.А.",
+              "classrooms": [
+                "Б204"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "МДК 09.01 Проектирование и разработка веб-приложений",
+          "teaching_assignments": [
+            {
+              "teacher": "Неделяева Н.А.",
+              "classrooms": [
+                "Б302"
+              ]
+            },
+            {
+              "teacher": "Королева П.Д.",
+              "classrooms": [
+                "Б301"
+              ]
+            }
+          ]
+        }
+      ],
+      "thursday": [
+        {
+          "number": 2,
+          "subject": "Иностранный язык в профессиональной деятельности п/гр.",
+          "teaching_assignments": [
+            {
+              "teacher": "Зубковская А.Е.",
+              "classrooms": [
+                "А413"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "Основы философии",
+          "teaching_assignments": [
+            {
+              "teacher": "Свободина Н.В.",
+              "classrooms": [
+                "А312"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "МДК 08.02 Графический дизайн и мультимедиа",
+          "teaching_assignments": [
+            {
+              "teacher": "Вершинина Н.А.",
+              "classrooms": [
+                "Б304"
+              ]
+            },
+            {
+              "teacher": "Кувшинова В.А.",
+              "classrooms": [
+                "Б308"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "МДК 05.02 Разработка кода ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б304"
+              ]
+            },
+            {
+              "teacher": "Вакансия",
+              "classrooms": [
+                "Б304"
+              ]
+            }
+          ]
+        }
+      ],
+      "friday": [
+        {
+          "number": 5,
+          "subject": "МДК 05.01 Проектирование и дизайн ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б309"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 6,
+          "subject": "МДК 05.01 Проектирование и дизайн ИС",
+          "teaching_assignments": [
+            {
+              "teacher": "Юров А.А.",
+              "classrooms": [
+                "Б305"
+              ]
+            },
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "Б309"
+              ]
+            }
+          ]
+        }
+      ],
+      "saturday": [
+        {
+          "number": 2,
+          "subject": "УП 06 Учебная практика",
+          "teaching_assignments": [
+            {
+              "teacher": "Васильченко М.О.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            },
+            {
+              "teacher": "Панасюк А.Д.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 3,
+          "subject": "МДК 08.02 Графический дизайн и мультимедиа",
+          "teaching_assignments": [
+            {
+              "teacher": "Вершинина Н.А.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            },
+            {
+              "teacher": "Кувшинова В.А.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 4,
+          "subject": "Безопасность жизнедеятельности",
+          "teaching_assignments": [
+            {
+              "teacher": "Корсаков С.В.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        },
+        {
+          "number": 5,
+          "subject": "Эффективное поведение на рынке труда",
+          "teaching_assignments": [
+            {
+              "teacher": "Малашкевич Д.А.",
+              "classrooms": [
+                "ДОТ"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -102,6 +102,7 @@ class UserService:
         )
 
         await self.uow.commit()
+        await self.uow.refresh(model)
 
         await cache.delete_tags(f"user:{telegram_id}")
 
